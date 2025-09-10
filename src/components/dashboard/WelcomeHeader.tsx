@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     StyleSheet,
@@ -11,7 +11,7 @@ import {
 import { colors } from '../../lib/utils';
 
 const WelcomeHeader: React.FC = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -29,7 +29,7 @@ const WelcomeHeader: React.FC = () => {
         
         <TouchableOpacity
           style={styles.notificationButton}
-          onPress={() => navigation.navigate('Notifications' as never)}
+          onPress={() => router.push('/notifications')}
           activeOpacity={0.7}
         >
           <Ionicons name="notifications-outline" size={20} color={colors.foreground} />
@@ -48,7 +48,7 @@ const WelcomeHeader: React.FC = () => {
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>이번 달 현황</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate('Stats' as never)}
+              onPress={() => router.push('/(tabs)/stats')}
               activeOpacity={0.7}
             >
               <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
