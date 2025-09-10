@@ -14,7 +14,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useNavigation } from '@react-navigation/native';
 
-const AddEvent: React.FC = () => {
+const AddLedger: React.FC = () => {
   const navigation = useNavigation();
   const [formData, setFormData] = useState({
     title: '',
@@ -244,4 +244,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddEvent;
+export default AddLedger;
