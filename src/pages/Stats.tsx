@@ -1,16 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 import MobileLayout from '../components/layout/MobileLayout';
+import { colors } from '../lib/utils';
 import { EventTypeStat, MonthlyData, RelationshipStat } from '../types';
 
 const screenWidth = Dimensions.get('window').width;
@@ -188,10 +189,10 @@ const InteractivePieChart: React.FC<{
   onSlicePress: (index: number, name: string, value: number, percentage: number) => void 
 }> = ({ data, onSlicePress }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
-  const chartSize = 200;
+  const chartSize = 160;
   const centerX = chartSize / 2;
   const centerY = chartSize / 2;
-  const radius = 80;
+  const radius = 60;
   
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
@@ -344,133 +345,179 @@ const Stats: React.FC = () => {
   return (
     <MobileLayout currentPage="stats">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 무신사 스타일 헤더 */}
+        {/* 통계 전용 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <Text style={styles.title}>마음의 통계</Text>
+            <View style={styles.titleSection}>
+              <View style={styles.titleRow}>
+                <Ionicons name="analytics" size={28} color={colors.primary} />
+                <Text style={styles.title}>마음의 통계</Text>
+              </View>
+              <Text style={styles.subtitle}>따뜻한 마음의 흐름을 한눈에</Text>
+            </View>
             <TouchableOpacity
               style={styles.periodButton}
               onPress={() => {
                 // Period selection logic here
               }}
+              activeOpacity={0.7}
             >
               <Text style={styles.periodText}>{selectedPeriod}년</Text>
-              <Ionicons name="chevron-down" size={16} color="#666" />
+              <Ionicons name="chevron-down" size={16} color={colors.mutedForeground} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>따뜻한 마음의 흐름을 한눈에</Text>
-        </View>
-
-        {/* 무신사 스타일 핵심 지표 */}
-        <View style={styles.metricsSection}>
-          <View style={styles.metricsCard}>
-            <View style={styles.metricsHeader}>
-              <Text style={styles.metricsTitle}>핵심 지표</Text>
-              <View style={styles.metricsBadge}>
-                <Text style={styles.metricsBadgeText}>2025년</Text>
-              </View>
+          
+          {/* 통계 요약 바 */}
+          <View style={styles.summaryBar}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{totalIncome.toLocaleString()}</Text>
+              <Text style={styles.summaryLabel}>받은 마음</Text>
             </View>
-            <View style={styles.metricsGrid}>
-              <View style={styles.metricItem}>
-                <View style={styles.metricIcon}>
-                  <Ionicons name="heart" size={20} color="#4a5568" />
-                </View>
-                <Text style={styles.metricValue}>{totalIncome.toLocaleString()}</Text>
-                <Text style={styles.metricLabel}>받은 마음</Text>
-                <Text style={styles.metricChange}>+12% vs 전월</Text>
-              </View>
-              
-              <View style={styles.metricDivider} />
-              
-              <View style={styles.metricItem}>
-                <View style={styles.metricIcon}>
-                  <Ionicons name="trending-up" size={20} color="#4a5568" />
-                </View>
-                <Text style={styles.metricValue}>{totalExpense.toLocaleString()}</Text>
-                <Text style={styles.metricLabel}>나눈 마음</Text>
-                <Text style={styles.metricChange}>+8% vs 전월</Text>
-              </View>
-              
-              <View style={styles.metricDivider} />
-              
-              <View style={styles.metricItem}>
-                <View style={styles.metricIcon}>
-                  <Ionicons name="trending-up" size={20} color="#4a5568" />
-                </View>
-                <Text style={[styles.metricValue, { color: netBalance >= 0 ? '#4a5568' : '#718096' }]}>
-                  {netBalance >= 0 ? '+' : ''}{netBalance.toLocaleString()}
-                </Text>
-                <Text style={styles.metricLabel}>마음의 수지</Text>
-                <Text style={styles.metricChange}>
-                  {netBalance >= 0 ? '여유로운 상태' : '적극적인 나눔'}
-                </Text>
-              </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{totalExpense.toLocaleString()}</Text>
+              <Text style={styles.summaryLabel}>나눈 마음</Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryValue, { color: netBalance >= 0 ? colors.success : colors.destructive }]}>
+                {netBalance >= 0 ? '+' : ''}{netBalance.toLocaleString()}
+              </Text>
+              <Text style={styles.summaryLabel}>수지</Text>
             </View>
           </View>
         </View>
 
-        {/* 월별 수입/지출 추이 차트 */}
-        <View style={styles.chartSection}>
+        {/* 통계 전용 상세 지표 */}
+        <View style={styles.detailedStatsSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>월별 수입/지출 추이</Text>
-            <Text style={styles.sectionCount}>8개월</Text>
+            <Text style={styles.sectionTitle}>상세 분석</Text>
+            <View style={styles.analysisBadge}>
+              <Ionicons name="trending-up" size={14} color={colors.success} />
+              <Text style={styles.analysisBadgeText}>성장세</Text>
+            </View>
           </View>
           
-          <View style={styles.chartCard}>
-            <InteractiveLineChart 
-              data={lineChartData.income} 
-              labels={lineChartData.labels} 
-              colors={lineChartData.colors}
-              onPointPress={handleLineChartPointPress}
-            />
-            <View style={styles.chartLegend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#4a5568' }]} />
-                <Text style={styles.legendText}>받은 마음 (만원)</Text>
+          <View style={styles.detailedStatsGrid}>
+            <View style={styles.detailedStatCard}>
+              <View style={styles.detailedStatHeader}>
+                <View style={styles.detailedStatIcon}>
+                  <Ionicons name="heart" size={20} color="#FF6B9D" />
+                </View>
+                <View style={styles.detailedStatTrend}>
+                  <Ionicons name="trending-up" size={16} color={colors.success} />
+                  <Text style={styles.detailedStatTrendText}>+12%</Text>
+                </View>
               </View>
+              <Text style={styles.detailedStatValue}>{totalIncome.toLocaleString()}원</Text>
+              <Text style={styles.detailedStatLabel}>받은 마음</Text>
+              <Text style={styles.detailedStatDescription}>전월 대비 증가</Text>
             </View>
-            {selectedData && selectedData.title.includes('월별') && (
-              <View style={[styles.tooltip, { 
-                left: selectedData.position.x, 
-                top: selectedData.position.y 
-              }]}>
-                <Text style={styles.tooltipTitle}>{selectedData.title}</Text>
-                <Text style={styles.tooltipValue}>{selectedData.value}</Text>
-                <Text style={styles.tooltipDescription}>{selectedData.description}</Text>
+
+            <View style={styles.detailedStatCard}>
+              <View style={styles.detailedStatHeader}>
+                <View style={styles.detailedStatIcon}>
+                  <Ionicons name="gift" size={20} color="#4ECDC4" />
+                </View>
+                <View style={styles.detailedStatTrend}>
+                  <Ionicons name="trending-up" size={16} color={colors.warning} />
+                  <Text style={styles.detailedStatTrendText}>+8%</Text>
+                </View>
               </View>
-            )}
+              <Text style={styles.detailedStatValue}>{totalExpense.toLocaleString()}원</Text>
+              <Text style={styles.detailedStatLabel}>나눈 마음</Text>
+              <Text style={styles.detailedStatDescription}>전월 대비 증가</Text>
+            </View>
+
+            <View style={styles.detailedStatCard}>
+              <View style={styles.detailedStatHeader}>
+                <View style={styles.detailedStatIcon}>
+                  <Ionicons name="balance-scale" size={20} color={netBalance >= 0 ? colors.success : colors.destructive} />
+                </View>
+                <View style={styles.detailedStatTrend}>
+                  <Ionicons 
+                    name={netBalance >= 0 ? "trending-up" : "trending-down"} 
+                    size={16} 
+                    color={netBalance >= 0 ? colors.success : colors.destructive} 
+                  />
+                  <Text style={[styles.detailedStatTrendText, { color: netBalance >= 0 ? colors.success : colors.destructive }]}>
+                    {netBalance >= 0 ? '+' : ''}{Math.abs(netBalance / 10000).toFixed(0)}만
+                  </Text>
+                </View>
+              </View>
+              <Text style={[styles.detailedStatValue, { color: netBalance >= 0 ? colors.success : colors.destructive }]}>
+                {netBalance >= 0 ? '+' : ''}{netBalance.toLocaleString()}원
+              </Text>
+              <Text style={styles.detailedStatLabel}>마음의 수지</Text>
+              <Text style={styles.detailedStatDescription}>
+                {netBalance >= 0 ? '여유로운 상태' : '적극적인 나눔'}
+              </Text>
+            </View>
+
+            <View style={styles.detailedStatCard}>
+              <View style={styles.detailedStatHeader}>
+                <View style={styles.detailedStatIcon}>
+                  <Ionicons name="calendar" size={20} color="#45B7D1" />
+                </View>
+                <View style={styles.detailedStatTrend}>
+                  <Ionicons name="trending-up" size={16} color={colors.success} />
+                  <Text style={styles.detailedStatTrendText}>+3건</Text>
+                </View>
+              </View>
+              <Text style={styles.detailedStatValue}>24건</Text>
+              <Text style={styles.detailedStatLabel}>연간 경조사</Text>
+              <Text style={styles.detailedStatDescription}>작년 대비 증가</Text>
+            </View>
           </View>
         </View>
 
-        {/* 경조사 종류별 분포 */}
+        {/* 월별 마음 흐름 분석 */}
         <View style={styles.chartSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>경조사 종류별 분포</Text>
-            <Text style={styles.sectionCount}>4종류</Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="trending-up" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>월별 마음 흐름 분석</Text>
+            </View>
+            <View style={styles.chartBadge}>
+              <Text style={styles.chartBadgeText}>8개월</Text>
+            </View>
           </View>
           
-          <View style={styles.chartCard}>
-            <View style={styles.pieChartContainer}>
-              <InteractivePieChart 
-                data={pieChartData}
-                onSlicePress={handlePieChartPress}
+          <View style={styles.enhancedChartCard}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.chartSubtitle}>받은 마음 vs 나눈 마음 추이</Text>
+              <View style={styles.chartStats}>
+                <View style={styles.chartStatItem}>
+                  <Text style={styles.chartStatValue}>+{Math.round((totalIncome / 8) / 10000)}만</Text>
+                  <Text style={styles.chartStatLabel}>월평균</Text>
+                </View>
+              </View>
+            </View>
+            
+            <View style={styles.chartContainer}>
+              <InteractiveLineChart 
+                data={lineChartData.income} 
+                labels={lineChartData.labels} 
+                colors={['#FF6B9D', '#4ECDC4']}
+                onPointPress={handleLineChartPointPress}
               />
-              <View style={styles.pieChartLegend}>
-                {pieChartData.map((item, index) => (
-                  <TouchableOpacity 
-                    key={index} 
-                    style={styles.pieLegendItem}
-                    onPress={() => handlePieChartPress(index, item.name, item.value, item.value / pieChartData.reduce((sum, i) => sum + i.value, 0))}
-                    activeOpacity={0.7}
-                  >
-                    <View style={[styles.pieLegendDot, { backgroundColor: item.color }]} />
-                    <Text style={styles.pieLegendText}>{item.name} ({item.value}개)</Text>
-                  </TouchableOpacity>
-                ))}
+            </View>
+            
+            <View style={styles.enhancedChartLegend}>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#FF6B9D' }]} />
+                <Text style={styles.legendText}>받은 마음</Text>
+                <Text style={styles.legendValue}>{totalIncome.toLocaleString()}원</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#4ECDC4' }]} />
+                <Text style={styles.legendText}>나눈 마음</Text>
+                <Text style={styles.legendValue}>{totalExpense.toLocaleString()}원</Text>
               </View>
             </View>
-            {selectedData && selectedData.title.includes('통계') && !selectedData.title.includes('관계') && (
-              <View style={[styles.tooltip, { 
+            
+            {selectedData && selectedData.title.includes('월별') && (
+              <View style={[styles.enhancedTooltip, { 
                 left: selectedData.position.x, 
                 top: selectedData.position.y 
               }]}>
@@ -482,37 +529,135 @@ const Stats: React.FC = () => {
           </View>
         </View>
 
-        {/* 관계별 통계 */}
+        {/* 경조사 유형별 마음 분포 */}
         <View style={styles.chartSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>관계별 마음 나눔</Text>
-            <Text style={styles.sectionCount}>4그룹</Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="pie-chart" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>경조사 유형별 마음 분포</Text>
+            </View>
+            <View style={styles.chartBadge}>
+              <Text style={styles.chartBadgeText}>4종류</Text>
+            </View>
           </View>
           
-          <View style={styles.chartCard}>
-            <InteractiveBarChart 
-              data={barChartData.data} 
-              labels={barChartData.labels} 
-              colors={barChartData.colors}
-              onBarPress={handleBarChartPress}
-            />
-            <View style={styles.relationshipLegend}>
+          <View style={styles.enhancedChartCard}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.chartSubtitle}>경조사별 참여 현황</Text>
+              <View style={styles.chartStats}>
+                <View style={styles.chartStatItem}>
+                  <Text style={styles.chartStatValue}>{pieChartData.reduce((sum, item) => sum + item.value, 0)}건</Text>
+                  <Text style={styles.chartStatLabel}>총 경조사</Text>
+                </View>
+              </View>
+            </View>
+            
+            <View style={styles.enhancedPieChartContainer}>
+              <View style={styles.pieChartWrapper}>
+                <InteractivePieChart 
+                  data={pieChartData}
+                  onSlicePress={handlePieChartPress}
+                />
+              </View>
+              
+              <View style={styles.enhancedPieChartLegend}>
+                {pieChartData.map((item, index) => {
+                  const percentage = Math.round((item.value / pieChartData.reduce((sum, i) => sum + i.value, 0)) * 100);
+                  return (
+                    <TouchableOpacity 
+                      key={index} 
+                      style={styles.enhancedPieLegendItem}
+                      onPress={() => handlePieChartPress(index, item.name, item.value, item.value / pieChartData.reduce((sum, i) => sum + i.value, 0))}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.pieLegendLeft}>
+                        <View style={[styles.pieLegendDot, { backgroundColor: item.color }]} />
+                        <Text style={styles.pieLegendText}>{item.name}</Text>
+                      </View>
+                      <View style={styles.pieLegendRight}>
+                        <Text style={styles.pieLegendValue}>{item.value}건</Text>
+                        <Text style={styles.pieLegendPercentage}>{percentage}%</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+            
+            {selectedData && selectedData.title.includes('통계') && !selectedData.title.includes('관계') && (
+              <View style={[styles.enhancedTooltip, { 
+                left: selectedData.position.x, 
+                top: selectedData.position.y 
+              }]}>
+                <Text style={styles.tooltipTitle}>{selectedData.title}</Text>
+                <Text style={styles.tooltipValue}>{selectedData.value}</Text>
+                <Text style={styles.tooltipDescription}>{selectedData.description}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* 관계별 마음 나눔 분석 */}
+        <View style={styles.chartSection}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="people" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>관계별 마음 나눔 분석</Text>
+            </View>
+            <View style={styles.chartBadge}>
+              <Text style={styles.chartBadgeText}>4그룹</Text>
+            </View>
+          </View>
+          
+          <View style={styles.enhancedChartCard}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.chartSubtitle}>관계별 마음 나눔 현황</Text>
+              <View style={styles.chartStats}>
+                <View style={styles.chartStatItem}>
+                  <Text style={styles.chartStatValue}>{relationshipStats.reduce((sum, stat) => sum + stat.count, 0)}명</Text>
+                  <Text style={styles.chartStatLabel}>총 관계</Text>
+                </View>
+              </View>
+            </View>
+            
+            <View style={styles.chartContainer}>
+              <InteractiveBarChart 
+                data={barChartData.data} 
+                labels={barChartData.labels} 
+                colors={barChartData.colors}
+                onBarPress={handleBarChartPress}
+              />
+            </View>
+            
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.enhancedRelationshipLegend}
+              decelerationRate="fast"
+              nestedScrollEnabled={true}
+              scrollEnabled={true}
+              style={styles.relationshipScrollContainer}
+            >
               {relationshipStats.map((stat, index) => (
                 <TouchableOpacity 
                   key={index} 
-                  style={styles.relationshipLegendItem}
+                  style={styles.enhancedRelationshipLegendItem}
                   onPress={() => handleBarChartPress(index, stat.amount / 10000, stat.relation)}
                   activeOpacity={0.7}
                 >
-                  <View style={[styles.relationshipLegendDot, { backgroundColor: stat.color }]} />
-                  <Text style={styles.relationshipLegendText}>
-                    {stat.relation} ({stat.count}명, {Math.round(stat.amount / 10000)}만원)
-                  </Text>
+                  <View style={styles.relationshipLegendLeft}>
+                    <View style={[styles.relationshipLegendDot, { backgroundColor: stat.color }]} />
+                    <Text style={styles.relationshipLegendText}>{stat.relation}</Text>
+                  </View>
+                  <View style={styles.relationshipLegendRight}>
+                    <Text style={styles.relationshipLegendValue}>{stat.count}명</Text>
+                    <Text style={styles.relationshipLegendAmount}>{Math.round(stat.amount / 10000)}만원</Text>
+                  </View>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
+            
             {selectedData && selectedData.title.includes('관계') && (
-              <View style={[styles.tooltip, { 
+              <View style={[styles.enhancedTooltip, { 
                 left: selectedData.position.x, 
                 top: selectedData.position.y 
               }]}>
@@ -523,6 +668,7 @@ const Stats: React.FC = () => {
             )}
           </View>
         </View>
+
 
         {/* 인사이트 섹션 */}
         <View style={styles.insightsSection}>
@@ -564,234 +710,411 @@ const Stats: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
   },
   
-  // 헤더 스타일
+  // 통계 전용 헤더
   header: {
-    backgroundColor: 'white',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: colors.card,
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  titleSection: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
     marginBottom: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    letterSpacing: -0.5,
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: colors.foreground,
+    lineHeight: 32,
   },
   periodButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    backgroundColor: colors.background,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: colors.border,
   },
   periodText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#4a5568',
+    fontWeight: '600',
+    color: colors.foreground,
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: colors.mutedForeground,
     lineHeight: 20,
   },
-
-  // 핵심 지표 섹션
-  metricsSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  metricsCard: {
-    backgroundColor: 'white',
+  summaryBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
     borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    padding: 16,
   },
-  metricsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  metricsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  metricsBadge: {
-    backgroundColor: '#e2e8f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  metricsBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4a5568',
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metricItem: {
+  summaryItem: {
     flex: 1,
     alignItems: 'center',
   },
-  metricIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  metricValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.foreground,
     marginBottom: 4,
   },
-  metricLabel: {
-    fontSize: 13,
-    color: '#666',
+  summaryLabel: {
+    fontSize: 12,
+    color: colors.mutedForeground,
     fontWeight: '500',
-    marginBottom: 4,
   },
-  metricChange: {
-    fontSize: 11,
-    color: '#999',
-  },
-  metricDivider: {
+  summaryDivider: {
     width: 1,
-    height: 60,
-    backgroundColor: '#e9ecef',
-    marginHorizontal: 20,
+    height: 40,
+    backgroundColor: colors.border,
+    marginHorizontal: 16,
   },
 
-  // 차트 섹션
+  // 통계 전용 상세 지표
+  detailedStatsSection: {
+    paddingHorizontal: 24,
+    marginBottom: 32,
+  },
+  analysisBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.success + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  analysisBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.success,
+  },
+  detailedStatsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  detailedStatCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: colors.card,
+    borderRadius: 18,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  detailedStatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  detailedStatIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailedStatTrend: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.background,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  detailedStatTrendText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.success,
+  },
+  detailedStatValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.foreground,
+    marginBottom: 6,
+    lineHeight: 24,
+  },
+  detailedStatLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.foreground,
+    marginBottom: 4,
+  },
+  detailedStatDescription: {
+    fontSize: 12,
+    color: colors.mutedForeground,
+    lineHeight: 16,
+  },
+
+  // 차트 섹션 (통계 전용 스타일)
   chartSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.foreground,
   },
-  sectionCount: {
+  chartBadge: {
+    backgroundColor: colors.background,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chartBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.mutedForeground,
+  },
+  enhancedChartCard: {
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  chartSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: colors.mutedForeground,
     fontWeight: '500',
   },
-  chartCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+  chartStats: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  chartStatItem: {
+    alignItems: 'center',
+  },
+  chartStatValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  chartStatLabel: {
+    fontSize: 11,
+    color: colors.mutedForeground,
+    fontWeight: '500',
+  },
+  chartContainer: {
+    marginVertical: 16,
   },
   chart: {
     borderRadius: 16,
   },
-  chartLegend: {
+  enhancedChartLegend: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    marginTop: 16,
+    justifyContent: 'space-around',
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   legendText: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 13,
+    color: colors.foreground,
     fontWeight: '500',
   },
-  relationshipLegend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
-    marginTop: 16,
+  legendValue: {
+    fontSize: 12,
+    color: colors.mutedForeground,
+    fontWeight: '600',
+    marginLeft: 4,
   },
-  relationshipLegendItem: {
+  // 파이 차트 스타일
+    enhancedPieChartContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingHorizontal: 8,
+    },
+  pieChartWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 160,
+    height: 160,
+  },
+    enhancedPieChartLegend: {
+      width: 160,
+      marginLeft: 12,
+    },
+  enhancedPieLegendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  pieLegendLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  pieLegendRight: {
+    alignItems: 'flex-end',
+  },
+  pieLegendValue: {
+    fontSize: 12,
+    color: colors.foreground,
+    fontWeight: 'bold',
+  },
+  pieLegendPercentage: {
+    fontSize: 10,
+    color: colors.mutedForeground,
+    fontWeight: '600',
+  },
+  
+  // 관계별 차트 스타일
+  relationshipScrollContainer: {
+    height: 180, // 3개 카드 높이 (56px * 3 + 간격)
+  },
+  enhancedRelationshipLegend: {
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingBottom: 16,
+  },
+  enhancedRelationshipLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  relationshipLegendLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  relationshipLegendRight: {
+    alignItems: 'flex-end',
   },
   relationshipLegendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   relationshipLegendText: {
-    fontSize: 11,
-    color: '#666',
+    fontSize: 14,
+    color: colors.foreground,
     fontWeight: '500',
   },
+  relationshipLegendValue: {
+    fontSize: 12,
+    color: colors.foreground,
+    fontWeight: '600',
+  },
+  relationshipLegendAmount: {
+    fontSize: 11,
+    color: colors.mutedForeground,
+    fontWeight: '500',
+  },
+  
 
-  // 인사이트 섹션
+  // 인사이트 섹션 (홈 페이지 스타일)
   insightsSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
   },
   insightsGrid: {
     gap: 12,
   },
   insightCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.card,
     borderRadius: 16,
-    padding: 16,
+    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: colors.border,
   },
   insightIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -802,12 +1125,12 @@ const styles = StyleSheet.create({
   insightTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.foreground,
     marginBottom: 4,
   },
   insightText: {
     fontSize: 13,
-    color: '#666',
+    color: colors.mutedForeground,
     lineHeight: 18,
   },
 
@@ -853,37 +1176,44 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   pieLegendText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#4a5568',
     fontWeight: '500',
   },
 
-  // 툴팁 스타일
-  tooltip: {
+  // 툴팁 스타일 (통계 전용)
+  enhancedTooltip: {
     position: 'absolute',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 8,
-    padding: 8,
-    minWidth: 120,
+    backgroundColor: colors.foreground,
+    borderRadius: 12,
+    padding: 12,
+    minWidth: 140,
     zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   tooltipTitle: {
-    fontSize: 11,
-    color: '#fff',
+    fontSize: 12,
+    color: colors.background,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   tooltipValue: {
-    fontSize: 13,
-    color: '#fff',
-    fontWeight: '700',
-    marginBottom: 2,
+    fontSize: 14,
+    color: colors.background,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   tooltipDescription: {
-    fontSize: 10,
-    color: '#d1d5db',
-    lineHeight: 12,
+    fontSize: 11,
+    color: colors.mutedForeground,
+    lineHeight: 14,
   },
 });
 
 export default Stats;
+
+
