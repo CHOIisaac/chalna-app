@@ -154,10 +154,6 @@ const Ledgers: React.FC = () => {
 
         {/* 무신사 스타일 장부 그리드 */}
         <View style={styles.contactsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>인연 목록</Text>
-            <Text style={styles.sectionCount}>{filteredLedgers.length}명</Text>
-          </View>
           
           <View style={styles.contactsGrid}>
             {filteredLedgers.map((ledger) => {
