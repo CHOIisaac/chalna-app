@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -36,7 +39,7 @@ const InteractiveLineChart: React.FC<{
       duration: 1500,
       useNativeDriver: false,
     }).start();
-  }, []);
+  }, [animatedValue]);
   const minValue = Math.min(...data);
   const range = maxValue - minValue || 1;
   
@@ -127,7 +130,7 @@ const InteractiveBarChart: React.FC<{
       duration: 1200,
       useNativeDriver: false,
     }).start();
-  }, []);
+  }, [animatedValue]);
   
   return (
     <Animated.View style={{ opacity: animatedValue }}>
@@ -202,7 +205,7 @@ const InteractivePieChart: React.FC<{
       duration: 1000,
       useNativeDriver: false,
     }).start();
-  }, []);
+  }, [animatedValue]);
   let currentAngle = 0;
   
   const paths = data.map((item, index) => {
@@ -253,12 +256,14 @@ const InteractivePieChart: React.FC<{
 
 const Stats: React.FC = () => {
   const [selectedPeriod] = useState('2025');
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedData, setSelectedData] = useState<{
     title: string;
     value: string;
     description: string;
     position: { x: number; y: number };
   } | null>(null);
+  const [showEmptyState] = useState(false);
 
   // Mock data for statistics
   const monthlyData: MonthlyData[] = [
@@ -290,6 +295,14 @@ const Stats: React.FC = () => {
   const totalExpense = monthlyData.reduce((sum, month) => sum + month.expense, 0);
   const netBalance = totalIncome - totalExpense;
 
+  // 로딩 시뮬레이션
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   // 터치 핸들러 함수들
   const handleLineChartPointPress = (index: number, value: number, label: string) => {
     const monthData = monthlyData[index];
@@ -299,6 +312,11 @@ const Stats: React.FC = () => {
       description: `이벤트 ${monthData.events}건, 순수익 ${monthData.net.toLocaleString()}원`,
       position: { x: 50 + (index * 50), y: 100 }
     });
+    
+    // 햅틱 피드백 (실제 디바이스에서만 작동)
+    if (Platform.OS === 'ios') {
+      // HapticFeedback.impactAsync(HapticFeedback.ImpactFeedbackStyle.Light);
+    }
   };
 
   const handleBarChartPress = (index: number, value: number, label: string) => {
@@ -342,6 +360,53 @@ const Stats: React.FC = () => {
     colors: relationshipStats.map(r => r.color),
   };
 
+  // 로딩 상태 UI
+  if (isLoading) {
+    return (
+      <MobileLayout currentPage="stats">
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingContent}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>마음의 통계를 준비하고 있어요</Text>
+            <Text style={styles.loadingSubtext}>잠시만 기다려주세요...</Text>
+          </View>
+        </View>
+      </MobileLayout>
+    );
+  }
+
+  // 빈 상태 UI
+  if (showEmptyState) {
+    return (
+      <MobileLayout currentPage="stats">
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+          <View style={styles.emptyStateContainer}>
+            <View style={styles.emptyStateContent}>
+              <View style={styles.emptyStateIcon}>
+                <Ionicons name="analytics-outline" size={64} color={colors.mutedForeground} />
+              </View>
+              <Text style={styles.emptyStateTitle}>아직 통계 데이터가 없어요</Text>
+              <Text style={styles.emptyStateText}>
+                경조사를 기록하면{'\n'}마음의 통계를 확인할 수 있어요
+              </Text>
+              <TouchableOpacity 
+                style={styles.emptyStateButton}
+                onPress={() => {
+                  // 경조사 추가 페이지로 이동
+                  Alert.alert('알림', '경조사 추가 기능은 준비 중입니다.');
+                }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={20} color={colors.background} />
+                <Text style={styles.emptyStateButtonText}>첫 경조사 기록하기</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </MobileLayout>
+    );
+  }
+
   return (
     <MobileLayout currentPage="stats">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -358,7 +423,15 @@ const Stats: React.FC = () => {
             <TouchableOpacity
               style={styles.periodButton}
               onPress={() => {
-                // Period selection logic here
+                Alert.alert(
+                  '기간 선택',
+                  '통계를 확인할 기간을 선택해주세요',
+                  [
+                    { text: '2024년', onPress: () => {} },
+                    { text: '2025년', onPress: () => {} },
+                    { text: '취소', style: 'cancel' }
+                  ]
+                );
               }}
               activeOpacity={0.7}
             >
@@ -432,7 +505,7 @@ const Stats: React.FC = () => {
             <View style={styles.detailedStatCard}>
               <View style={styles.detailedStatHeader}>
                 <View style={styles.detailedStatIcon}>
-                  <Ionicons name="balance-scale" size={20} color={netBalance >= 0 ? colors.success : colors.destructive} />
+                  <Ionicons name="trending-up" size={20} color={netBalance >= 0 ? colors.success : colors.destructive} />
                 </View>
                 <View style={styles.detailedStatTrend}>
                   <Ionicons 
@@ -481,6 +554,13 @@ const Stats: React.FC = () => {
             <View style={styles.chartBadge}>
               <Text style={styles.chartBadgeText}>8개월</Text>
             </View>
+          </View>
+          
+          {/* 차트 설명 */}
+          <View style={styles.chartDescription}>
+            <Text style={styles.chartDescriptionText}>
+              💡 차트의 점을 터치하면 상세 정보를 확인할 수 있어요
+            </Text>
           </View>
           
           <View style={styles.enhancedChartCard}>
@@ -539,6 +619,13 @@ const Stats: React.FC = () => {
             <View style={styles.chartBadge}>
               <Text style={styles.chartBadgeText}>4종류</Text>
             </View>
+          </View>
+          
+          {/* 차트 설명 */}
+          <View style={styles.chartDescription}>
+            <Text style={styles.chartDescriptionText}>
+              🎯 파이 차트와 범례를 터치하면 상세 정보를 확인할 수 있어요
+            </Text>
           </View>
           
           <View style={styles.enhancedChartCard}>
@@ -607,6 +694,13 @@ const Stats: React.FC = () => {
             <View style={styles.chartBadge}>
               <Text style={styles.chartBadgeText}>4그룹</Text>
             </View>
+          </View>
+          
+          {/* 차트 설명 */}
+          <View style={styles.chartDescription}>
+            <Text style={styles.chartDescriptionText}>
+              📊 바 차트와 하단 목록을 터치하면 상세 정보를 확인할 수 있어요
+            </Text>
           </View>
           
           <View style={styles.enhancedChartCard}>
@@ -1211,6 +1305,99 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.mutedForeground,
     lineHeight: 14,
+  },
+
+  // 로딩 상태 스타일
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContent: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  loadingText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.foreground,
+    marginTop: 20,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  loadingSubtext: {
+    fontSize: 14,
+    color: colors.mutedForeground,
+    textAlign: 'center',
+  },
+
+  // 빈 상태 스타일
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 80,
+  },
+  emptyStateContent: {
+    alignItems: 'center',
+  },
+  emptyStateIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: colors.border,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.foreground,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: colors.mutedForeground,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 16,
+    gap: 8,
+  },
+  emptyStateButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.background,
+  },
+
+
+  // 차트 설명 스타일
+  chartDescription: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chartDescriptionText: {
+    fontSize: 13,
+    color: colors.mutedForeground,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });
 
