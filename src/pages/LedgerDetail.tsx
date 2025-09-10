@@ -1,26 +1,21 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, shadows } from '../lib/utils';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Avatar } from '../components/ui/Avatar';
-import Button from '../components/ui/Button';
-import { useNavigation, useRoute } from '@react-navigation/native';
 
 const LedgerDetail: React.FC = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { id } = route.params as { id: string };
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
 
-  // Mock data for contact detail
-  const contact = {
+  // Mock data for ledger detail
+  const ledgerDetail = {
     id: parseInt(id),
     name: "김철수",
     relationship: "친구",
@@ -34,185 +29,140 @@ const LedgerDetail: React.FC = () => {
     events: [
       {
         id: 1,
-        type: "결혼식",
+        eventType: "결혼식",
         title: "김철수 결혼식",
         date: "2024-03-15",
         amount: 100000,
-        status: "완료",
+        type: "given",
+        location: "롯데호텔 크리스탈볼룸",
+        time: "12:00"
       },
       {
         id: 2,
-        type: "돌잔치",
+        eventType: "돌잔치",
         title: "김철수 아들 돌잔치",
         date: "2023-08-20",
         amount: 50000,
-        status: "완료",
+        type: "given",
+        location: "강남구청 웨딩홀",
+        time: "11:30"
       },
       {
         id: 3,
-        type: "장례식",
+        eventType: "장례식",
         title: "김철수 어머님 장례식",
         date: "2023-05-10",
         amount: 100000,
-        status: "완료",
+        type: "given",
+        location: "서울추모공원",
+        time: "14:00"
       },
+      {
+        id: 4,
+        eventType: "개업식",
+        title: "김철수 사무실 개업",
+        date: "2023-02-15",
+        amount: 30000,
+        type: "received",
+        location: "강남구 테헤란로",
+        time: "18:00"
+      },
+      {
+        id: 5,
+        eventType: "결혼식",
+        title: "김철수 동생 결혼식",
+        date: "2022-11-20",
+        amount: 50000,
+        type: "received",
+        location: "신라호텔",
+        time: "12:30"
+      }
     ],
   };
 
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
-      case '결혼식': return colors.accent;
-      case '장례식': return colors.mutedForeground;
-      case '돌잔치': return colors.primary;
-      default: return colors.secondaryForeground;
-    }
-  };
-
-  const getEventTypeIcon = (type: string): keyof typeof Ionicons.glyphMap => {
-    switch (type) {
-      case '결혼식': return 'heart';
-      case '장례식': return 'flower';
-      case '돌잔치': return 'gift';
-      default: return 'calendar';
-    }
-  };
 
   return (
-    <MobileLayout currentPage="contact-detail">
+    <MobileLayout currentPage="ledger-detail">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 헤더 */}
+        {/* 무신사 스타일 헤더 */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
-          </TouchableOpacity>
-          <Text style={styles.title}>연락처 상세</Text>
-          <TouchableOpacity style={styles.editButton} activeOpacity={0.7}>
-            <Ionicons name="pencil" size={20} color={colors.primary} />
-          </TouchableOpacity>
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+            <Text style={styles.title}>장부 상세</Text>
+            <TouchableOpacity style={styles.editButton} activeOpacity={0.7}>
+              <Ionicons name="pencil" size={20} color="#4a5568" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.subtitle}>{ledgerDetail.name}님과의 경조사 내역</Text>
         </View>
 
-        {/* 연락처 정보 */}
-        <Card style={styles.contactCard} gradient shadow="soft">
-          <CardContent style={styles.contactContent}>
-            <View style={styles.contactHeader}>
-              <Avatar size="xl" fallback={contact.name} />
-              <View style={styles.contactInfo}>
-                <Text style={styles.contactName}>{contact.name}</Text>
-                <Text style={styles.contactRelationship}>{contact.relationship}</Text>
-                <View style={styles.contactStats}>
-                  <Text style={styles.statText}>경조사 {contact.eventCount}회</Text>
-                  <Text style={styles.statText}>•</Text>
-                  <Text style={styles.statText}>최근: {contact.lastEvent}</Text>
-                </View>
-              </View>
+
+        {/* 장부 정보 수정 섹션 */}
+        <View style={styles.editSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>장부 정보</Text>
+            <TouchableOpacity style={styles.editToggle} activeOpacity={0.7}>
+              <Ionicons name="pencil" size={16} color="#4a5568" />
+              <Text style={styles.editToggleText}>수정</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.editCard}>
+            <View style={styles.editItem}>
+              <Text style={styles.editLabel}>이름</Text>
+              <Text style={styles.editValue}>{ledgerDetail.name}</Text>
             </View>
             
-            <View style={styles.contactActions}>
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-                <Ionicons name="call" size={20} color={colors.primary} />
-                <Text style={styles.actionText}>전화</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-                <Ionicons name="mail" size={20} color={colors.primary} />
-                <Text style={styles.actionText}>이메일</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-                <Ionicons name="chatbubble" size={20} color={colors.primary} />
-                <Text style={styles.actionText}>메시지</Text>
-              </TouchableOpacity>
+            <View style={styles.editItem}>
+              <Text style={styles.editLabel}>관계</Text>
+              <Text style={styles.editValue}>{ledgerDetail.relationship}</Text>
             </View>
-          </CardContent>
-        </Card>
-
-        {/* 경조사 요약 */}
-        <Card style={styles.summaryCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.summaryTitle}>경조사 요약</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.summaryGrid}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryValue}>{contact.totalGiven.toLocaleString()}원</Text>
-                <Text style={styles.summaryLabel}>준 금액</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryValue}>{contact.totalReceived.toLocaleString()}원</Text>
-                <Text style={styles.summaryLabel}>받은 금액</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: colors.destructive }]}>
-                  {contact.balance.toLocaleString()}원
-                </Text>
-                <Text style={styles.summaryLabel}>차액</Text>
-              </View>
+            
+            <View style={styles.editItem}>
+              <Text style={styles.editLabel}>경조사 타입</Text>
+              <Text style={styles.editValue}>{ledgerDetail.events[0]?.eventType || '결혼식'}</Text>
             </View>
-          </CardContent>
-        </Card>
-
-        {/* 연락처 정보 */}
-        <Card style={styles.infoCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.infoTitle}>연락처 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.infoItem}>
-              <Ionicons name="call" size={20} color={colors.mutedForeground} />
-              <Text style={styles.infoText}>{contact.phone}</Text>
+            
+            <View style={styles.editItem}>
+              <Text style={styles.editLabel}>날짜</Text>
+              <Text style={styles.editValue}>{ledgerDetail.events[0]?.date || ledgerDetail.lastEvent}</Text>
             </View>
-            <View style={styles.infoItem}>
-              <Ionicons name="mail" size={20} color={colors.mutedForeground} />
-              <Text style={styles.infoText}>{contact.email}</Text>
+            
+            <View style={styles.editItem}>
+              <Text style={styles.editLabel}>금액</Text>
+              <Text style={styles.editValue}>{ledgerDetail.events[0]?.amount.toLocaleString() || '0'}원</Text>
             </View>
-          </CardContent>
-        </Card>
-
-        {/* 경조사 내역 */}
-        <Card style={styles.eventsCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.eventsTitle}>경조사 내역</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.eventsList}>
-              {contact.events.map((event) => {
-                const typeColor = getEventTypeColor(event.type);
-                const typeIcon = getEventTypeIcon(event.type);
-                
-                return (
-                  <View key={event.id} style={styles.eventItem}>
-                    <View style={styles.eventIcon}>
-                      <Ionicons name={typeIcon} size={20} color={typeColor} />
-                    </View>
-                    <View style={styles.eventInfo}>
-                      <Text style={styles.eventTitle}>{event.title}</Text>
-                      <Text style={styles.eventDate}>{event.date}</Text>
-                    </View>
-                    <View style={styles.eventAmount}>
-                      <Text style={styles.amountText}>{event.amount.toLocaleString()}원</Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          </CardContent>
-        </Card>
+          </View>
+        </View>
 
         {/* 액션 버튼들 */}
         <View style={styles.actionButtons}>
-          <Button
-            title="새 경조사 추가"
-            onPress={() => navigation.navigate('AddEvent' as never)}
-            style={styles.primaryButton}
-          />
-          <Button
-            title="연락처 수정"
-            onPress={() => {}}
-            variant="outline"
-            style={styles.secondaryButton}
-          />
+          <TouchableOpacity 
+            style={styles.primaryActionButton}
+            onPress={() => {
+              // 장부 정보 수정 기능
+              console.log('장부 정보 수정');
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="save" size={20} color="white" />
+            <Text style={styles.primaryActionText}>저장</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.secondaryActionButton}
+            onPress={() => router.push('/(tabs)/events')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="calendar" size={20} color="#4a5568" />
+            <Text style={styles.secondaryActionText}>일정 보기</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </MobileLayout>
@@ -222,186 +172,154 @@ const LedgerDetail: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f8f9fa',
   },
+  
+  // 헤더 스타일
   header: {
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  headerTop: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.foreground,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: -0.5,
   },
   editButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  contactCard: {
-    marginHorizontal: 16,
+  subtitle: {
+    fontSize: 15,
+    color: '#666',
+    lineHeight: 20,
+  },
+
+
+  // 장부 정보 수정 섹션
+  editSection: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
-  contactContent: {
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  editToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  editToggleText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#4a5568',
+  },
+  editCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
   },
-  contactHeader: {
+  editItem: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 16,
-    marginBottom: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f9fa',
   },
-  contactInfo: {
-    flex: 1,
-  },
-  contactName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.foreground,
-    marginBottom: 4,
-  },
-  contactRelationship: {
-    fontSize: 16,
-    color: colors.mutedForeground,
-    marginBottom: 8,
-  },
-  contactStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statText: {
+  editLabel: {
     fontSize: 14,
-    color: colors.mutedForeground,
-  },
-  contactActions: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  actionButton: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: colors.primary + '10',
-  },
-  actionText: {
-    fontSize: 12,
     fontWeight: '500',
-    color: colors.primary,
-    marginTop: 4,
+    color: '#666',
   },
-  summaryCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  summaryTitle: {
-    fontSize: 16,
-    color: colors.foreground,
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  summaryItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  summaryValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.foreground,
-    marginBottom: 4,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    color: colors.mutedForeground,
-  },
-  infoCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  infoTitle: {
-    fontSize: 16,
-    color: colors.foreground,
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 8,
-  },
-  infoText: {
-    fontSize: 16,
-    color: colors.foreground,
-  },
-  eventsCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  eventsTitle: {
-    fontSize: 16,
-    color: colors.foreground,
-  },
-  eventsList: {
-    gap: 12,
-  },
-  eventItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 8,
-  },
-  eventIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.muted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  eventInfo: {
-    flex: 1,
-  },
-  eventTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.foreground,
-    marginBottom: 2,
-  },
-  eventDate: {
+  editValue: {
     fontSize: 14,
-    color: colors.mutedForeground,
+    color: '#1a1a1a',
+    fontWeight: '500',
   },
-  eventAmount: {
-    alignItems: 'flex-end',
-  },
-  amountText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.foreground,
-  },
+
+  // 액션 버튼들
   actionButtons: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 24,
     gap: 12,
   },
-  primaryButton: {
-    backgroundColor: colors.primary,
+  primaryActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4a5568',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    gap: 8,
   },
-  secondaryButton: {
-    borderColor: colors.border,
+  primaryActionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+  },
+  secondaryActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    gap: 8,
+  },
+  secondaryActionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4a5568',
   },
 });
 
