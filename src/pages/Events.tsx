@@ -26,8 +26,8 @@ const Events: React.FC = () => {
       type: "wedding",
       date: new Date(),
       location: "롯데호텔 크리스탈볼룸",
-      amount: 100000,
       time: "12:00",
+      status: "completed", // completed, upcoming
     },
     {
       id: "2",
@@ -35,8 +35,8 @@ const Events: React.FC = () => {
       type: "funeral",
       date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       location: "서울추모공원",
-      amount: 50000,
       time: "14:00",
+      status: "upcoming",
     },
     {
       id: "3",
@@ -44,8 +44,8 @@ const Events: React.FC = () => {
       type: "birthday",
       date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       location: "강남구청 웨딩홀",
-      amount: 30000,
       time: "11:30",
+      status: "upcoming",
     }
   ];
 
@@ -63,6 +63,22 @@ const Events: React.FC = () => {
       case 'wedding': return '결혼식';
       case 'funeral': return '장례식';
       case 'birthday': return '돌잔치';
+      default: return '기타';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return { bg: '#e8f5e8', text: '#2e7d32' };
+      case 'upcoming': return { bg: '#fff3e0', text: '#f57c00' };
+      default: return { bg: '#f0f0f0', text: '#666666' };
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'completed': return '완료';
+      case 'upcoming': return '예정';
       default: return '기타';
     }
   };
@@ -272,15 +288,19 @@ const Events: React.FC = () => {
                       </View>
                     </View>
 
-                    {/* 금액 섹션 (이벤트 타입 + 금액) */}
-                    <View style={styles.amountSection}>
+                    {/* 상태 섹션 (이벤트 타입 + 상태) */}
+                    <View style={styles.statusSection}>
                       <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
                         <Text style={[styles.typeText, { color: typeStyle.text }]}>
                           {getEventTypeName(event.type)}
                         </Text>
                       </View>
                       <Text></Text>
-                      <Text style={styles.amountText}>{event.amount.toLocaleString()}원</Text>
+                      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
+                        <Text style={[styles.statusText, { color: getStatusColor(event.status).text }]}>
+                          {getStatusText(event.status)}
+                        </Text>
+                      </View>
                     </View>
                   </TouchableOpacity>
                 );
@@ -427,15 +447,19 @@ const Events: React.FC = () => {
                         </View>
                       </View>
 
-                      {/* 금액 섹션 (이벤트 타입 + 금액) */}
-                      <View style={styles.modalAmountSection}>
+                      {/* 상태 섹션 (이벤트 타입 + 상태) */}
+                      <View style={styles.modalStatusSection}>
                         <View style={[styles.modalTypeBadge, { backgroundColor: typeStyle.bg }]}>
                           <Text style={[styles.modalTypeText, { color: typeStyle.text }]}>
                             {getEventTypeName(event.type)}
                           </Text>
                         </View>
                         <Text></Text>
-                        <Text style={styles.modalAmountText}>{event.amount.toLocaleString()}원</Text>
+                        <View style={[styles.modalStatusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
+                          <Text style={[styles.modalStatusText, { color: getStatusColor(event.status).text }]}>
+                            {getStatusText(event.status)}
+                          </Text>
+                        </View>
                       </View>
                     </TouchableOpacity>
                   );
@@ -707,17 +731,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // 금액 섹션
-  amountSection: {
+  // 상태 섹션
+  statusSection: {
     marginLeft: 12,
     alignItems: 'flex-end',
     justifyContent: 'space-between',
+    gap: 4,
   },
-  amountText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: 5,
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
 
   // 추천 섹션
@@ -953,11 +983,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // 모달 금액 섹션
-  modalAmountSection: {
+  // 모달 상태 섹션
+  modalStatusSection: {
     marginLeft: 12,
     alignItems: 'flex-end',
     justifyContent: 'space-between',
+    gap: 4,
   },
   modalTypeBadge: {
     paddingHorizontal: 10,
@@ -970,11 +1001,16 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
-  modalAmountText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: 5,
+  modalStatusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  modalStatusText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   emptyDateState: {
     alignItems: 'center',
