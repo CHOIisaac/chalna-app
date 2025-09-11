@@ -115,7 +115,6 @@ const Ledgers: React.FC = () => {
               <Ionicons name="options-outline" size={20} color={colors.foreground} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>주고받은 내역을 한눈에 확인하세요</Text>
         </View>
 
         {/* 무신사 스타일 검색바 */}
@@ -239,7 +238,7 @@ const styles = StyleSheet.create({
   
   // 헤더 스타일
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
@@ -274,7 +273,7 @@ const styles = StyleSheet.create({
 
   // 검색 섹션
   searchSection: {
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -283,7 +282,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
