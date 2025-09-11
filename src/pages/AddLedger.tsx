@@ -18,12 +18,20 @@ const AddLedger: React.FC = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
-    relationship: RelationshipType.FRIEND,
-    eventType: EventType.WEDDING,
+    relationship: '', // 기본값 제거
+    eventType: '', // 기본값 제거
     date: new Date(),
     amount: '',
     type: 'given', // given: 나눔, received: 받음
     memo: ''
+  });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    relationship: '',
+    eventType: '',
+    date: '',
+    amount: ''
   });
   
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -40,6 +48,11 @@ const AddLedger: React.FC = () => {
       ...prev,
       [field]: value
     }));
+    
+    // 실시간 검증 - 값이 입력되면 에러 메시지 제거
+    if (value && value.toString().trim()) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -59,22 +72,43 @@ const AddLedger: React.FC = () => {
     });
   };
 
-  const handleSave = () => {
-    // 필수 필드 검증
+  const validateForm = () => {
+    const newErrors = {
+      name: '',
+      relationship: '',
+      eventType: '',
+      date: '',
+      amount: ''
+    };
+
+    let hasError = false;
+
     if (!formData.name.trim()) {
-      alert('이름을 입력해주세요.');
-      return;
+      newErrors.name = '이름을 입력해주세요';
+      hasError = true;
     }
-    if (!formData.relationship.trim()) {
-      alert('관계를 입력해주세요.');
-      return;
+
+    if (!formData.relationship) {
+      newErrors.relationship = '관계를 선택해주세요';
+      hasError = true;
     }
-    if (!formData.date) {
-      alert('날짜를 선택해주세요.');
-      return;
+
+    if (!formData.eventType) {
+      newErrors.eventType = '경조사 타입을 선택해주세요';
+      hasError = true;
     }
+
     if (!formData.amount.trim()) {
-      alert('금액을 입력해주세요.');
+      newErrors.amount = '금액을 입력해주세요';
+      hasError = true;
+    }
+
+    setErrors(newErrors);
+    return !hasError;
+  };
+
+  const handleSave = () => {
+    if (!validateForm()) {
       return;
     }
 
@@ -130,15 +164,23 @@ const AddLedger: React.FC = () => {
                 <View style={styles.fieldIconContainer}>
                   <Ionicons name="person" size={20} color="#4a5568" />
                 </View>
-                <Text style={styles.fieldLabel}>이름</Text>
+                <Text style={styles.fieldLabel}>
+                  이름 <Text style={styles.required}>*</Text>
+                </Text>
               </View>
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  errors.name && styles.inputError
+                ]}
                 value={formData.name}
                 onChangeText={(value) => handleInputChange('name', value)}
                 placeholder="이름을 입력하세요"
                 placeholderTextColor="#999"
               />
+              {errors.name && (
+                <Text style={styles.errorText}>{errors.name}</Text>
+              )}
             </View>
 
             {/* 관계 */}
@@ -147,10 +189,15 @@ const AddLedger: React.FC = () => {
                 <View style={styles.fieldIconContainer}>
                   <Ionicons name="people" size={20} color="#4a5568" />
                 </View>
-                <Text style={styles.fieldLabel}>관계</Text>
+                <Text style={styles.fieldLabel}>
+                  관계 <Text style={styles.required}>*</Text>
+                </Text>
               </View>
               <ScrollView 
-                style={styles.optionsScrollContainer}
+                style={[
+                  styles.optionsScrollContainer,
+                  errors.relationship && styles.inputError
+                ]}
                 showsVerticalScrollIndicator={true}
                 nestedScrollEnabled={true}
               >
@@ -171,13 +218,13 @@ const AddLedger: React.FC = () => {
                       ]}>
                         {option}
                       </Text>
-                      {formData.relationship === option && (
-                        <Ionicons name="checkmark" size={20} color="#4a5568" />
-                      )}
                     </TouchableOpacity>
                   ))}
                 </View>
               </ScrollView>
+              {errors.relationship && (
+                <Text style={styles.errorText}>{errors.relationship}</Text>
+              )}
             </View>
 
             {/* 경조사 타입 */}
@@ -186,10 +233,15 @@ const AddLedger: React.FC = () => {
                 <View style={styles.fieldIconContainer}>
                   <Ionicons name="calendar" size={20} color="#4a5568" />
                 </View>
-                <Text style={styles.fieldLabel}>경조사 타입</Text>
+                <Text style={styles.fieldLabel}>
+                  경조사 타입 <Text style={styles.required}>*</Text>
+                </Text>
               </View>
               <ScrollView 
-                style={styles.optionsScrollContainer}
+                style={[
+                  styles.optionsScrollContainer,
+                  errors.eventType && styles.inputError
+                ]}
                 showsVerticalScrollIndicator={true}
                 nestedScrollEnabled={true}
               >
@@ -210,13 +262,13 @@ const AddLedger: React.FC = () => {
                       ]}>
                         {type}
                       </Text>
-                      {formData.eventType === type && (
-                        <Ionicons name="checkmark" size={18} color="#4a5568" />
-                      )}
                     </TouchableOpacity>
                   ))}
                 </View>
               </ScrollView>
+              {errors.eventType && (
+                <Text style={styles.errorText}>{errors.eventType}</Text>
+              )}
             </View>
 
             {/* 날짜 */}
@@ -245,12 +297,12 @@ const AddLedger: React.FC = () => {
                 <View style={styles.datePickerContainer}>
                   {Platform.OS === 'ios' && (
                     <View style={styles.datePickerHeader}>
-                      <TouchableOpacity
-                        style={styles.datePickerCancelButton}
-                        onPress={() => setShowDatePicker(false)}
-                      >
-                        <Text style={styles.datePickerCancelText}>취소</Text>
-                      </TouchableOpacity>
+                      {/*<TouchableOpacity*/}
+                      {/*  style={styles.datePickerCancelButton}*/}
+                      {/*  onPress={() => setShowDatePicker(false)}*/}
+                      {/*>*/}
+                      {/*  <Text style={styles.datePickerCancelText}>취소</Text>*/}
+                      {/*</TouchableOpacity>*/}
                       <TouchableOpacity
                         style={styles.datePickerConfirmButton}
                         onPress={() => setShowDatePicker(false)}
@@ -281,16 +333,24 @@ const AddLedger: React.FC = () => {
                 <View style={styles.fieldIconContainer}>
                   <Ionicons name="cash" size={20} color="#4a5568" />
                 </View>
-                <Text style={styles.fieldLabel}>금액</Text>
+                <Text style={styles.fieldLabel}>
+                  금액 <Text style={styles.required}>*</Text>
+                </Text>
               </View>
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  errors.amount && styles.inputError
+                ]}
                 value={formData.amount}
                 onChangeText={(value) => handleInputChange('amount', value)}
                 placeholder="금액을 입력하세요"
                 placeholderTextColor="#999"
                 keyboardType="numeric"
               />
+              {errors.amount && (
+                <Text style={styles.errorText}>{errors.amount}</Text>
+              )}
             </View>
 
             {/* 나눔/받음 타입 */}
@@ -620,6 +680,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+
+  // 필수 표시 및 에러 스타일
+  required: {
+    color: '#e53e3e',
+    fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#e53e3e',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  inputError: {
+    borderColor: '#e53e3e',
+    borderWidth: 1,
   },
 });
 
