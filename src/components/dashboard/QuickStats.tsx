@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
     StyleSheet,
@@ -13,34 +14,34 @@ const QuickStats: React.FC = () => {
   const stats: StatItem[] = [
     {
       title: '축의금',
-      amount: '850,000원',
+      amount: '805,000,000원',
       change: '+12%',
       changeLabel: '전월 대비',
       trend: 'up',
       icon: 'trending-up',
-      bgColor: '#f1f8e9',
-      iconColor: '#4caf50',
-      border: '#dcedc8',
+      bgColor: '#FFFFFF',
+      iconColor: '#666666',
+      border: '#e0e0e0',
     },
     {
       title: '조의금',
-      amount: '320,000원',
+      amount: '32,000,000원',
       change: '-5%',
       changeLabel: '전월 대비',
       trend: 'down',
       icon: 'trending-down',
-      bgColor: '#fff8e1',
-      iconColor: '#ff9800',
-      border: '#ffecb3',
+      bgColor: '#FFFFFF',
+      iconColor: '#666666',
+      border: '#e0e0e0',
     },
     {
-      title: '연간 총 경조사',
-      amount: '24건',
+      title: '함께한 순간',
+      amount: '3건',
       change: '+3건',
-      changeLabel: '작년 대비',
+      changeLabel: '전월 대비',
       trend: 'up',
       icon: 'calendar-outline',
-      bgColor: '#f5f5f5',
+      bgColor: '#FFFFFF',
       iconColor: '#666666',
       border: '#e0e0e0',
     },
@@ -51,9 +52,9 @@ const QuickStats: React.FC = () => {
       changeLabel: '전월 대비',
       trend: 'up',
       icon: 'analytics',
-      bgColor: '#f3f8ff',
-      iconColor: '#1976d2',
-      border: '#e1ecf7',
+      bgColor: '#FFFFFF',
+      iconColor: '#666666',
+      border: '#e0e0e0',
     },
   ];
 
@@ -87,55 +88,56 @@ const QuickStats: React.FC = () => {
           return (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.statCard,
-                {
-                  backgroundColor: stat.bgColor,
-                  borderColor: stat.border,
-                },
-              ]}
+              style={styles.statCard}
               activeOpacity={0.8}
             >
-              <View style={styles.statHeader}>
-                <View style={styles.iconContainer}>
-                  <Ionicons name={IconName} size={16} color={stat.iconColor} />
-                </View>
-                {stat.trend !== 'neutral' && (
-                  <View
-                    style={[
-                      styles.trendBadge,
-                      {
-                        backgroundColor: stat.trend === 'up' 
-                          ? colors.success + '20' 
-                          : colors.warning + '20',
-                      },
-                    ]}
-                  >
-                    <Text
+              <LinearGradient
+                colors={['#FFFFFF', '#F8F9FA']}
+                style={styles.cardGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.statHeader}>
+                  <View style={styles.iconContainer}>
+                    <Ionicons name={IconName} size={16} color={stat.iconColor} />
+                  </View>
+                  {stat.trend !== 'neutral' && (
+                    <View
                       style={[
-                        styles.trendText,
+                        styles.trendBadge,
                         {
-                          color: stat.trend === 'up' ? colors.success : colors.warning,
+                          backgroundColor: stat.trend === 'up' 
+                            ? colors.success + '20' 
+                            : colors.warning + '20',
                         },
                       ]}
                     >
-                      {stat.change}
+                      <Text
+                        style={[
+                          styles.trendText,
+                          {
+                            color: stat.trend === 'up' ? colors.success : colors.warning,
+                          },
+                        ]}
+                      >
+                        {stat.change}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                
+                <View style={styles.statContent}>
+                  <Text style={styles.statAmount}>{stat.amount}</Text>
+                  <Text style={styles.statTitle}>{stat.title}</Text>
+                  {stat.trend === 'neutral' ? (
+                    <Text style={styles.statDescription}>
+                      {stat.change} {stat.changeLabel}
                     </Text>
-                  </View>
-                )}
-              </View>
-              
-              <View style={styles.statContent}>
-                <Text style={styles.statAmount}>{stat.amount}</Text>
-                <Text style={styles.statTitle}>{stat.title}</Text>
-                {stat.trend === 'neutral' ? (
-                  <Text style={styles.statDescription}>
-                    {stat.change} {stat.changeLabel}
-                  </Text>
-                ) : (
-                  <Text style={styles.statDescription}>{stat.changeLabel}</Text>
-                )}
-              </View>
+                  ) : (
+                    <Text style={styles.statDescription}>{stat.changeLabel}</Text>
+                  )}
+                </View>
+              </LinearGradient>
             </TouchableOpacity>
           );
         })}
@@ -158,14 +160,15 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: '45%',
     borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+  },
+  cardGradient: {
+    padding: 20,
+    borderRadius: 16,
   },
   statHeader: {
     flexDirection: 'row',
