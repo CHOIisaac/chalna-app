@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 
@@ -39,6 +39,7 @@ const LedgerDetail: React.FC = () => {
     balance: 70000,
     lastEvent: "2024-03-15",
     eventCount: 5,
+    memo: "대학 동기 친구로 10년 넘게 알고 지낸 사이입니다.",
     events: [
       {
         id: 1,
@@ -109,22 +110,6 @@ const LedgerDetail: React.FC = () => {
             </TouchableOpacity>
             <Text style={styles.title}>상세 정보</Text>
             <View style={styles.placeholder} />
-          </View>
-        </View>
-
-
-        {/* 프로필 카드 */}
-        <View style={styles.profileSection}>
-          <View style={styles.profileCard}>
-            <View style={styles.profileHeader}>
-              <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>{ledgerDetail.name.charAt(0)}</Text>
-              </View>
-              <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{ledgerDetail.name}</Text>
-                <Text style={styles.profileRelationship}>{ledgerDetail.relationship}</Text>
-              </View>
-            </View>
           </View>
         </View>
 
@@ -215,6 +200,29 @@ const LedgerDetail: React.FC = () => {
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+
+            {/* 메모 */}
+            <TouchableOpacity
+              style={styles.memoItem}
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('memo', ledgerDetail.memo)}
+            >
+              <View style={styles.memoHeader}>
+                <View style={styles.memoIconContainer}>
+                  <Ionicons name="document-text" size={20} color="#4a5568" />
+                </View>
+                <View style={styles.memoInfo}>
+                  <Text style={styles.memoLabel}>메모</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#ccc" />
+              </View>
+              
+              <View style={styles.memoContent}>
+                <Text style={styles.memoText} numberOfLines={3}>
+                  {ledgerDetail.memo || '메모가 없습니다'}
+                </Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -394,6 +402,52 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1a1a1a',
     fontWeight: '500',
+  },
+  memoValue: {
+    lineHeight: 20,
+    marginTop: 2,
+  },
+  memoItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f9fa',
+    backgroundColor: '#fafafa',
+  },
+  memoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  memoIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  memoInfo: {
+    flex: 1,
+  },
+  memoLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+  },
+  memoContent: {
+    marginLeft: 48,
+    minHeight: 50,
+    paddingVertical: 4,
+    paddingRight: 20,
+  },
+  memoText: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '500',
+    lineHeight: 20,
   },
 
   // 액션 버튼들
