@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { EventType, RelationshipType } from '../types';
 
 const EditField: React.FC = () => {
   const router = useRouter();
@@ -35,6 +36,8 @@ const EditField: React.FC = () => {
         return { label: '날짜', icon: 'time' };
       case 'amount':
         return { label: '금액', icon: 'cash' };
+      case 'memo':
+        return { label: '메모', icon: 'document-text' };
       default:
         return { label: '정보', icon: 'information' };
     }
@@ -86,41 +89,86 @@ const EditField: React.FC = () => {
               </View>
               <View style={styles.fieldInfo}>
                 <Text style={styles.fieldLabel}>{fieldInfo.label}</Text>
+                {(field === 'eventType' || field === 'relationship') && (
+                  <Text style={styles.fieldDescription}>
+                    {field === 'eventType' 
+                      ? '경조사 타입을 선택하세요' 
+                      : '관계를 선택하세요'
+                    }
+                  </Text>
+                )}
               </View>
             </View>
 
             {field === 'eventType' ? (
-              <View style={styles.optionsContainer}>
-                {['결혼식', '장례식', '돌잔치', '개업식'].map((option) => (
-                  <TouchableOpacity
-                    key={option}
-                    style={[
-                      styles.optionButton,
-                      value === option && styles.selectedOption
-                    ]}
-                    onPress={() => setValue(option)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[
-                      styles.optionText,
-                      value === option && styles.selectedOptionText
-                    ]}>
-                      {option}
-                    </Text>
-                    {value === option && (
-                      <Ionicons name="checkmark" size={20} color="#4a5568" />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <ScrollView 
+                style={styles.optionsScrollContainer}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                <View style={styles.optionsContainer}>
+                  {Object.values(EventType).map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={[
+                        styles.optionButton,
+                        value === option && styles.selectedOption
+                      ]}
+                      onPress={() => setValue(option)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.optionText,
+                        value === option && styles.selectedOptionText
+                      ]}>
+                        {option}
+                      </Text>
+                      {value === option && (
+                        <Ionicons name="checkmark" size={20} color="#4a5568" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            ) : field === 'relationship' ? (
+              <ScrollView 
+                style={styles.optionsScrollContainer}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                <View style={styles.optionsContainer}>
+                  {Object.values(RelationshipType).map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={[
+                        styles.optionButton,
+                        value === option && styles.selectedOption
+                      ]}
+                      onPress={() => setValue(option)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.optionText,
+                        value === option && styles.selectedOptionText
+                      ]}>
+                        {option}
+                      </Text>
+                      {value === option && (
+                        <Ionicons name="checkmark" size={20} color="#4a5568" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
             ) : (
               <TextInput
-                style={styles.textInput}
+                style={[styles.textInput, field === 'memo' && styles.memoInput]}
                 value={value}
                 onChangeText={setValue}
                 keyboardType={field === 'amount' ? 'numeric' : 'default'}
-                multiline={field === 'relationship'}
-                numberOfLines={field === 'relationship' ? 2 : 1}
+                multiline={field === 'relationship' || field === 'memo'}
+                numberOfLines={field === 'relationship' ? 2 : field === 'memo' ? 3 : 1}
+                textAlignVertical={field === 'memo' ? 'top' : 'center'}
               />
             )}
           </View>
@@ -242,8 +290,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     minHeight: 56,
   },
+  optionsScrollContainer: {
+    maxHeight: 200,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+  },
   optionsContainer: {
     gap: 12,
+    padding: 12,
+  },
+  memoInput: {
+    height: 160,
+    paddingTop: 12,
+    textAlignVertical: 'top',
   },
   optionButton: {
     flexDirection: 'row',
@@ -251,10 +312,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e9ecef',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'white',
   },
   selectedOption: {
     backgroundColor: '#e2e8f0',
