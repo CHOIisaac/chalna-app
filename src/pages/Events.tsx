@@ -865,7 +865,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   todayText: {
-    color: '#4a5568',
+    color: 'black',
     fontWeight: '700',
   },
   eventDay: {
