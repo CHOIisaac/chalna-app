@@ -17,7 +17,7 @@ const FloatingActionButton: React.FC = () => {
   }, [router]);
 
   // 장부 추가용 색상
-  const fabColors: string[] = ['#4a5568', '#2d3748'];
+  const fabColors: string[] = ['black', '#2d3748'];
   const iconColor: string = 'white';
 
   return (

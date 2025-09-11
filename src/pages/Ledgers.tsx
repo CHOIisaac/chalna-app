@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   statsBadge: {
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,

@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   activeToggleButton: {
-    backgroundColor: '#4a5568',
+    backgroundColor: 'black',
   },
   toggleText: {
     fontSize: 14,
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   statsBadge: {
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
   dateNumber: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1976d2',
+    color: 'black',
     lineHeight: 28,
   },
   dateMonth: {
@@ -861,7 +861,7 @@ const styles = StyleSheet.create({
     color: 'transparent',
   },
   todayDay: {
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#f0f0f0',
     borderRadius: 20,
   },
   todayText: {
