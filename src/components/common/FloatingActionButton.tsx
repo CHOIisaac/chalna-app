@@ -1,30 +1,24 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
 import {
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
-import { colors, shadows } from '../../lib/utils';
+import { shadows } from '../../lib/utils';
 
 const FloatingActionButton: React.FC = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const router = useRouter();
 
   const handlePress = useCallback(() => {
-    // 현재 페이지에 따라 다른 페이지로 이동
-    if (route.name === 'events') {
-      navigation.navigate('AddSchedule' as never);
-    } else {
-      navigation.navigate('AddEvent' as never);
-    }
-  }, [navigation, route.name]);
+    // 장부 페이지에서 장부 추가 페이지로 이동
+    router.push('/add-ledger');
+  }, [router]);
 
-  // 일정 페이지에서는 다른 색상 사용
-  const isEventsPage = route.name === 'events';
-  const fabColors: string[] = isEventsPage ? ['#4a5568', '#2d3748'] : ['#1A1A1A', '#2A2A2A'];
-  const iconColor: string = isEventsPage ? 'white' : colors.primaryForeground;
+  // 장부 추가용 색상
+  const fabColors: string[] = ['#4a5568', '#2d3748'];
+  const iconColor: string = 'white';
 
   return (
     <TouchableOpacity
