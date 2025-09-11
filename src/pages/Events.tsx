@@ -6,6 +6,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -17,13 +18,25 @@ const Events: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  // 검색 및 필터 상태
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
+  const [eventTypeFilter, setEventTypeFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'date_asc' | 'date_desc'>('date_asc');
+  
+  // 드롭다운 상태
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [showEventTypeDropdown, setShowEventTypeDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Mock data for events
   const events = [
     {
       id: "1",
       title: "김철수 결혼식",
-      type: "wedding",
+      type: "결혼식",
       date: new Date(),
       location: "롯데호텔 크리스탈볼룸",
       time: "12:00",
@@ -32,7 +45,7 @@ const Events: React.FC = () => {
     {
       id: "2",
       title: "박영희 어머님 장례식",
-      type: "funeral",
+      type: "장례식",
       date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       location: "서울추모공원",
       time: "14:00",
@@ -41,29 +54,63 @@ const Events: React.FC = () => {
     {
       id: "3",
       title: "이민수 아들 돌잔치",
-      type: "birthday",
+      type: "돌잔치",
       date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       location: "강남구청 웨딩홀",
       time: "11:30",
       status: "upcoming",
+    },
+    {
+      id: "4",
+      title: "최민호 개업식",
+      type: "개업식",
+      date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      location: "강남구 상가",
+      time: "10:00",
+      status: "upcoming",
+    },
+    {
+      id: "5",
+      title: "한지영 결혼식",
+      type: "결혼식",
+      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      location: "웨딩홀",
+      time: "15:00",
+      status: "completed",
     }
   ];
 
+  // 필터링 및 정렬 로직
+  const filteredAndSortedEvents = events
+    .filter(event => {
+      // 검색어 필터
+      const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.type.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // 상태 필터
+      const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+      
+      // 경조사 타입 필터
+      const matchesEventType = eventTypeFilter === 'all' || event.type === eventTypeFilter;
+      
+      return matchesSearch && matchesStatus && matchesEventType;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'date_asc') {
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      } else {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+    });
+
   const getEventTypeColor = (type: string) => {
     switch (type) {
-      case 'wedding': return { bg: '#f0f0f0', text: '#666666' };
-      case 'funeral': return { bg: '#f0f0f0', text: '#666666' };
-      case 'birthday': return { bg: '#f0f0f0', text: '#666666' };
+      case '결혼식': return { bg: '#f0f0f0', text: '#666666' };
+      case '장례식': return { bg: '#f0f0f0', text: '#666666' };
+      case '돌잔치': return { bg: '#f0f0f0', text: '#666666' };
+      case '개업식': return { bg: '#f0f0f0', text: '#666666' };
       default: return { bg: '#f0f0f0', text: '#666666' };
-    }
-  };
-
-  const getEventTypeName = (type: string) => {
-    switch (type) {
-      case 'wedding': return '결혼식';
-      case 'funeral': return '장례식';
-      case 'birthday': return '돌잔치';
-      default: return '기타';
     }
   };
 
@@ -170,6 +217,31 @@ const Events: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.title}>함께할 순간</Text>
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => setShowFilterModal(true)}
+            >
+              <Ionicons name="options-outline" size={20} color="#1a1a1a" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* 검색 섹션 */}
+        <View style={styles.searchSection}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="일정명, 장소, 경조사 타입으로 검색..."
+              placeholderTextColor="#999"
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+            />
+            {searchTerm.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
+                <Ionicons name="close-circle" size={18} color="#999" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -226,12 +298,12 @@ const Events: React.FC = () => {
             </View>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{events.length}</Text>
+                <Text style={styles.statValue}>{filteredAndSortedEvents.length}</Text>
                 <Text style={styles.statLabel}>총 일정</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>3</Text>
+                <Text style={styles.statValue}>{filteredAndSortedEvents.filter(e => e.status === 'upcoming').length}</Text>
                 <Text style={styles.statLabel}>다가오는 일정</Text>
               </View>
             </View>
@@ -243,7 +315,7 @@ const Events: React.FC = () => {
           /* 무신사 스타일 일정 목록 */
           <View style={styles.eventsSection}>
             <View style={styles.eventsGrid}>
-              {events.map((event) => {
+              {filteredAndSortedEvents.map((event) => {
                 const typeStyle = getEventTypeColor(event.type);
                 const isToday = event.date.toDateString() === new Date().toDateString();
                 const isTomorrow = event.date.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
@@ -290,9 +362,9 @@ const Events: React.FC = () => {
 
                     {/* 상태 섹션 (이벤트 타입 + 상태) */}
                     <View style={styles.statusSection}>
-                      <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
+                        <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
                         <Text style={[styles.typeText, { color: typeStyle.text }]}>
-                          {getEventTypeName(event.type)}
+                          {event.type}
                         </Text>
                       </View>
                       <Text></Text>
@@ -480,6 +552,260 @@ const Events: React.FC = () => {
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton />
+
+      {/* 필터 모달 */}
+      <Modal
+        visible={showFilterModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity 
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowFilterModal(false)}
+          />
+          <View style={styles.modalContent}>
+            {/* 하단 시트 핸들 */}
+            <View style={styles.sheetHandle} />
+
+            {/* 기본 필터 드롭다운 */}
+            <View style={styles.dropdownSection}>
+              <Text style={styles.dropdownSectionTitle}>기본 필터</Text>
+              <TouchableOpacity
+                style={styles.dropdownButton}
+                onPress={() => {
+                  setShowStatusDropdown(!showStatusDropdown);
+                  setShowEventTypeDropdown(false);
+                  setShowSortDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownButtonText}>
+                  {statusFilter === 'all' ? '전체' : statusFilter === 'upcoming' ? '예정' : '완료'}
+                </Text>
+                <Ionicons 
+                  name={showStatusDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+              
+              {showStatusDropdown && (
+                <View style={styles.dropdownOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      statusFilter === 'all' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setStatusFilter('all');
+                      setShowStatusDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      statusFilter === 'all' && styles.dropdownOptionTextSelected
+                    ]}>
+                      전체
+                    </Text>
+                    {statusFilter === 'all' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      statusFilter === 'upcoming' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setStatusFilter('upcoming');
+                      setShowStatusDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      statusFilter === 'upcoming' && styles.dropdownOptionTextSelected
+                    ]}>
+                      예정
+                    </Text>
+                    {statusFilter === 'upcoming' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      statusFilter === 'completed' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setStatusFilter('completed');
+                      setShowStatusDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      statusFilter === 'completed' && styles.dropdownOptionTextSelected
+                    ]}>
+                      완료
+                    </Text>
+                    {statusFilter === 'completed' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* 경조사 타입별 필터 드롭다운 */}
+            <View style={styles.dropdownSection}>
+              <Text style={styles.dropdownSectionTitle}>경조사 타입</Text>
+              <TouchableOpacity
+                style={styles.dropdownButton}
+                onPress={() => {
+                  setShowEventTypeDropdown(!showEventTypeDropdown);
+                  setShowStatusDropdown(false);
+                  setShowSortDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownButtonText}>
+                  {eventTypeFilter === 'all' ? '전체' : eventTypeFilter}
+                </Text>
+                <Ionicons 
+                  name={showEventTypeDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+              
+              {showEventTypeDropdown && (
+                <View style={styles.dropdownOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      eventTypeFilter === 'all' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setEventTypeFilter('all');
+                      setShowEventTypeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      eventTypeFilter === 'all' && styles.dropdownOptionTextSelected
+                    ]}>
+                      전체
+                    </Text>
+                    {eventTypeFilter === 'all' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  {['결혼식', '장례식', '돌잔치', '개업식'].map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      style={[
+                        styles.dropdownOption,
+                        eventTypeFilter === type && styles.dropdownOptionSelected
+                      ]}
+                      onPress={() => {
+                        setEventTypeFilter(type);
+                        setShowEventTypeDropdown(false);
+                      }}
+                    >
+                      <Text style={[
+                        styles.dropdownOptionText,
+                        eventTypeFilter === type && styles.dropdownOptionTextSelected
+                      ]}>
+                        {type}
+                      </Text>
+                      {eventTypeFilter === type && (
+                        <Ionicons name="checkmark" size={16} color="#4a5568" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* 정렬 드롭다운 */}
+            <View style={styles.dropdownSection}>
+              <Text style={styles.dropdownSectionTitle}>정렬</Text>
+              <TouchableOpacity
+                style={styles.dropdownButton}
+                onPress={() => {
+                  setShowSortDropdown(!showSortDropdown);
+                  setShowStatusDropdown(false);
+                  setShowEventTypeDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownButtonText}>
+                  {sortBy === 'date_asc' ? '날짜순 (가까운 순)' : '날짜순 (과거 순)'}
+                </Text>
+                <Ionicons 
+                  name={showSortDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+              
+              {showSortDropdown && (
+                <View style={styles.dropdownOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      sortBy === 'date_asc' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setSortBy('date_asc');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      sortBy === 'date_asc' && styles.dropdownOptionTextSelected
+                    ]}>
+                      날짜순 (가까운 순)
+                    </Text>
+                    {sortBy === 'date_asc' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      sortBy === 'date_desc' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setSortBy('date_desc');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      sortBy === 'date_desc' && styles.dropdownOptionTextSelected
+                    ]}>
+                      날짜순 (과거 순)
+                    </Text>
+                    {sortBy === 'date_desc' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* 적용 버튼 */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={styles.applyButton}
+                onPress={() => setShowFilterModal(false)}
+              >
+                <Text style={styles.applyButtonText}>적용</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </MobileLayout>
   );
 };
@@ -661,6 +987,7 @@ const styles = StyleSheet.create({
   dateSection: {
     marginRight: 16,
     alignItems: 'center',
+    minWidth: 30,
   },
   dateContainer: {
     alignItems: 'center',
@@ -671,6 +998,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'black',
     lineHeight: 28,
+    textAlign: 'center',
   },
   dateMonth: {
     fontSize: 12,
@@ -707,15 +1035,16 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   typeBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    minWidth: 50,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
     alignItems: 'center',
   },
   typeText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   eventDetails: {
     gap: 4,
@@ -737,17 +1066,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     gap: 4,
+    minWidth: 80,
   },
   statusBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    minWidth: 50,
     alignItems: 'center',
   },
   statusText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
   },
 
   // 추천 섹션
@@ -940,6 +1269,7 @@ const styles = StyleSheet.create({
   modalDateSection: {
     marginRight: 16,
     alignItems: 'center',
+    minWidth: 40,
   },
   modalDateContainer: {
     alignItems: 'center',
@@ -950,6 +1280,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'black',
     lineHeight: 28,
+    textAlign: 'center',
+    minWidth: 24,
   },
   modalDateMonth: {
     fontSize: 12,
@@ -989,28 +1321,29 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     gap: 4,
+    minWidth: 80,
   },
   modalTypeBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    minWidth: 50,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
     alignItems: 'center',
   },
   modalTypeText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   modalStatusBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    minWidth: 50,
     alignItems: 'center',
   },
   modalStatusText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   emptyDateState: {
     alignItems: 'center',
@@ -1029,6 +1362,160 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,
+  },
+
+  // 필터 관련 스타일
+  filterButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // 검색 섹션
+  searchSection: {
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1a1a1a',
+    fontWeight: '400',
+  },
+  clearButton: {
+    marginLeft: 8,
+  },
+
+  // 모달 스타일
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#e9ecef',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+
+  // 드롭다운 스타일
+  dropdownSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+  },
+  dropdownButtonText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  dropdownOptions: {
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dropdownOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownOptionSelected: {
+    backgroundColor: '#f8f9fa',
+  },
+  dropdownOptionText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  dropdownOptionTextSelected: {
+    color: '#4a5568',
+    fontWeight: '600',
+  },
+
+  // 모달 액션 버튼
+  modalActions: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  applyButton: {
+    backgroundColor: '#4a5568',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });
 
