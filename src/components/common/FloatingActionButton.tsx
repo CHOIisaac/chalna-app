@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
 import {
     StyleSheet,
@@ -10,11 +10,16 @@ import { shadows } from '../../lib/utils';
 
 const FloatingActionButton: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handlePress = useCallback(() => {
-    // 장부 페이지에서 장부 추가 페이지로 이동
-    router.push('/add-ledger');
-  }, [router]);
+    // 현재 페이지에 따라 다른 동작
+    if (pathname.includes('/ledgers')) {
+      router.push('/add-ledger');
+    } else if (pathname.includes('/events')) {
+      router.push('/add-event');
+    }
+  }, [router, pathname]);
 
   // 장부 추가용 색상
   const fabColors: string[] = ['black', '#2d3748'];
