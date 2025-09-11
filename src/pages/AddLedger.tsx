@@ -1,168 +1,253 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../lib/utils';
 import MobileLayout from '../components/layout/MobileLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
-import { useNavigation } from '@react-navigation/native';
 
 const AddLedger: React.FC = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    title: '',
-    type: '',
+    name: '',
+    relationship: '',
+    eventType: '결혼식',
     date: '',
-    time: '',
-    location: '',
     amount: '',
-    notes: '',
+    type: 'given' // given: 나눔, received: 받음
   });
 
-  const eventTypes = [
-    { id: 'wedding', label: '결혼식', icon: 'heart' as keyof typeof Ionicons.glyphMap },
-    { id: 'funeral', label: '장례식', icon: 'flower' as keyof typeof Ionicons.glyphMap },
-    { id: 'birthday', label: '돌잔치', icon: 'gift' as keyof typeof Ionicons.glyphMap },
-    { id: 'opening', label: '개업식', icon: 'storefront' as keyof typeof Ionicons.glyphMap },
+  const eventTypes = ['결혼식', '장례식', '돌잔치', '개업식'];
+  const typeOptions = [
+    { value: 'given', label: '나눔', icon: 'arrow-up', color: '#e53e3e' },
+    { value: 'received', label: '받음', icon: 'arrow-down', color: '#38a169' }
   ];
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleSave = () => {
-    // Save event logic here
-    navigation.goBack();
+    // 필수 필드 검증
+    if (!formData.name.trim()) {
+      alert('이름을 입력해주세요.');
+      return;
+    }
+    if (!formData.relationship.trim()) {
+      alert('관계를 입력해주세요.');
+      return;
+    }
+    if (!formData.date.trim()) {
+      alert('날짜를 입력해주세요.');
+      return;
+    }
+    if (!formData.amount.trim()) {
+      alert('금액을 입력해주세요.');
+      return;
+    }
+
+    // 여기서 실제 저장 로직을 구현
+    console.log('Saving ledger:', formData);
+    
+    // 장부 페이지로 돌아가기
+    router.back();
+  };
+
+  const getFieldInfo = (field: string) => {
+    switch (field) {
+      case 'name':
+        return { label: '이름', placeholder: '이름을 입력하세요', icon: 'person' };
+      case 'relationship':
+        return { label: '관계', placeholder: '관계를 입력하세요', icon: 'people' };
+      case 'eventType':
+        return { label: '경조사 타입', placeholder: '경조사 타입을 선택하세요', icon: 'calendar' };
+      case 'date':
+        return { label: '날짜', placeholder: 'YYYY-MM-DD 형식으로 입력하세요', icon: 'time' };
+      case 'amount':
+        return { label: '금액', placeholder: '금액을 입력하세요', icon: 'cash' };
+      default:
+        return { label: '정보', placeholder: '정보를 입력하세요', icon: 'information' };
+    }
   };
 
   return (
-    <MobileLayout currentPage="add">
+    <MobileLayout currentPage="add-ledger">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
-          </TouchableOpacity>
-          <Text style={styles.title}>경조사 추가</Text>
-          <View style={styles.placeholder} />
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+            <Text style={styles.title}>장부 추가</Text>
+            <View style={styles.placeholder} />
+          </View>
+          <Text style={styles.subtitle}>새로운 경조사 장부를 추가하세요</Text>
         </View>
 
-        {/* 이벤트 타입 선택 */}
-        <Card style={styles.sectionCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.sectionTitle}>이벤트 종류</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.typeGrid}>
-              {eventTypes.map((type) => (
-                <TouchableOpacity
-                  key={type.id}
-                  style={[
-                    styles.typeButton,
-                    formData.type === type.id && styles.selectedTypeButton,
-                  ]}
-                  onPress={() => handleInputChange('type', type.id)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name={type.icon}
-                    size={24}
-                    color={formData.type === type.id ? colors.primaryForeground : colors.mutedForeground}
-                  />
-                  <Text
-                    style={[
-                      styles.typeLabel,
-                      formData.type === type.id && styles.selectedTypeLabel,
-                    ]}
-                  >
-                    {type.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+        {/* 폼 섹션 */}
+        <View style={styles.formSection}>
+          <View style={styles.formCard}>
+            {/* 이름 */}
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldHeader}>
+                <View style={styles.fieldIconContainer}>
+                  <Ionicons name="person" size={20} color="#4a5568" />
+                </View>
+                <Text style={styles.fieldLabel}>이름</Text>
+              </View>
+              <TextInput
+                style={styles.textInput}
+                value={formData.name}
+                onChangeText={(value) => handleInputChange('name', value)}
+                placeholder="이름을 입력하세요"
+                placeholderTextColor="#999"
+              />
             </View>
-          </CardContent>
-        </Card>
 
-        {/* 기본 정보 */}
-        <Card style={styles.sectionCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.sectionTitle}>기본 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Input
-              label="이벤트 제목"
-              placeholder="예: 김철수 ♥ 이영희 결혼식"
-              value={formData.title}
-              onChangeText={(value) => handleInputChange('title', value)}
-            />
-            
-            <Input
-              label="날짜"
-              placeholder="YYYY-MM-DD"
-              value={formData.date}
-              onChangeText={(value) => handleInputChange('date', value)}
-            />
-            
-            <Input
-              label="시간"
-              placeholder="예: 12:00"
-              value={formData.time}
-              onChangeText={(value) => handleInputChange('time', value)}
-            />
-            
-            <Input
-              label="장소"
-              placeholder="예: 롯데호텔 크리스탈볼룸"
-              value={formData.location}
-              onChangeText={(value) => handleInputChange('location', value)}
-            />
-          </CardContent>
-        </Card>
+            {/* 관계 */}
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldHeader}>
+                <View style={styles.fieldIconContainer}>
+                  <Ionicons name="people" size={20} color="#4a5568" />
+                </View>
+                <Text style={styles.fieldLabel}>관계</Text>
+              </View>
+              <TextInput
+                style={styles.textInput}
+                value={formData.relationship}
+                onChangeText={(value) => handleInputChange('relationship', value)}
+                placeholder="관계를 입력하세요"
+                placeholderTextColor="#999"
+              />
+            </View>
 
-        {/* 경조사 정보 */}
-        <Card style={styles.sectionCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.sectionTitle}>경조사 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Input
-              label="경조사 금액"
-              placeholder="예: 100000"
-              value={formData.amount}
-              onChangeText={(value) => handleInputChange('amount', value)}
-              keyboardType="numeric"
-            />
-            
-            <Input
-              label="메모"
-              placeholder="추가 정보나 메모를 입력하세요"
-              value={formData.notes}
-              onChangeText={(value) => handleInputChange('notes', value)}
-              multiline
-              numberOfLines={3}
-              style={styles.textArea}
-            />
-          </CardContent>
-        </Card>
+            {/* 경조사 타입 */}
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldHeader}>
+                <View style={styles.fieldIconContainer}>
+                  <Ionicons name="calendar" size={20} color="#4a5568" />
+                </View>
+                <Text style={styles.fieldLabel}>경조사 타입</Text>
+              </View>
+              <View style={styles.optionsContainer}>
+                {eventTypes.map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.optionButton,
+                      formData.eventType === type && styles.selectedOption
+                    ]}
+                    onPress={() => handleInputChange('eventType', type)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[
+                      styles.optionText,
+                      formData.eventType === type && styles.selectedOptionText
+                    ]}>
+                      {type}
+                    </Text>
+                    {formData.eventType === type && (
+                      <Ionicons name="checkmark" size={18} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
 
-        {/* 저장 버튼 */}
-        <View style={styles.saveButtonContainer}>
-          <Button
-            title="경조사 저장"
-            onPress={handleSave}
+            {/* 날짜 */}
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldHeader}>
+                <View style={styles.fieldIconContainer}>
+                  <Ionicons name="time" size={20} color="#4a5568" />
+                </View>
+                <Text style={styles.fieldLabel}>날짜</Text>
+              </View>
+              <TextInput
+                style={styles.textInput}
+                value={formData.date}
+                onChangeText={(value) => handleInputChange('date', value)}
+                placeholder="YYYY-MM-DD 형식으로 입력하세요"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            {/* 금액 */}
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldHeader}>
+                <View style={styles.fieldIconContainer}>
+                  <Ionicons name="cash" size={20} color="#4a5568" />
+                </View>
+                <Text style={styles.fieldLabel}>금액</Text>
+              </View>
+              <TextInput
+                style={styles.textInput}
+                value={formData.amount}
+                onChangeText={(value) => handleInputChange('amount', value)}
+                placeholder="금액을 입력하세요"
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+              />
+            </View>
+
+            {/* 나눔/받음 타입 */}
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldHeader}>
+                <View style={styles.fieldIconContainer}>
+                  <Ionicons name="swap-vertical" size={20} color="#4a5568" />
+                </View>
+                <Text style={styles.fieldLabel}>타입</Text>
+              </View>
+              <View style={styles.typeContainer}>
+                {typeOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.typeButton,
+                      formData.type === option.value && styles.selectedType
+                    ]}
+                    onPress={() => handleInputChange('type', option.value)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons 
+                      name={option.icon as any} 
+                      size={20} 
+                      color={formData.type === option.value ? 'white' : option.color} 
+                    />
+                    <Text style={[
+                      styles.typeText,
+                      formData.type === option.value && styles.selectedTypeText
+                    ]}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* 액션 버튼 */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
             style={styles.saveButton}
-          />
+            onPress={handleSave}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.saveButtonText}>장부 추가</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </MobileLayout>
@@ -172,75 +257,175 @@ const AddLedger: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f8f9fa',
   },
+  
+  // 헤더 스타일
   header: {
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  headerTop: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.foreground,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: -0.5,
   },
   placeholder: {
     width: 40,
+    height: 40,
   },
-  sectionCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+  subtitle: {
+    fontSize: 15,
+    color: '#666',
+    lineHeight: 20,
   },
-  sectionTitle: {
+
+  // 폼 섹션
+  formSection: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  formCard: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  fieldContainer: {
+    marginBottom: 24,
+  },
+  fieldHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  fieldIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  fieldLabel: {
     fontSize: 16,
-    color: colors.foreground,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
-  typeGrid: {
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: '#1a1a1a',
+    backgroundColor: '#f8f9fa',
+    minHeight: 56,
+  },
+  optionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
   },
-  typeButton: {
-    flex: 1,
-    minWidth: '45%',
+  optionButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+    minWidth: 80,
+    justifyContent: 'center',
   },
-  selectedTypeButton: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+  selectedOption: {
+    backgroundColor: '#e2e8f0',
+    borderColor: '#4a5568',
   },
-  typeLabel: {
+  optionText: {
     fontSize: 14,
+    color: '#1a1a1a',
     fontWeight: '500',
-    color: colors.mutedForeground,
-    marginTop: 8,
   },
-  selectedTypeLabel: {
-    color: colors.primaryForeground,
+  selectedOptionText: {
+    color: '#4a5568',
+    fontWeight: '600',
   },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
+  typeContainer: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  saveButtonContainer: {
-    paddingHorizontal: 16,
+  typeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+    gap: 8,
+  },
+  selectedType: {
+    backgroundColor: '#4a5568',
+    borderColor: '#4a5568',
+  },
+  typeText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+    fontWeight: '600',
+  },
+  selectedTypeText: {
+    color: 'white',
+  },
+
+  // 액션 버튼들
+  actionButtons: {
+    paddingHorizontal: 20,
     paddingVertical: 24,
   },
   saveButton: {
-    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4a5568',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });
 
