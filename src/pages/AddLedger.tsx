@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -18,11 +20,13 @@ const AddLedger: React.FC = () => {
     name: '',
     relationship: RelationshipType.FRIEND,
     eventType: EventType.WEDDING,
-    date: '',
+    date: new Date(),
     amount: '',
     type: 'given', // given: 나눔, received: 받음
     memo: ''
   });
+  
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const eventTypes = Object.values(EventType);
   const relationshipTypes = Object.values(RelationshipType);
@@ -31,11 +35,28 @@ const AddLedger: React.FC = () => {
     { value: 'received', label: '받음', icon: 'arrow-down', color: '#38a169' }
   ];
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      handleInputChange('date', selectedDate);
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   };
 
   const handleSave = () => {
@@ -48,8 +69,8 @@ const AddLedger: React.FC = () => {
       alert('관계를 입력해주세요.');
       return;
     }
-    if (!formData.date.trim()) {
-      alert('날짜를 입력해주세요.');
+    if (!formData.date) {
+      alert('날짜를 선택해주세요.');
       return;
     }
     if (!formData.amount.trim()) {
@@ -202,17 +223,56 @@ const AddLedger: React.FC = () => {
             <View style={styles.fieldContainer}>
               <View style={styles.fieldHeader}>
                 <View style={styles.fieldIconContainer}>
-                  <Ionicons name="time" size={20} color="#4a5568" />
+                  <Ionicons name="calendar" size={20} color="#4a5568" />
                 </View>
                 <Text style={styles.fieldLabel}>날짜</Text>
               </View>
-              <TextInput
-                style={styles.textInput}
-                value={formData.date}
-                onChangeText={(value) => handleInputChange('date', value)}
-                placeholder="YYYY-MM-DD 형식으로 입력하세요"
-                placeholderTextColor="#999"
-              />
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={() => {
+                  console.log('Date button pressed, showDatePicker:', showDatePicker);
+                  setShowDatePicker(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.dateText}>
+                  {formatDate(formData.date)}
+                </Text>
+                <Ionicons name="chevron-down" size={20} color="#666" />
+              </TouchableOpacity>
+              
+              {showDatePicker && (
+                <View style={styles.datePickerContainer}>
+                  {Platform.OS === 'ios' && (
+                    <View style={styles.datePickerHeader}>
+                      <TouchableOpacity
+                        style={styles.datePickerCancelButton}
+                        onPress={() => setShowDatePicker(false)}
+                      >
+                        <Text style={styles.datePickerCancelText}>취소</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.datePickerConfirmButton}
+                        onPress={() => setShowDatePicker(false)}
+                      >
+                        <Text style={styles.datePickerConfirmText}>확인</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  <View style={styles.datePickerWrapper}>
+                    <DateTimePicker
+                      value={formData.date}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleDateChange}
+                      locale="ko-KR"
+                      style={Platform.OS === 'ios' ? styles.datePickerIOS : undefined}
+                      textColor="#000000"
+                      accentColor="#4a5568"
+                    />
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* 금액 */}
@@ -445,6 +505,73 @@ const styles = StyleSheet.create({
     height: 160,
     paddingTop: 12,
     textAlignVertical: 'top',
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#f8f9fa',
+    minHeight: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+  },
+  datePickerContainer: {
+    marginTop: 10,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    overflow: 'hidden',
+  },
+  datePickerWrapper: {
+    backgroundColor: 'white',
+  },
+  datePickerIOS: {
+    height: 200,
+    backgroundColor: 'white',
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    backgroundColor: '#f8f9fa',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  datePickerCancelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  datePickerConfirmButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  datePickerConfirmText: {
+    fontSize: 16,
+    color: '#4a5568',
+    fontWeight: '600',
+  },
+  debugText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    padding: 10,
+    backgroundColor: '#f0f0f0',
   },
   typeContainer: {
     flexDirection: 'row',
