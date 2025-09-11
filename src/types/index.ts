@@ -1,8 +1,32 @@
 // 기존 웹 프로젝트의 타입들을 React Native용으로 변환
 
+// 경조사 타입 정의
+export enum EventType {
+  WEDDING = "결혼식",
+  FUNERAL = "장례식", 
+  BIRTHDAY = "생일",
+  FIRST_BIRTHDAY = "돌잔치",
+  GRADUATION = "졸업식",
+  OPENING = "개업식",
+  ANNIVERSARY = "기념일",
+  OTHER = "기타"
+}
+
+// 관계 타입 정의
+export enum RelationshipType {
+  FAMILY = "가족",
+  FRIEND = "친구",
+  COLLEAGUE = "직장동료",
+  ACQUAINTANCE = "지인",
+  NEIGHBOR = "이웃",
+  RELATIVE = "친척",
+  TEACHER = "선생님",
+  OTHER = "기타"
+}
+
 export interface Event {
   id: string;
-  type: '결혼식' | '장례식' | '돌잔치' | '개업식';
+  type: EventType;
   title: string;
   date: string;
   location: string;
@@ -55,7 +79,7 @@ export interface MonthlyData {
 }
 
 export interface EventTypeStat {
-  type: string;
+  type: EventType;
   count: number;
   amount: number;
   color: string;
