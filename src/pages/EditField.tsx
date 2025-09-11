@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Alert,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -15,14 +17,32 @@ import { EventType, RelationshipType } from '../types';
 
 const EditField: React.FC = () => {
   const router = useRouter();
-  const { id, field, currentValue, name } = useLocalSearchParams<{
-    id: string;
+  const { field, currentValue } = useLocalSearchParams<{
     field: string;
     currentValue: string;
-    name: string;
   }>();
 
   const [value, setValue] = useState(currentValue);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
+  // 날짜 필드인 경우 Date 객체로 변환
+  const getInitialDate = () => {
+    if (field === 'date') {
+      try {
+        // YYYY-MM-DD 형식의 문자열을 Date 객체로 변환
+        const dateParts = currentValue.split('-');
+        if (dateParts.length === 3) {
+          return new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+        }
+      } catch (error) {
+        console.error('날짜 파싱 오류:', error);
+      }
+      return new Date();
+    }
+    return new Date();
+  };
+  
+  const [dateValue, setDateValue] = useState(getInitialDate());
 
   const getFieldInfo = () => {
     switch (field) {
@@ -33,7 +53,7 @@ const EditField: React.FC = () => {
       case 'eventType':
         return { label: '경조사 타입', icon: 'calendar' };
       case 'date':
-        return { label: '날짜', icon: 'time' };
+        return { label: '날짜', icon: 'calendar' };
       case 'amount':
         return { label: '금액', icon: 'cash' };
       case 'memo':
@@ -56,6 +76,24 @@ const EditField: React.FC = () => {
     
     // 바로 이전 페이지로 돌아가기
     router.back();
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      setDateValue(selectedDate);
+      setValue(selectedDate.toISOString().split('T')[0]); // YYYY-MM-DD 형식으로 변환
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   };
 
   const handleCancel = () => {
@@ -160,6 +198,52 @@ const EditField: React.FC = () => {
                   ))}
                 </View>
               </ScrollView>
+            ) : field === 'date' ? (
+              <View>
+                <TouchableOpacity
+                  style={styles.dateButton}
+                  onPress={() => setShowDatePicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.dateText}>
+                    {formatDate(dateValue)}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#666" />
+                </TouchableOpacity>
+                
+                {showDatePicker && (
+                  <View style={styles.datePickerContainer}>
+                    {Platform.OS === 'ios' && (
+                      <View style={styles.datePickerHeader}>
+                        <TouchableOpacity
+                          style={styles.datePickerCancelButton}
+                          onPress={() => setShowDatePicker(false)}
+                        >
+                          <Text style={styles.datePickerCancelText}>취소</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.datePickerConfirmButton}
+                          onPress={() => setShowDatePicker(false)}
+                        >
+                          <Text style={styles.datePickerConfirmText}>확인</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    <View style={styles.datePickerWrapper}>
+                      <DateTimePicker
+                        value={dateValue}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={handleDateChange}
+                        locale="ko-KR"
+                        style={Platform.OS === 'ios' ? styles.datePickerIOS : undefined}
+                        textColor="#000000"
+                        accentColor="#4a5568"
+                      />
+                    </View>
+                  </View>
+                )}
+              </View>
             ) : (
               <TextInput
                 style={[styles.textInput, field === 'memo' && styles.memoInput]}
@@ -289,6 +373,66 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     backgroundColor: '#f8f9fa',
     minHeight: 56,
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#f8f9fa',
+    minHeight: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+  },
+  datePickerContainer: {
+    marginTop: 10,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    overflow: 'hidden',
+  },
+  datePickerWrapper: {
+    backgroundColor: 'white',
+  },
+  datePickerIOS: {
+    height: 200,
+    backgroundColor: 'white',
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    backgroundColor: '#f8f9fa',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  datePickerCancelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  datePickerConfirmButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  datePickerConfirmText: {
+    fontSize: 16,
+    color: '#4a5568',
+    fontWeight: '600',
   },
   optionsScrollContainer: {
     maxHeight: 200,
