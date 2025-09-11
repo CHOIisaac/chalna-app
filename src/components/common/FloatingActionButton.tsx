@@ -21,10 +21,6 @@ const FloatingActionButton: React.FC = () => {
     }
   }, [router, pathname]);
 
-  // 장부 추가용 색상
-  const fabColors: string[] = ['black', '#2d3748'];
-  const iconColor: string = 'white';
-
   return (
     <TouchableOpacity
       style={styles.fab}
@@ -32,12 +28,12 @@ const FloatingActionButton: React.FC = () => {
       activeOpacity={0.8}
     >
       <LinearGradient
-        colors={fabColors}
+        colors={['black', '#2d3748']}
         style={styles.fabGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Ionicons name="add" size={24} color={iconColor} />
+        <Ionicons name="add" size={24} color="white" />
       </LinearGradient>
     </TouchableOpacity>
   );
