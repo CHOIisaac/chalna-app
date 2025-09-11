@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    Modal,
     ScrollView,
     StyleSheet,
     Text,
@@ -16,6 +17,15 @@ import { colors } from '../lib/utils';
 const Ledgers: React.FC = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  
+  // 필터 상태
+  const [filterType, setFilterType] = useState<'all' | 'given' | 'received'>('all');
+  const [sortBy, setSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
+  
+  // 드롭다운 상태
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Mock data for ledgers - 경조사 내역 목록
   const ledgers = [
@@ -75,11 +85,33 @@ const Ledgers: React.FC = () => {
     }
   ];
 
-  const filteredLedgers = ledgers.filter(ledger =>
-    ledger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    ledger.relationship.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    ledger.eventType.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 필터링 및 정렬 로직
+  const filteredAndSortedLedgers = ledgers
+    .filter(ledger => {
+      // 검색어 필터
+      const matchesSearch = ledger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ledger.relationship.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ledger.eventType.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // 타입 필터
+      const matchesType = filterType === 'all' || ledger.type === filterType;
+      
+      return matchesSearch && matchesType;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'date_desc':
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case 'date_asc':
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case 'amount_desc':
+          return b.amount - a.amount;
+        case 'amount_asc':
+          return a.amount - b.amount;
+        default:
+          return 0;
+      }
+    });
 
   const getEventTypeColor = (eventType: string) => {
     switch (eventType) {
@@ -111,7 +143,10 @@ const Ledgers: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.title}>인연 장부</Text>
-            <TouchableOpacity style={styles.filterButton}>
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => setShowFilterModal(true)}
+            >
               <Ionicons name="options-outline" size={20} color={colors.foreground} />
             </TouchableOpacity>
           </View>
@@ -162,7 +197,7 @@ const Ledgers: React.FC = () => {
         {/* 경조사 내역 목록 */}
         <View style={styles.ledgersSection}>
           <View style={styles.ledgersList}>
-            {filteredLedgers.map((ledger) => {
+            {filteredAndSortedLedgers.map((ledger) => {
               const eventTypeColor = getEventTypeColor(ledger.eventType);
               const eventTypeIcon = getEventTypeIcon(ledger.eventType);
               
@@ -213,7 +248,7 @@ const Ledgers: React.FC = () => {
         </View>
 
         {/* 빈 상태 */}
-        {filteredLedgers.length === 0 && (
+        {filteredAndSortedLedgers.length === 0 && (
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
               <Ionicons name="people-outline" size={48} color="#ddd" />
@@ -226,6 +261,230 @@ const Ledgers: React.FC = () => {
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton />
+
+      {/* 필터 모달 */}
+      <Modal
+        visible={showFilterModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity 
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowFilterModal(false)}
+          />
+          <View style={styles.modalContent}>
+            {/* 하단 시트 핸들 */}
+            <View style={styles.sheetHandle} />
+
+            {/* 기본 필터 드롭다운 */}
+            <View style={styles.dropdownSection}>
+              <Text style={styles.dropdownSectionTitle}>기본 필터</Text>
+              <TouchableOpacity
+                style={styles.dropdownButton}
+                onPress={() => {
+                  setShowFilterDropdown(!showFilterDropdown);
+                  setShowSortDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownButtonText}>
+                  {filterType === 'all' ? '전체' : filterType === 'given' ? '나눔' : '받음'}
+                </Text>
+                <Ionicons 
+                  name={showFilterDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+              
+              {showFilterDropdown && (
+                <View style={styles.dropdownOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      filterType === 'all' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setFilterType('all');
+                      setShowFilterDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      filterType === 'all' && styles.dropdownOptionTextSelected
+                    ]}>
+                      전체
+                    </Text>
+                    {filterType === 'all' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      filterType === 'given' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setFilterType('given');
+                      setShowFilterDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      filterType === 'given' && styles.dropdownOptionTextSelected
+                    ]}>
+                      나눔
+                    </Text>
+                    {filterType === 'given' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      filterType === 'received' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setFilterType('received');
+                      setShowFilterDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      filterType === 'received' && styles.dropdownOptionTextSelected
+                    ]}>
+                      받음
+                    </Text>
+                    {filterType === 'received' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* 정렬 드롭다운 */}
+            <View style={styles.dropdownSection}>
+              <Text style={styles.dropdownSectionTitle}>정렬</Text>
+              <TouchableOpacity
+                style={styles.dropdownButton}
+                onPress={() => {
+                  setShowSortDropdown(!showSortDropdown);
+                  setShowFilterDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownButtonText}>
+                  {sortBy === 'date_desc' ? '날짜순 (최신)' :
+                   sortBy === 'date_asc' ? '날짜순 (과거)' :
+                   sortBy === 'amount_desc' ? '금액순 (높은)' : '금액순 (낮은)'}
+                </Text>
+                <Ionicons 
+                  name={showSortDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+              
+              {showSortDropdown && (
+                <View style={styles.dropdownOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      sortBy === 'date_desc' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setSortBy('date_desc');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      sortBy === 'date_desc' && styles.dropdownOptionTextSelected
+                    ]}>
+                      날짜순 (최신)
+                    </Text>
+                    {sortBy === 'date_desc' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      sortBy === 'date_asc' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setSortBy('date_asc');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      sortBy === 'date_asc' && styles.dropdownOptionTextSelected
+                    ]}>
+                      날짜순 (과거)
+                    </Text>
+                    {sortBy === 'date_asc' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      sortBy === 'amount_desc' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setSortBy('amount_desc');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      sortBy === 'amount_desc' && styles.dropdownOptionTextSelected
+                    ]}>
+                      금액순 (높은)
+                    </Text>
+                    {sortBy === 'amount_desc' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      sortBy === 'amount_asc' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setSortBy('amount_asc');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      sortBy === 'amount_asc' && styles.dropdownOptionTextSelected
+                    ]}>
+                      금액순 (낮은)
+                    </Text>
+                    {sortBy === 'amount_asc' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* 적용 버튼 */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={styles.applyButton}
+                onPress={() => setShowFilterModal(false)}
+              >
+                <Text style={styles.applyButtonText}>적용</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </MobileLayout>
   );
 };
@@ -479,6 +738,119 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,
+  },
+
+  // 모달 스타일
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#e9ecef',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+
+  // 드롭다운 스타일
+  dropdownSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+  },
+  dropdownButtonText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  dropdownOptions: {
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dropdownOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownOptionSelected: {
+    backgroundColor: '#f8f9fa',
+  },
+  dropdownOptionText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  dropdownOptionTextSelected: {
+    color: '#4a5568',
+    fontWeight: '600',
+  },
+
+  // 모달 액션 버튼
+  modalActions: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  applyButton: {
+    backgroundColor: 'black',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });
 
