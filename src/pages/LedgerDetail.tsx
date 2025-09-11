@@ -14,6 +14,19 @@ const LedgerDetail: React.FC = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  // 개별 항목 수정 핸들러
+  const handleEditItem = (field: string, currentValue: string) => {
+    router.push({
+      pathname: '/edit-field',
+      params: {
+        id: id,
+        field: field,
+        currentValue: currentValue,
+        name: ledgerDetail.name
+      }
+    });
+  };
+
   // Mock data for ledger detail
   const ledgerDetail = {
     id: parseInt(id),
@@ -84,7 +97,7 @@ const LedgerDetail: React.FC = () => {
   return (
     <MobileLayout currentPage="ledger-detail">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 무신사 스타일 헤더 */}
+        {/* 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <TouchableOpacity
@@ -94,73 +107,125 @@ const LedgerDetail: React.FC = () => {
             >
               <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
-            <Text style={styles.title}>장부 상세</Text>
-            <TouchableOpacity style={styles.editButton} activeOpacity={0.7}>
-              <Ionicons name="pencil" size={20} color="#4a5568" />
-            </TouchableOpacity>
+            <Text style={styles.title}>상세 정보</Text>
+            <View style={styles.placeholder} />
           </View>
-          <Text style={styles.subtitle}>{ledgerDetail.name}님과의 경조사 내역</Text>
+        </View>
+
+
+        {/* 프로필 카드 */}
+        <View style={styles.profileSection}>
+          <View style={styles.profileCard}>
+            <View style={styles.profileHeader}>
+              <View style={styles.avatarContainer}>
+                <Text style={styles.avatarText}>{ledgerDetail.name.charAt(0)}</Text>
+              </View>
+              <View style={styles.profileInfo}>
+                <Text style={styles.profileName}>{ledgerDetail.name}</Text>
+                <Text style={styles.profileRelationship}>{ledgerDetail.relationship}</Text>
+              </View>
+            </View>
+          </View>
         </View>
 
 
         {/* 장부 정보 수정 섹션 */}
         <View style={styles.editSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>장부 정보</Text>
-            <TouchableOpacity style={styles.editToggle} activeOpacity={0.7}>
-              <Ionicons name="pencil" size={16} color="#4a5568" />
-              <Text style={styles.editToggleText}>수정</Text>
-            </TouchableOpacity>
-          </View>
-          
           <View style={styles.editCard}>
-            <View style={styles.editItem}>
-              <Text style={styles.editLabel}>이름</Text>
-              <Text style={styles.editValue}>{ledgerDetail.name}</Text>
-            </View>
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('name', ledgerDetail.name)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="person" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>이름</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.name}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
             
-            <View style={styles.editItem}>
-              <Text style={styles.editLabel}>관계</Text>
-              <Text style={styles.editValue}>{ledgerDetail.relationship}</Text>
-            </View>
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('relationship', ledgerDetail.relationship)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="people" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>관계</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.relationship}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
             
-            <View style={styles.editItem}>
-              <Text style={styles.editLabel}>경조사 타입</Text>
-              <Text style={styles.editValue}>{ledgerDetail.events[0]?.eventType || '결혼식'}</Text>
-            </View>
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('eventType', ledgerDetail.events[0]?.eventType || '결혼식')}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="calendar" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>경조사 타입</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.eventType || '결혼식'}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
             
-            <View style={styles.editItem}>
-              <Text style={styles.editLabel}>날짜</Text>
-              <Text style={styles.editValue}>{ledgerDetail.events[0]?.date || ledgerDetail.lastEvent}</Text>
-            </View>
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('date', ledgerDetail.events[0]?.date || ledgerDetail.lastEvent)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="time" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>날짜</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.date || ledgerDetail.lastEvent}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
             
-            <View style={styles.editItem}>
-              <Text style={styles.editLabel}>금액</Text>
-              <Text style={styles.editValue}>{ledgerDetail.events[0]?.amount.toLocaleString() || '0'}원</Text>
-            </View>
+            <TouchableOpacity 
+              style={[styles.editItem, styles.lastEditItem]} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('amount', (ledgerDetail.events[0]?.amount || 0).toString())}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="cash" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>금액</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.amount.toLocaleString() || '0'}원</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* 액션 버튼들 */}
         <View style={styles.actionButtons}>
           <TouchableOpacity 
-            style={styles.primaryActionButton}
-            onPress={() => {
-              // 장부 정보 수정 기능
-              console.log('장부 정보 수정');
-            }}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="save" size={20} color="white" />
-            <Text style={styles.primaryActionText}>저장</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
             style={styles.secondaryActionButton}
             onPress={() => router.push('/(tabs)/events')}
             activeOpacity={0.8}
           >
-            <Ionicons name="calendar" size={20} color="#4a5568" />
             <Text style={styles.secondaryActionText}>일정 보기</Text>
           </TouchableOpacity>
         </View>
@@ -177,7 +242,7 @@ const styles = StyleSheet.create({
   
   // 헤더 스타일
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
@@ -204,13 +269,9 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     letterSpacing: -0.5,
   },
-  editButton: {
+  placeholder: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   subtitle: {
     fontSize: 15,
@@ -219,48 +280,76 @@ const styles = StyleSheet.create({
   },
 
 
+  // 프로필 섹션
+  profileSection: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  profileCard: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#4a5568',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: 'white',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  profileRelationship: {
+    fontSize: 16,
+    color: '#666',
+  },
+
   // 장부 정보 수정 섹션
   editSection: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 20,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#1a1a1a',
-  },
-  editToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  editToggleText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#4a5568',
+    marginBottom: 16,
   },
   editCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
     borderWidth: 1,
     borderColor: '#f0f0f0',
   },
@@ -268,9 +357,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f8f9fa',
+  },
+  lastEditItem: {
+    borderBottomWidth: 0,
+  },
+  editItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  editIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  editItemContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   editLabel: {
     fontSize: 14,
