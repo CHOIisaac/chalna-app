@@ -948,7 +948,7 @@ const styles = StyleSheet.create({
   modalDateNumber: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1976d2',
+    color: 'black',
     lineHeight: 28,
   },
   modalDateMonth: {
