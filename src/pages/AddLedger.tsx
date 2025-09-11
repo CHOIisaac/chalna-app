@@ -10,19 +10,22 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { EventType, RelationshipType } from '../types';
 
 const AddLedger: React.FC = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
-    relationship: '',
-    eventType: '결혼식',
+    relationship: RelationshipType.FRIEND,
+    eventType: EventType.WEDDING,
     date: '',
     amount: '',
-    type: 'given' // given: 나눔, received: 받음
+    type: 'given', // given: 나눔, received: 받음
+    memo: ''
   });
 
-  const eventTypes = ['결혼식', '장례식', '돌잔치', '개업식'];
+  const eventTypes = Object.values(EventType);
+  const relationshipTypes = Object.values(RelationshipType);
   const typeOptions = [
     { value: 'given', label: '나눔', icon: 'arrow-up', color: '#e53e3e' },
     { value: 'received', label: '받음', icon: 'arrow-down', color: '#38a169' }
@@ -125,13 +128,35 @@ const AddLedger: React.FC = () => {
                 </View>
                 <Text style={styles.fieldLabel}>관계</Text>
               </View>
-              <TextInput
-                style={styles.textInput}
-                value={formData.relationship}
-                onChangeText={(value) => handleInputChange('relationship', value)}
-                placeholder="관계를 입력하세요"
-                placeholderTextColor="#999"
-              />
+              <ScrollView 
+                style={styles.optionsScrollContainer}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                <View style={styles.optionsContainer}>
+                  {relationshipTypes.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={[
+                        styles.optionButton,
+                        formData.relationship === option && styles.selectedOption
+                      ]}
+                      onPress={() => handleInputChange('relationship', option)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.optionText,
+                        formData.relationship === option && styles.selectedOptionText
+                      ]}>
+                        {option}
+                      </Text>
+                      {formData.relationship === option && (
+                        <Ionicons name="checkmark" size={20} color="#4a5568" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
             </View>
 
             {/* 경조사 타입 */}
@@ -142,29 +167,35 @@ const AddLedger: React.FC = () => {
                 </View>
                 <Text style={styles.fieldLabel}>경조사 타입</Text>
               </View>
-              <View style={styles.optionsContainer}>
-                {eventTypes.map((type) => (
-                  <TouchableOpacity
-                    key={type}
-                    style={[
-                      styles.optionButton,
-                      formData.eventType === type && styles.selectedOption
-                    ]}
-                    onPress={() => handleInputChange('eventType', type)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[
-                      styles.optionText,
-                      formData.eventType === type && styles.selectedOptionText
-                    ]}>
-                      {type}
-                    </Text>
-                    {formData.eventType === type && (
-                      <Ionicons name="checkmark" size={18} color="#4a5568" />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <ScrollView 
+                style={styles.optionsScrollContainer}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                <View style={styles.optionsContainer}>
+                  {eventTypes.map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      style={[
+                        styles.optionButton,
+                        formData.eventType === type && styles.selectedOption
+                      ]}
+                      onPress={() => handleInputChange('eventType', type)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.optionText,
+                        formData.eventType === type && styles.selectedOptionText
+                      ]}>
+                        {type}
+                      </Text>
+                      {formData.eventType === type && (
+                        <Ionicons name="checkmark" size={18} color="#4a5568" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
             </View>
 
             {/* 날짜 */}
@@ -235,6 +266,26 @@ const AddLedger: React.FC = () => {
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
+
+            {/* 메모 */}
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldHeader}>
+                <View style={styles.fieldIconContainer}>
+                  <Ionicons name="document-text" size={20} color="#4a5568" />
+                </View>
+                <Text style={styles.fieldLabel}>메모</Text>
+              </View>
+              <TextInput
+                style={[styles.textInput, styles.memoInput]}
+                value={formData.memo}
+                onChangeText={(value) => handleInputChange('memo', value)}
+                placeholder="추가 메모를 입력하세요 (선택사항)"
+                placeholderTextColor="#999"
+                multiline={true}
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
             </View>
           </View>
         </View>
@@ -378,6 +429,22 @@ const styles = StyleSheet.create({
   selectedOptionText: {
     color: '#4a5568',
     fontWeight: '600',
+  },
+  optionsScrollContainer: {
+    maxHeight: 200,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+  },
+  optionsContainer: {
+    gap: 12,
+    padding: 12,
+  },
+  memoInput: {
+    height: 160,
+    paddingTop: 12,
+    textAlignVertical: 'top',
   },
   typeContainer: {
     flexDirection: 'row',
