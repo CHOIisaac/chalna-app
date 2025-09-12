@@ -97,6 +97,43 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* 모달 스크린들 */}
+      <Tabs.Screen
+        name="ledger-detail"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="edit-field"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="add-ledger"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="add-event"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="event-detail"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="edit-event-field"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
