@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import MobileLayout from '../components/layout/MobileLayout';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const DateTimePicker = require('@react-native-community/datetimepicker').default;
 
@@ -82,25 +83,42 @@ const AddEvent: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>일정 추가</Text>
-        <View style={styles.placeholder} />
-      </View>
+    <MobileLayout currentPage="add-event">
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+        {/* 헤더 */}
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+            <Text style={styles.title}>일정 추가</Text>
+            <View style={styles.placeholder} />
+          </View>
+          <Text style={styles.subtitle}>새로운 경조사 일정을 추가하세요</Text>
+        </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* 폼 섹션 */}
+        <View style={styles.formSection}>
+          <View style={styles.formCard}>
         {/* 일정명 */}
-        <View style={styles.section}>
-          <Text style={styles.label}>일정명 *</Text>
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldHeader}>
+            <View style={styles.fieldIconContainer}>
+              <Ionicons name="person" size={20} color="#4a5568" />
+            </View>
+            <Text style={styles.fieldLabel}>
+              일정명 <Text style={styles.required}>*</Text>
+            </Text>
+          </View>
           <TextInput
-            style={[styles.input, errors.title && styles.inputError]}
+            style={[
+              styles.textInput,
+              errors.title && styles.inputError
+            ]}
             value={title}
             onChangeText={(text) => {
               setTitle(text);
@@ -109,25 +127,38 @@ const AddEvent: React.FC = () => {
               }
             }}
             placeholder="예: 김철수 ♥ 이영희 결혼식"
+            placeholderTextColor="#999"
           />
-          {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
+          {errors.title && (
+            <Text style={styles.errorText}>{errors.title}</Text>
+          )}
         </View>
 
         {/* 경조사 타입 */}
-        <View style={styles.section}>
-          <Text style={styles.label}>경조사 타입 *</Text>
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldHeader}>
+            <View style={styles.fieldIconContainer}>
+              <Ionicons name="calendar" size={20} color="#4a5568" />
+            </View>
+            <Text style={styles.fieldLabel}>
+              경조사 타입 <Text style={styles.required}>*</Text>
+            </Text>
+          </View>
           <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.typeScrollView}
+            style={[
+              styles.optionsScrollContainer,
+              errors.eventType && styles.inputError
+            ]}
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
           >
-            <View style={styles.typeContainer}>
+            <View style={styles.optionsContainer}>
               {eventTypes.map((type) => (
                 <TouchableOpacity
                   key={type}
                   style={[
-                    styles.typeOption,
-                    eventType === type && styles.typeOptionSelected
+                    styles.optionButton,
+                    eventType === type && styles.selectedOption
                   ]}
                   onPress={() => {
                     setEventType(type);
@@ -135,10 +166,11 @@ const AddEvent: React.FC = () => {
                       setErrors({...errors, eventType: ''});
                     }
                   }}
+                  activeOpacity={0.7}
                 >
                   <Text style={[
-                    styles.typeOptionText,
-                    eventType === type && styles.typeOptionTextSelected
+                    styles.optionText,
+                    eventType === type && styles.selectedOptionText
                   ]}>
                     {type}
                   </Text>
@@ -146,23 +178,30 @@ const AddEvent: React.FC = () => {
               ))}
             </View>
           </ScrollView>
-          {errors.eventType && <Text style={styles.errorText}>{errors.eventType}</Text>}
+          {errors.eventType && (
+            <Text style={styles.errorText}>{errors.eventType}</Text>
+          )}
         </View>
 
         {/* 날짜 */}
-        <View style={styles.section}>
-          <Text style={styles.label}>날짜 *</Text>
+        <View style={[styles.fieldContainer, styles.dateFieldContainer]}>
+          <View style={styles.fieldHeader}>
+            <View style={styles.fieldIconContainer}>
+              <Ionicons name="calendar" size={20} color="#4a5568" />
+            </View>
+            <Text style={styles.fieldLabel}>날짜</Text>
+          </View>
           <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowDatePicker(true)}
+            activeOpacity={0.7}
           >
             <Ionicons name="calendar-outline" size={20} color="#666" />
             <Text style={styles.dateButtonText}>
               {date.toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric',
-                weekday: 'short'
+                day: 'numeric'
               })}
             </Text>
           </TouchableOpacity>
@@ -185,6 +224,7 @@ const AddEvent: React.FC = () => {
                   textColor="#000000"
                   accentColor="#4a5568"
                   style={styles.datePicker}
+                  locale="ko-KR"
                 />
               </View>
             </View>
@@ -192,10 +232,20 @@ const AddEvent: React.FC = () => {
         </View>
 
         {/* 시간 */}
-        <View style={styles.section}>
-          <Text style={styles.label}>시간 *</Text>
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldHeader}>
+            <View style={styles.fieldIconContainer}>
+              <Ionicons name="time" size={20} color="#4a5568" />
+            </View>
+            <Text style={styles.fieldLabel}>
+              시간 <Text style={styles.required}>*</Text>
+            </Text>
+          </View>
           <TextInput
-            style={[styles.input, errors.time && styles.inputError]}
+            style={[
+              styles.textInput,
+              errors.time && styles.inputError
+            ]}
             value={time}
             onChangeText={(text) => {
               setTime(text);
@@ -204,15 +254,28 @@ const AddEvent: React.FC = () => {
               }
             }}
             placeholder="예: 12:00"
+            placeholderTextColor="#999"
           />
-          {errors.time && <Text style={styles.errorText}>{errors.time}</Text>}
+          {errors.time && (
+            <Text style={styles.errorText}>{errors.time}</Text>
+          )}
         </View>
 
         {/* 장소 */}
-        <View style={styles.section}>
-          <Text style={styles.label}>장소 *</Text>
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldHeader}>
+            <View style={styles.fieldIconContainer}>
+              <Ionicons name="location" size={20} color="#4a5568" />
+            </View>
+            <Text style={styles.fieldLabel}>
+              장소 <Text style={styles.required}>*</Text>
+            </Text>
+          </View>
           <TextInput
-            style={[styles.input, errors.location && styles.inputError]}
+            style={[
+              styles.textInput,
+              errors.location && styles.inputError
+            ]}
             value={location}
             onChangeText={(text) => {
               setLocation(text);
@@ -221,22 +284,33 @@ const AddEvent: React.FC = () => {
               }
             }}
             placeholder="예: 롯데호텔 크리스탈볼룸"
+            placeholderTextColor="#999"
           />
-          {errors.location && <Text style={styles.errorText}>{errors.location}</Text>}
+          {errors.location && (
+            <Text style={styles.errorText}>{errors.location}</Text>
+          )}
         </View>
 
         {/* 메모 */}
-        <View style={styles.section}>
-          <Text style={styles.label}>메모</Text>
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldHeader}>
+            <View style={styles.fieldIconContainer}>
+              <Ionicons name="document-text" size={20} color="#4a5568" />
+            </View>
+            <Text style={styles.fieldLabel}>메모</Text>
+          </View>
           <TextInput
-            style={[styles.input, styles.memoInput]}
+            style={[styles.textInput, styles.memoInput]}
             value={memo}
             onChangeText={setMemo}
             placeholder="추가 정보나 메모를 입력해주세요"
+            placeholderTextColor="#999"
             multiline
             numberOfLines={4}
             textAlignVertical="top"
           />
+        </View>
+          </View>
         </View>
       </ScrollView>
 
@@ -249,7 +323,7 @@ const AddEvent: React.FC = () => {
           <Text style={styles.saveButtonText}>일정 추가</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </MobileLayout>
   );
 };
 
@@ -258,16 +332,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
+  // 헤더 스타일
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
     backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   backButton: {
     width: 40,
@@ -277,17 +353,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
     color: '#1a1a1a',
   },
   placeholder: {
     width: 40,
   },
-  content: {
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+
+  // 폼 섹션 스타일
+  formSection: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  formCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   section: {
     marginTop: 24,
@@ -308,12 +402,155 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e9ecef',
   },
+
+  // AddLedger.tsx와 동일한 필드 스타일
+  fieldContainer: {
+    marginBottom: 24,
+  },
+  fieldHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  fieldIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f0f4f8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  fieldLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    flex: 1,
+  },
+  required: {
+    color: '#e53e3e',
+    fontWeight: 'bold',
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#f8f9fa',
+    fontSize: 16,
+    color: '#1a1a1a',
+    minHeight: 56,
+  },
   inputError: {
     borderColor: '#ff6b6b',
   },
   memoInput: {
-    height: 100,
+    height: 160,
+    paddingTop: 12,
     textAlignVertical: 'top',
+  },
+
+  // 옵션 관련 스타일
+  optionsScrollContainer: {
+    maxHeight: 240,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+  },
+  optionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  optionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+    flex: 1,
+    minWidth: '30%',
+    maxWidth: '31%',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  selectedOption: {
+    backgroundColor: '#e2e8f0',
+    borderColor: '#4a5568',
+  },
+  optionText: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  selectedOptionText: {
+    color: '#4a5568',
+    fontWeight: '600',
+  },
+
+  // 날짜 관련 스타일
+  dateFieldContainer: {
+    position: 'relative',
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    gap: 12,
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  datePickerContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    marginTop: 12,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    overflow: 'hidden',
+    zIndex: 1000,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  datePickerHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4a5568',
+  },
+  datePickerWrapper: {
+    padding: 16,
+    backgroundColor: 'white',
+  },
+  datePicker: {
+    backgroundColor: 'white',
   },
   errorText: {
     fontSize: 14,
