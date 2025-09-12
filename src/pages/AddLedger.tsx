@@ -3,13 +3,13 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { EventType, RelationshipType } from '../types';
@@ -64,13 +64,6 @@ const AddLedger: React.FC = () => {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-  };
 
   const validateForm = () => {
     const newErrors = {
@@ -119,26 +112,9 @@ const AddLedger: React.FC = () => {
     router.back();
   };
 
-  const getFieldInfo = (field: string) => {
-    switch (field) {
-      case 'name':
-        return { label: '이름', placeholder: '이름을 입력하세요', icon: 'person' };
-      case 'relationship':
-        return { label: '관계', placeholder: '관계를 입력하세요', icon: 'people' };
-      case 'eventType':
-        return { label: '경조사 타입', placeholder: '경조사 타입을 선택하세요', icon: 'calendar' };
-      case 'date':
-        return { label: '날짜', placeholder: 'YYYY-MM-DD 형식으로 입력하세요', icon: 'time' };
-      case 'amount':
-        return { label: '금액', placeholder: '금액을 입력하세요', icon: 'cash' };
-      default:
-        return { label: '정보', placeholder: '정보를 입력하세요', icon: 'information' };
-    }
-  };
-
   return (
     <MobileLayout currentPage="add-ledger">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
         {/* 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
@@ -272,7 +248,7 @@ const AddLedger: React.FC = () => {
             </View>
 
             {/* 날짜 */}
-            <View style={styles.fieldContainer}>
+            <View style={[styles.fieldContainer, styles.dateFieldContainer]}>
               <View style={styles.fieldHeader}>
                 <View style={styles.fieldIconContainer}>
                   <Ionicons name="calendar" size={20} color="#4a5568" />
@@ -281,33 +257,25 @@ const AddLedger: React.FC = () => {
               </View>
               <TouchableOpacity
                 style={styles.dateButton}
-                onPress={() => {
-                  console.log('Date button pressed, showDatePicker:', showDatePicker);
-                  setShowDatePicker(true);
-                }}
+                onPress={() => setShowDatePicker(true)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.dateText}>
-                  {formatDate(formData.date)}
+                <Ionicons name="calendar-outline" size={20} color="#666" />
+                <Text style={styles.dateButtonText}>
+                  {formData.date.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
                 </Text>
-                <Ionicons name="chevron-down" size={20} color="#666" />
               </TouchableOpacity>
               
               {showDatePicker && (
                 <View style={styles.datePickerContainer}>
                   {Platform.OS === 'ios' && (
                     <View style={styles.datePickerHeader}>
-                      {/*<TouchableOpacity*/}
-                      {/*  style={styles.datePickerCancelButton}*/}
-                      {/*  onPress={() => setShowDatePicker(false)}*/}
-                      {/*>*/}
-                      {/*  <Text style={styles.datePickerCancelText}>취소</Text>*/}
-                      {/*</TouchableOpacity>*/}
-                      <TouchableOpacity
-                        style={styles.datePickerConfirmButton}
-                        onPress={() => setShowDatePicker(false)}
-                      >
-                        <Text style={styles.datePickerConfirmText}>확인</Text>
+                      <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                        <Text style={styles.datePickerHeaderText}>완료</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -317,10 +285,10 @@ const AddLedger: React.FC = () => {
                       mode="date"
                       display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                       onChange={handleDateChange}
-                      locale="ko-KR"
-                      style={Platform.OS === 'ios' ? styles.datePickerIOS : undefined}
                       textColor="#000000"
                       accentColor="#4a5568"
+                      style={styles.datePicker}
+                      locale="ko-KR"
                     />
                   </View>
                 </View>
@@ -523,7 +491,7 @@ const styles = StyleSheet.create({
   optionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
   },
   optionButton: {
     flexDirection: 'row',
@@ -534,8 +502,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e9ecef',
     backgroundColor: '#f8f9fa',
-    minWidth: 80,
+    flex: 1,
+    minWidth: '30%',
+    maxWidth: '31%',
     justifyContent: 'center',
+    marginBottom: 10,
   },
   selectedOption: {
     backgroundColor: '#e2e8f0',
@@ -551,11 +522,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   optionsScrollContainer: {
-    maxHeight: 200,
+    maxHeight: 240,
     borderWidth: 1,
     borderColor: '#e9ecef',
     borderRadius: 12,
     backgroundColor: '#f8f9fa',
+    padding: 12,
   },
   memoInput: {
     height: 160,
@@ -563,64 +535,61 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   dateButton: {
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#f8f9fa',
-    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    gap: 12,
   },
-  dateText: {
+  dateButtonText: {
     fontSize: 16,
     color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  dateFieldContainer: {
+    position: 'relative',
   },
   datePickerContainer: {
-    marginTop: 10,
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    marginTop: 12,
     backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e9ecef',
     overflow: 'hidden',
-  },
-  datePickerWrapper: {
-    backgroundColor: 'white',
-  },
-  datePickerIOS: {
-    height: 200,
-    backgroundColor: 'white',
+    zIndex: 1000,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   datePickerHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    backgroundColor: '#f8f9fa',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: '#f0f0f0',
   },
-  datePickerCancelButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  datePickerCancelText: {
+  datePickerHeaderText: {
     fontSize: 16,
-    color: '#666',
-  },
-  datePickerConfirmButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  datePickerConfirmText: {
-    fontSize: 16,
-    color: '#4a5568',
     fontWeight: '600',
+    color: '#4a5568',
+  },
+  datePickerWrapper: {
+    padding: 16,
+    backgroundColor: 'white',
+  },
+  datePicker: {
+    backgroundColor: 'white',
   },
   debugText: {
     fontSize: 14,
