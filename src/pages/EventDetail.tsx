@@ -1,25 +1,34 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../lib/utils';
 import MobileLayout from '../components/layout/MobileLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { useNavigation, useRoute } from '@react-navigation/native';
 
 const EventDetail: React.FC = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { id } = route.params as { id: string };
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
+
+  // 개별 항목 수정 핸들러
+  const handleEditItem = (field: string, currentValue: string) => {
+    router.push({
+      pathname: '/edit-event-field',
+      params: {
+        id: id,
+        field: field,
+        currentValue: currentValue,
+        title: eventDetail.title
+      }
+    });
+  };
 
   // Mock data for event detail
-  const event = {
+  const eventDetail = {
     id: parseInt(id),
     title: "김철수 ♥ 이영희 결혼식",
     type: "결혼식",
@@ -29,7 +38,7 @@ const EventDetail: React.FC = () => {
     amount: 100000,
     status: "예정",
     attendees: 150,
-    notes: "신랑 신부 모두 대학교 동기입니다.",
+    memo: "신랑 신부 모두 대학교 동기입니다. 신혼여행은 유럽으로 갑니다.",
   };
 
   return (
@@ -37,92 +46,176 @@ const EventDetail: React.FC = () => {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
-          </TouchableOpacity>
-          <Text style={styles.title}>이벤트 상세</Text>
-          <TouchableOpacity style={styles.editButton} activeOpacity={0.7}>
-            <Ionicons name="pencil" size={20} color={colors.primary} />
-          </TouchableOpacity>
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+            <Text style={styles.title}>상세 정보</Text>
+            <View style={styles.placeholder} />
+          </View>
         </View>
 
-        {/* 이벤트 정보 */}
-        <Card style={styles.eventCard} gradient shadow="soft">
-          <CardContent style={styles.eventContent}>
-            <View style={styles.eventHeader}>
-              <View style={styles.eventIcon}>
-                <Ionicons name="heart" size={24} color={colors.accent} />
-              </View>
-              <View style={styles.eventInfo}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventType}>{event.type}</Text>
-                <Text style={styles.eventStatus}>{event.status}</Text>
-              </View>
-            </View>
-          </CardContent>
-        </Card>
 
-        {/* 상세 정보 */}
-        <Card style={styles.detailCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.detailTitle}>상세 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.detailItem}>
-              <Ionicons name="calendar" size={20} color={colors.mutedForeground} />
-              <Text style={styles.detailText}>{event.date}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Ionicons name="time" size={20} color={colors.mutedForeground} />
-              <Text style={styles.detailText}>{event.time}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Ionicons name="location" size={20} color={colors.mutedForeground} />
-              <Text style={styles.detailText}>{event.location}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Ionicons name="people" size={20} color={colors.mutedForeground} />
-              <Text style={styles.detailText}>참석자 {event.attendees}명</Text>
-            </View>
-          </CardContent>
-        </Card>
-
-        {/* 경조사 정보 */}
-        <Card style={styles.amountCard} shadow="soft">
-          <CardHeader>
-            <CardTitle style={styles.amountTitle}>경조사 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.amountContainer}>
-              <Text style={styles.amountLabel}>경조사 금액</Text>
-              <Text style={styles.amountValue}>{event.amount.toLocaleString()}원</Text>
-            </View>
-            {event.notes && (
-              <View style={styles.notesContainer}>
-                <Text style={styles.notesLabel}>메모</Text>
-                <Text style={styles.notesText}>{event.notes}</Text>
+        {/* 일정 정보 수정 섹션 */}
+        <View style={styles.editSection}>
+          <View style={styles.editCard}>
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('title', eventDetail.title)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="person" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>일정명</Text>
+                  <Text style={styles.editValue}>{eventDetail.title}</Text>
+                </View>
               </View>
-            )}
-          </CardContent>
-        </Card>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('type', eventDetail.type)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="calendar" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>경조사 타입</Text>
+                  <Text style={styles.editValue}>{eventDetail.type}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('date', eventDetail.date)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="calendar-outline" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>날짜</Text>
+                  <Text style={styles.editValue}>{eventDetail.date}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('time', eventDetail.time)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="time" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>시간</Text>
+                  <Text style={styles.editValue}>{eventDetail.time}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('location', eventDetail.location)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="location" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>장소</Text>
+                  <Text style={styles.editValue}>{eventDetail.location}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('amount', eventDetail.amount.toString())}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="cash" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>금액</Text>
+                  <Text style={styles.editValue}>{eventDetail.amount.toLocaleString()}원</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('status', eventDetail.status)}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="checkmark-circle" size={18} color="#4a5568" />
+                </View>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>상태</Text>
+                  <Text style={styles.editValue}>{eventDetail.status}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+
+            {/* 메모 */}
+            <TouchableOpacity
+              style={styles.memoItem}
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('memo', eventDetail.memo)}
+            >
+              <View style={styles.memoHeader}>
+                <View style={styles.memoIconContainer}>
+                  <Ionicons name="document-text" size={20} color="#4a5568" />
+                </View>
+                <View style={styles.memoInfo}>
+                  <Text style={styles.memoLabel}>메모</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#ccc" />
+              </View>
+              
+              <View style={styles.memoContent}>
+                <Text style={styles.memoText} numberOfLines={3}>
+                  {eventDetail.memo || '메모가 없습니다'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* 액션 버튼들 */}
         <View style={styles.actionButtons}>
-          <Button
-            title="경조사 기록"
-            onPress={() => navigation.navigate('Contacts' as never)}
-            style={styles.primaryButton}
-          />
-          <Button
-            title="일정 수정"
-            onPress={() => {}}
-            variant="outline"
-            style={styles.secondaryButton}
-          />
+          <TouchableOpacity 
+            style={styles.secondaryActionButton}
+            onPress={() => router.push('/(tabs)/events')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.secondaryActionText}>일정 보기</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </MobileLayout>
@@ -132,136 +225,152 @@ const EventDetail: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f8f9fa',
   },
+  
+  // 헤더 스타일
   header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
+    backgroundColor: 'white',
+  },
+  headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    marginBottom: 8,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.foreground,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a1a1a',
   },
-  editButton: {
+  placeholder: {
     width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  eventCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+
+  // 수정 섹션 스타일
+  editSection: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
-  eventContent: {
+  editCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  eventHeader: {
+
+  // 수정 아이템 스타일
+  editItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
-  eventIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.accent + '20',
+  lastEditItem: {
+    borderBottomWidth: 0,
+  },
+  editItemLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  eventInfo: {
     flex: 1,
   },
-  eventTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.foreground,
-    marginBottom: 4,
+  editIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  eventType: {
-    fontSize: 16,
-    color: colors.mutedForeground,
-    marginBottom: 4,
+  editItemContent: {
+    flex: 1,
   },
-  eventStatus: {
+  editLabel: {
     fontSize: 14,
-    color: colors.primary,
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  editValue: {
+    fontSize: 16,
+    color: '#1e293b',
     fontWeight: '500',
   },
-  detailCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  detailTitle: {
-    fontSize: 16,
-    color: colors.foreground,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 8,
-  },
-  detailText: {
-    fontSize: 16,
-    color: colors.foreground,
-  },
-  amountCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  amountTitle: {
-    fontSize: 16,
-    color: colors.foreground,
-  },
-  amountContainer: {
-    marginBottom: 16,
-  },
-  amountLabel: {
-    fontSize: 14,
-    color: colors.mutedForeground,
-    marginBottom: 4,
-  },
-  amountValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.foreground,
-  },
-  notesContainer: {
+
+  // 메모 아이템 스타일
+  memoItem: {
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: '#f1f5f9',
   },
-  notesLabel: {
+  memoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  memoIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  memoInfo: {
+    flex: 1,
+  },
+  memoLabel: {
     fontSize: 14,
-    color: colors.mutedForeground,
-    marginBottom: 8,
+    color: '#64748b',
   },
-  notesText: {
+  memoContent: {
+    paddingLeft: 44,
+  },
+  memoText: {
     fontSize: 16,
-    color: colors.foreground,
+    color: '#1e293b',
     lineHeight: 24,
   },
+
+  // 액션 버튼 스타일
   actionButtons: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 24,
-    gap: 12,
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
   },
-  primaryButton: {
-    backgroundColor: colors.primary,
+  secondaryActionButton: {
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
-  secondaryButton: {
-    borderColor: colors.border,
+  secondaryActionText: {
+    color: '#4a5568',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
