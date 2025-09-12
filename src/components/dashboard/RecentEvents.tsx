@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { Event } from '../../types';
 
@@ -59,36 +59,6 @@ const RecentEvents: React.FC = () => {
     })
     .slice(0, 3); // 3개까지만 표시
 
-
-  const getEventIcon = (type: string): keyof typeof Ionicons.glyphMap => {
-    switch (type) {
-      case '결혼식':
-        return 'heart';
-      case '장례식':
-        return 'rose';
-      case '돌잔치':
-        return 'sparkles';
-      case '생일':
-        return 'gift';
-      default:
-        return 'star';
-    }
-  };
-
-  const getEventIconColor = (type: string): string => {
-    switch (type) {
-      case '결혼식':
-        return '#e91e63'; // 핑크/빨강
-      case '장례식':
-        return '#9e9e9e'; // 회색
-      case '돌잔치':
-        return '#ff9800'; // 오렌지
-      default:
-        return '#666666'; // 기본 회색
-    }
-  };
-
-
   return (
     <View style={styles.container}>
       {/* 무신사 스타일 헤더 */}
@@ -101,9 +71,6 @@ const RecentEvents: React.FC = () => {
 
         <View style={styles.eventsList}>
           {sortedEvents.map((event, index) => {
-            const IconName = getEventIcon(event.type);
-            const iconColor = getEventIconColor(event.type);
-            
             return (
               <TouchableOpacity 
                 key={event.id} 
@@ -111,13 +78,6 @@ const RecentEvents: React.FC = () => {
                 activeOpacity={0.8}
                 onPress={() => {}}
               >
-                {/* 이벤트 아이콘 영역 */}
-                <View style={styles.iconSection}>
-                  <View style={styles.eventIconContainer}>
-                    <Ionicons name={IconName} size={20} color={iconColor} />
-                  </View>
-                </View>
-
                 {/* 정보 영역 */}
                 <View style={styles.infoSection}>
                   <View style={styles.titleRow}>
@@ -231,38 +191,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f0f0f0',
-  },
-
-  // 아이콘 섹션
-  iconSection: {
-    position: 'relative',
-    marginRight: 16,
-  },
-  eventIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#e2e8f0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  statusIndicator: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
   },
 
   // 정보 섹션
