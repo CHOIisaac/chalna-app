@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
   },
   headerTop: {
     flexDirection: 'row',
@@ -372,6 +372,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
+    paddingBottom: 15,
   },
   formCard: {
     backgroundColor: 'white',
@@ -631,9 +632,7 @@ const styles = StyleSheet.create({
   bottomSection: {
     paddingHorizontal: 20,
     paddingVertical: 20,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    backgroundColor: 'f8f9fa',
   },
   saveButton: {
     backgroundColor: '#4a5568',
