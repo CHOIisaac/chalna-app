@@ -282,8 +282,8 @@ const styles = StyleSheet.create({
   // 메모 아이템 스타일
   memoItem: {
     paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    // borderTopWidth: 1,
+    // borderTopColor: '#f1f5f9',
   },
   memoHeader: {
     flexDirection: 'row',
