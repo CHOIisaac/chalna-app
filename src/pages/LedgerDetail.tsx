@@ -341,7 +341,6 @@ const styles = StyleSheet.create({
   editSection: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,

@@ -69,9 +69,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('title', eventDetail.title)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="person" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>일정명</Text>
                   <Text style={styles.editValue}>{eventDetail.title}</Text>
@@ -86,9 +83,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('type', eventDetail.type)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="calendar" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>경조사 타입</Text>
                   <Text style={styles.editValue}>{eventDetail.type}</Text>
@@ -103,9 +97,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('date', eventDetail.date)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="calendar-outline" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>날짜</Text>
                   <Text style={styles.editValue}>{eventDetail.date}</Text>
@@ -120,9 +111,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('time', eventDetail.time)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="time" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>시간</Text>
                   <Text style={styles.editValue}>{eventDetail.time}</Text>
@@ -137,9 +125,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('location', eventDetail.location)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="location" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>장소</Text>
                   <Text style={styles.editValue}>{eventDetail.location}</Text>
@@ -154,9 +139,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('amount', eventDetail.amount.toString())}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="cash" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>금액</Text>
                   <Text style={styles.editValue}>{eventDetail.amount.toLocaleString()}원</Text>
@@ -171,9 +153,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('status', eventDetail.status)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="checkmark-circle" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>상태</Text>
                   <Text style={styles.editValue}>{eventDetail.status}</Text>
@@ -189,9 +168,6 @@ const EventDetail: React.FC = () => {
               onPress={() => handleEditItem('memo', eventDetail.memo)}
             >
               <View style={styles.memoHeader}>
-                <View style={styles.memoIconContainer}>
-                  <Ionicons name="document-text" size={20} color="#4a5568" />
-                </View>
                 <View style={styles.memoInfo}>
                   <Text style={styles.memoLabel}>메모</Text>
                 </View>
@@ -233,7 +209,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'f8f9fa',
   },
   headerTop: {
     flexDirection: 'row',
@@ -245,7 +221,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -288,18 +263,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   editItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
-  },
-  editIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
   },
   editItemContent: {
     flex: 1,
@@ -326,15 +290,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  memoIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
   memoInfo: {
     flex: 1,
   },
@@ -343,7 +298,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   memoContent: {
-    paddingLeft: 44,
+    paddingLeft: 0,
   },
   memoText: {
     fontSize: 16,
@@ -355,9 +310,7 @@ const styles = StyleSheet.create({
   actionButtons: {
     paddingHorizontal: 20,
     paddingVertical: 24,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    backgroundColor: 'f8f9fa',
   },
   secondaryActionButton: {
     backgroundColor: '#f8f9fa',
