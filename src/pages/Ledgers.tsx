@@ -204,7 +204,7 @@ const Ledgers: React.FC = () => {
 
                   {/* 금액 영역 */}
                   <View style={styles.amountSection}>
-                    <Text style={[styles.amountText, { color: ledger.type === 'given' ? '#4a5568' : '#718096' }]}>
+                    <Text style={[styles.amountText, { color: '#4a5568' }]}>
                       {ledger.amount.toLocaleString()}원
                     </Text>
                     <Text style={[styles.typeLabel, { color: ledger.type === 'given' ? '#4a5568' : '#718096' }]}>
@@ -346,9 +346,9 @@ const Ledgers: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {sortBy === 'date_desc' ? '날짜순 (최신)' :
-                   sortBy === 'date_asc' ? '날짜순 (과거)' :
-                   sortBy === 'amount_desc' ? '금액순 (높은)' : '금액순 (낮은)'}
+                  {sortBy === 'date_desc' ? '최신순' :
+                   sortBy === 'date_asc' ? '오래된순' :
+                   sortBy === 'amount_desc' ? '높은금액순' : '낮은금액순'}
                 </Text>
                 <Ionicons 
                   name={showSortDropdown ? "chevron-up" : "chevron-down"} 
@@ -373,7 +373,7 @@ const Ledgers: React.FC = () => {
                       styles.dropdownOptionText,
                       sortBy === 'date_desc' && styles.dropdownOptionTextSelected
                     ]}>
-                      날짜순 (최신)
+                      최신순
                     </Text>
                     {sortBy === 'date_desc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
@@ -393,7 +393,7 @@ const Ledgers: React.FC = () => {
                       styles.dropdownOptionText,
                       sortBy === 'date_asc' && styles.dropdownOptionTextSelected
                     ]}>
-                      날짜순 (과거)
+                      오래된순
                     </Text>
                     {sortBy === 'date_asc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
@@ -413,7 +413,7 @@ const Ledgers: React.FC = () => {
                       styles.dropdownOptionText,
                       sortBy === 'amount_desc' && styles.dropdownOptionTextSelected
                     ]}>
-                      금액순 (높은)
+                      높은금액순
                     </Text>
                     {sortBy === 'amount_desc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
@@ -433,7 +433,7 @@ const Ledgers: React.FC = () => {
                       styles.dropdownOptionText,
                       sortBy === 'amount_asc' && styles.dropdownOptionTextSelected
                     ]}>
-                      금액순 (낮은)
+                      낮은금액순
                     </Text>
                     {sortBy === 'amount_asc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />

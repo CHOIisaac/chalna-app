@@ -739,7 +739,7 @@ const Events: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {sortBy === 'date_asc' ? '날짜순 (가까운 순)' : '날짜순 (과거 순)'}
+                  {sortBy === 'date_asc' ? '최신순' : '오래된순'}
                 </Text>
                 <Ionicons 
                   name={showSortDropdown ? "chevron-up" : "chevron-down"} 
@@ -764,7 +764,7 @@ const Events: React.FC = () => {
                       styles.dropdownOptionText,
                       sortBy === 'date_asc' && styles.dropdownOptionTextSelected
                     ]}>
-                      날짜순 (가까운 순)
+                      최신순
                     </Text>
                     {sortBy === 'date_asc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
@@ -784,7 +784,7 @@ const Events: React.FC = () => {
                       styles.dropdownOptionText,
                       sortBy === 'date_desc' && styles.dropdownOptionTextSelected
                     ]}>
-                      날짜순 (과거 순)
+                      오래된순
                     </Text>
                     {sortBy === 'date_desc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
