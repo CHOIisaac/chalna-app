@@ -152,7 +152,7 @@ const LedgerDetail: React.FC = () => {
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
-                  <Text style={styles.editLabel}>경조사 타입</Text>
+                  <Text style={styles.editLabel}>경조사</Text>
                   <Text style={styles.editValue}>{ledgerDetail.events[0]?.eventType || '결혼식'}</Text>
                 </View>
               </View>
@@ -180,7 +180,7 @@ const LedgerDetail: React.FC = () => {
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
-                  <Text style={styles.editLabel}>타입</Text>
+                  <Text style={styles.editLabel}>구분</Text>
                   <Text style={styles.editValue}>{ledgerDetail.events[0]?.type === 'given' ? '나눔' : '받음'}</Text>
                 </View>
               </View>

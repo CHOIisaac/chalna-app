@@ -47,23 +47,23 @@ const EditScheduleField: React.FC = () => {
   const getFieldInfo = () => {
     switch (field) {
       case 'title':
-        return { label: '일정명', icon: 'person' };
+        return { label: '일정명' };
       case 'type':
-        return { label: '경조사 타입', icon: 'calendar' };
+        return { label: '경조사 타입' };
       case 'date':
-        return { label: '날짜', icon: 'calendar-outline' };
+        return { label: '날짜' };
       case 'time':
-        return { label: '시간', icon: 'time' };
+        return { label: '시간' };
       case 'location':
-        return { label: '장소', icon: 'location' };
+        return { label: '장소' };
       case 'amount':
-        return { label: '금액', icon: 'cash' };
+        return { label: '금액' };
       case 'status':
-        return { label: '상태', icon: 'checkmark-circle' };
+        return { label: '상태' };
       case 'memo':
-        return { label: '메모', icon: 'document-text' };
+        return { label: '메모' };
       default:
-        return { label: '정보', icon: 'information' };
+        return { label: '정보' };
     }
   };
 
@@ -123,9 +123,6 @@ const EditScheduleField: React.FC = () => {
           <View style={styles.formCard}>
             {/* 필드 헤더 */}
             <View style={styles.fieldHeader}>
-              <View style={styles.fieldIconContainer}>
-                <Ionicons name={fieldInfo.icon as any} size={20} color="#4a5568" />
-              </View>
               <Text style={styles.fieldLabel}>{fieldInfo.label}</Text>
             </View>
 
@@ -293,13 +290,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  fieldIconContainer: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
   },
   fieldLabel: {
     fontSize: 16,
