@@ -100,13 +100,6 @@ const EditField: React.FC = () => {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-  };
 
   const handleCancel = () => {
     router.back();
@@ -220,27 +213,22 @@ const EditField: React.FC = () => {
                   onPress={() => setShowDatePicker(true)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.dateText}>
-                    {formatDate(dateValue)}
+                  <Ionicons name="calendar-outline" size={20} color="#666" />
+                  <Text style={styles.dateButtonText}>
+                    {dateValue.toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#666" />
                 </TouchableOpacity>
                 
                 {showDatePicker && (
                   <View style={styles.datePickerContainer}>
                     {Platform.OS === 'ios' && (
                       <View style={styles.datePickerHeader}>
-                        <TouchableOpacity
-                          style={styles.datePickerCancelButton}
-                          onPress={() => setShowDatePicker(false)}
-                        >
-                          <Text style={styles.datePickerCancelText}>취소</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.datePickerConfirmButton}
-                          onPress={() => setShowDatePicker(false)}
-                        >
-                          <Text style={styles.datePickerConfirmText}>확인</Text>
+                        <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                          <Text style={styles.datePickerHeaderText}>완료</Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -250,10 +238,10 @@ const EditField: React.FC = () => {
                         mode="date"
                         display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                         onChange={handleDateChange}
-                        locale="ko-KR"
-                        style={Platform.OS === 'ios' ? styles.datePickerIOS : undefined}
                         textColor="#000000"
                         accentColor="#4a5568"
+                        style={styles.datePicker}
+                        locale="ko-KR"
                       />
                     </View>
                   </View>
@@ -402,75 +390,61 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   dateButton: {
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#f8f9fa',
-    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    gap: 12,
   },
-  dateText: {
+  dateButtonText: {
     fontSize: 16,
     color: '#1a1a1a',
+    fontWeight: '500',
   },
   datePickerContainer: {
-    marginTop: 10,
+    marginTop: 12,
     backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e9ecef',
     overflow: 'hidden',
   },
-  datePickerWrapper: {
-    backgroundColor: 'white',
-  },
-  datePickerIOS: {
-    height: 200,
-    backgroundColor: 'white',
-  },
   datePickerHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    backgroundColor: '#f8f9fa',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: '#f0f0f0',
   },
-  datePickerCancelButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  datePickerCancelText: {
+  datePickerHeaderText: {
     fontSize: 16,
-    color: '#666',
-  },
-  datePickerConfirmButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  datePickerConfirmText: {
-    fontSize: 16,
-    color: '#4a5568',
     fontWeight: '600',
+    color: '#4a5568',
+  },
+  datePickerWrapper: {
+    padding: 16,
+    backgroundColor: 'white',
+  },
+  datePicker: {
+    backgroundColor: 'white',
   },
   optionsScrollContainer: {
-    maxHeight: 200,
+    maxHeight: 240,
     borderWidth: 1,
     borderColor: '#e9ecef',
     borderRadius: 12,
     backgroundColor: '#f8f9fa',
+    padding: 12,
   },
   optionsContainer: {
-    gap: 12,
-    padding: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   memoInput: {
     height: 160,
@@ -479,14 +453,18 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e9ecef',
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
+    flex: 1,
+    minWidth: '30%',
+    maxWidth: '31%',
+    justifyContent: 'center',
+    marginBottom: 10,
   },
   selectedOption: {
     backgroundColor: '#e2e8f0',
