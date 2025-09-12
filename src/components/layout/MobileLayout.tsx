@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    SafeAreaView,
     StatusBar,
     StyleSheet,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../lib/utils';
 
 interface MobileLayoutProps {
