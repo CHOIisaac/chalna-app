@@ -325,7 +325,7 @@ const Events: React.FC = () => {
                     key={event.id}
                     style={styles.eventCard}
                     activeOpacity={0.8}
-                    onPress={() => router.push(`/edit-event?id=${event.id}`)}
+                    onPress={() => router.push(`/event-detail?id=${event.id}`)}
                   >
                     {/* 날짜 표시 */}
                     <View style={styles.dateSection}>
@@ -523,7 +523,7 @@ const Events: React.FC = () => {
                       <View style={styles.modalStatusSection}>
                         <View style={[styles.modalTypeBadge, { backgroundColor: typeStyle.bg }]}>
                           <Text style={[styles.modalTypeText, { color: typeStyle.text }]}>
-                            {getEventTypeName(event.type)}
+                            {event.type}
                           </Text>
                         </View>
                         <Text></Text>
@@ -1413,6 +1413,18 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
   },
   sheetHandle: {
     width: 40,
