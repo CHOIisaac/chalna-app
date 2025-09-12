@@ -54,6 +54,8 @@ const EditField: React.FC = () => {
         return { label: '경조사 타입', icon: 'calendar' };
       case 'date':
         return { label: '날짜', icon: 'calendar' };
+      case 'type':
+        return { label: '타입', icon: 'swap-horizontal' };
       case 'amount':
         return { label: '금액', icon: 'cash' };
       case 'memo':
@@ -135,11 +137,13 @@ const EditField: React.FC = () => {
                   {fieldInfo.label}
                   {field !== 'memo' && <Text style={styles.required}> *</Text>}
                 </Text>
-                {(field === 'eventType' || field === 'relationship') && (
+                {(field === 'eventType' || field === 'relationship' || field === 'type') && (
                   <Text style={styles.fieldDescription}>
                     {field === 'eventType' 
                       ? '경조사 타입을 선택하세요' 
-                      : '관계를 선택하세요'
+                      : field === 'relationship'
+                      ? '관계를 선택하세요'
+                      : '나눔 또는 받음을 선택하세요'
                     }
                   </Text>
                 )}
@@ -204,6 +208,52 @@ const EditField: React.FC = () => {
                       </Text>
                     </TouchableOpacity>
                   ))}
+                </View>
+              </ScrollView>
+            ) : field === 'type' ? (
+              <ScrollView 
+                style={styles.optionsScrollContainer}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                <View style={styles.typeOptionsContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.typeOptionButton,
+                      value === 'given' && styles.selectedOption
+                    ]}
+                    onPress={() => {
+                      setValue('given');
+                      setError(''); // 값 선택 시 에러 제거
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[
+                      styles.optionText,
+                      value === 'given' && styles.selectedOptionText
+                    ]}>
+                      나눔
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.typeOptionButton,
+                      value === 'received' && styles.selectedOption
+                    ]}
+                    onPress={() => {
+                      setValue('received');
+                      setError(''); // 값 선택 시 에러 제거
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[
+                      styles.optionText,
+                      value === 'received' && styles.selectedOptionText
+                    ]}>
+                      받음
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </ScrollView>
             ) : field === 'date' ? (
@@ -478,6 +528,21 @@ const styles = StyleSheet.create({
   selectedOptionText: {
     color: '#4a5568',
     fontWeight: '600',
+  },
+  typeOptionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  typeOptionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
   },
 
   // 액션 버튼들
