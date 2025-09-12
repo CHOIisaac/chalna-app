@@ -5,7 +5,6 @@ import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
@@ -14,7 +13,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: '#000000', // 활성 탭 아이콘 색상을 검정색으로
+        tabBarInactiveTintColor: '#999999', // 비활성 탭 아이콘 색상을 회색으로
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
@@ -22,8 +22,14 @@ export default function TabLayout() {
           ios: {
             // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
+            borderTopWidth: 1,
+            borderTopColor: '#f8f9fa',
           },
-          default: {},
+          default: {
+            backgroundColor: '#ffffff', // Android/Web에서 화이트 배경 설정
+            borderTopWidth: 1,
+            borderTopColor: '#e5e5e5',
+          },
         }),
       }}>
       <Tabs.Screen
