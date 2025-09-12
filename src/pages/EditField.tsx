@@ -51,11 +51,11 @@ const EditField: React.FC = () => {
       case 'relationship':
         return { label: '관계' };
       case 'eventType':
-        return { label: '경조사 타입' };
+        return { label: '경조사' };
       case 'date':
         return { label: '날짜' };
       case 'type':
-        return { label: '타입' };
+        return { label: '구분' };
       case 'amount':
         return { label: '금액' };
       case 'memo':
@@ -505,16 +505,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   selectedOption: {
-    backgroundColor: '#e2e8f0',
-    borderColor: '#4a5568',
+    backgroundColor: '#ffffff',
+    borderColor: '#000000',
   },
   optionText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: '#9ca3af',
     fontWeight: '500',
   },
   selectedOptionText: {
-    color: '#4a5568',
+    color: '#000000',
     fontWeight: '600',
   },
   typeOptionsContainer: {

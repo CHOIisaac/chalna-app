@@ -471,16 +471,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   selectedOption: {
-    backgroundColor: '#e2e8f0',
-    borderColor: '#4a5568',
+    backgroundColor: '#ffffff',
+    borderColor: '#000000',
   },
   optionText: {
     fontSize: 14,
-    color: '#1a1a1a',
+    color: '#9ca3af',
     fontWeight: '500',
   },
   selectedOptionText: {
-    color: '#4a5568',
+    color: '#000000',
     fontWeight: '600',
   },
   optionsScrollContainer: {
@@ -576,16 +576,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   selectedType: {
-    backgroundColor: '#6c757d',
-    borderColor: '#6c757d',
+    backgroundColor: '#ffffff',
+    borderColor: '#000000',
   },
   typeText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: '#9ca3af',
     fontWeight: '600',
   },
   selectedTypeText: {
-    color: '#ffffff',
+    color: '#000000',
   },
 
   bottomSection: {
