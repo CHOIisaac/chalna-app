@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
@@ -325,7 +325,7 @@ const Events: React.FC = () => {
                     key={event.id}
                     style={styles.eventCard}
                     activeOpacity={0.8}
-                    onPress={() => router.push(`/event-detail?id=${event.id}`)}
+                    onPress={() => router.push(`/schedule-detail?id=${event.id}`)}
                   >
                     {/* 날짜 표시 */}
                     <View style={styles.dateSection}>
