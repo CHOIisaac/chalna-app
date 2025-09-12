@@ -16,7 +16,7 @@ const FloatingActionButton: React.FC = () => {
     // 현재 페이지에 따라 다른 동작
     if (pathname.includes('/ledgers')) {
       router.push('/add-ledger');
-    } else if (pathname.includes('/events')) {
+    } else if (pathname.includes('/schedules')) {
       router.push('/add-event');
     }
   }, [router, pathname]);

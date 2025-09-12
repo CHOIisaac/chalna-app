@@ -97,7 +97,7 @@ export interface RelationshipStat {
 // 네비게이션 타입들
 export type RootStackParamList = {
   Home: undefined;
-  Events: undefined;
+  Schedules: undefined;
   Contacts: undefined;
   Stats: undefined;
   More: undefined;
@@ -117,7 +117,7 @@ export type RootStackParamList = {
 export type TabParamList = {
   Home: undefined;
   Contacts: undefined;
-  Events: undefined;
+  Schedules: undefined;
   Stats: undefined;
   More: undefined;
 };

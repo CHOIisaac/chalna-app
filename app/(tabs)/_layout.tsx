@@ -59,7 +59,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="events"
+        name="schedules"
         options={{
           title: '일정',
           tabBarIcon: ({ color, focused }) => (

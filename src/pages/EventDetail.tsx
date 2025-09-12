@@ -187,7 +187,7 @@ const EventDetail: React.FC = () => {
         <View style={styles.actionButtons}>
           <TouchableOpacity 
             style={styles.secondaryActionButton}
-            onPress={() => router.push('/(tabs)/events')}
+            onPress={() => router.push('/(tabs)/schedules')}
             activeOpacity={0.8}
           >
             <Text style={styles.secondaryActionText}>일정 보기</Text>
