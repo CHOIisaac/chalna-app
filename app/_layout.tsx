@@ -27,7 +27,6 @@ export default function RootLayout() {
           <Stack.Screen name="edit-field" options={{ headerShown: false }} />
           <Stack.Screen name="add-ledger" options={{ headerShown: false }} />
           <Stack.Screen name="add-event" options={{ headerShown: false }} />
-          <Stack.Screen name="edit-event" options={{ headerShown: false }} />
           <Stack.Screen name="event-detail" options={{ headerShown: false }} />
           <Stack.Screen name="edit-event-field" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
