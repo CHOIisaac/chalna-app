@@ -471,8 +471,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTop: {
     flexDirection: 'row',
@@ -490,7 +488,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -505,8 +502,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   searchContainer: {
     flexDirection: 'row',
