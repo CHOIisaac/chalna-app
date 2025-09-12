@@ -107,9 +107,6 @@ const AddEvent: React.FC = () => {
         {/* 일정명 */}
         <View style={styles.fieldContainer}>
           <View style={styles.fieldHeader}>
-            <View style={styles.fieldIconContainer}>
-              <Ionicons name="person" size={20} color="#4a5568" />
-            </View>
             <Text style={styles.fieldLabel}>
               일정명 <Text style={styles.required}>*</Text>
             </Text>
@@ -137,9 +134,6 @@ const AddEvent: React.FC = () => {
         {/* 경조사 타입 */}
         <View style={styles.fieldContainer}>
           <View style={styles.fieldHeader}>
-            <View style={styles.fieldIconContainer}>
-              <Ionicons name="calendar" size={20} color="#4a5568" />
-            </View>
             <Text style={styles.fieldLabel}>
               경조사 타입 <Text style={styles.required}>*</Text>
             </Text>
@@ -186,9 +180,6 @@ const AddEvent: React.FC = () => {
         {/* 날짜 */}
         <View style={[styles.fieldContainer, styles.dateFieldContainer]}>
           <View style={styles.fieldHeader}>
-            <View style={styles.fieldIconContainer}>
-              <Ionicons name="calendar" size={20} color="#4a5568" />
-            </View>
             <Text style={styles.fieldLabel}>날짜</Text>
           </View>
           <TouchableOpacity
@@ -234,9 +225,6 @@ const AddEvent: React.FC = () => {
         {/* 시간 */}
         <View style={styles.fieldContainer}>
           <View style={styles.fieldHeader}>
-            <View style={styles.fieldIconContainer}>
-              <Ionicons name="time" size={20} color="#4a5568" />
-            </View>
             <Text style={styles.fieldLabel}>
               시간 <Text style={styles.required}>*</Text>
             </Text>
@@ -264,9 +252,6 @@ const AddEvent: React.FC = () => {
         {/* 장소 */}
         <View style={styles.fieldContainer}>
           <View style={styles.fieldHeader}>
-            <View style={styles.fieldIconContainer}>
-              <Ionicons name="location" size={20} color="#4a5568" />
-            </View>
             <Text style={styles.fieldLabel}>
               장소 <Text style={styles.required}>*</Text>
             </Text>
@@ -294,9 +279,6 @@ const AddEvent: React.FC = () => {
         {/* 메모 */}
         <View style={styles.fieldContainer}>
           <View style={styles.fieldHeader}>
-            <View style={styles.fieldIconContainer}>
-              <Ionicons name="document-text" size={20} color="#4a5568" />
-            </View>
             <Text style={styles.fieldLabel}>메모</Text>
           </View>
           <TextInput
@@ -409,18 +391,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   fieldHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 12,
-  },
-  fieldIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f0f4f8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
   },
   fieldLabel: {
     fontSize: 16,
@@ -635,7 +606,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'f8f9fa',
   },
   saveButton: {
-    backgroundColor: '#4a5568',
+    backgroundColor: 'black',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
