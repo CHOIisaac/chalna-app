@@ -350,16 +350,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedOption: {
-    backgroundColor: '#4a5568',
-    borderColor: '#4a5568',
+    backgroundColor: '#ffffff',
+    borderColor: '#000000',
   },
   optionText: {
     fontSize: 14,
-    color: '#4a5568',
+    color: '#9ca3af',
     fontWeight: '500',
   },
   selectedOptionText: {
-    color: 'white',
+    color: '#000000',
     fontWeight: '600',
   },
 
