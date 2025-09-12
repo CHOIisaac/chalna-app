@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 
@@ -231,7 +231,7 @@ const LedgerDetail: React.FC = () => {
         <View style={styles.actionButtons}>
           <TouchableOpacity 
             style={styles.secondaryActionButton}
-            onPress={() => router.push('/(tabs)/events')}
+            onPress={() => router.push('/(tabs)/schedules')}
             activeOpacity={0.8}
           >
             <Text style={styles.secondaryActionText}>일정 보기</Text>

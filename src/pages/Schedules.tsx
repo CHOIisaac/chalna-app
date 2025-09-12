@@ -211,7 +211,7 @@ const Events: React.FC = () => {
   };
 
   return (
-    <MobileLayout currentPage="events">
+    <MobileLayout currentPage="schedules">
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 무신사 스타일 헤더 */}
         <View style={styles.header}>
