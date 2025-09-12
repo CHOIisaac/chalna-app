@@ -556,50 +556,6 @@ const styles = StyleSheet.create({
   typeOptionTextSelected: {
     color: 'white',
   },
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    gap: 12,
-  },
-  dateButtonText: {
-    fontSize: 16,
-    color: '#1a1a1a',
-    fontWeight: '500',
-  },
-  datePickerContainer: {
-    marginTop: 12,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    overflow: 'hidden',
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  datePickerHeaderText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#4a5568',
-  },
-  datePickerWrapper: {
-    padding: 16,
-    backgroundColor: 'white',
-  },
-  datePicker: {
-    backgroundColor: 'white',
-  },
   bottomSection: {
     paddingHorizontal: 20,
     paddingVertical: 20,
