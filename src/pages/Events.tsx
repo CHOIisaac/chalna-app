@@ -566,7 +566,7 @@ const Events: React.FC = () => {
             activeOpacity={1}
             onPress={() => setShowFilterModal(false)}
           />
-          <View style={styles.modalContent}>
+          <View style={styles.filterModalContent}>
             {/* 하단 시트 핸들 */}
             <View style={styles.sheetHandle} />
 
@@ -1414,7 +1414,7 @@ const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
   },
-  modalContent: {
+  filterModalContent: {
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
