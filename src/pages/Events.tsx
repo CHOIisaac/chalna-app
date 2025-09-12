@@ -1414,18 +1414,6 @@ const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
   },
-  modalContent: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 40,
-    maxHeight: '80%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-  },
   sheetHandle: {
     width: 40,
     height: 4,
