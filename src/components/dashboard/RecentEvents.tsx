@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { Event } from '../../types';
+import { Event, EventType } from '../../types';
 
 const RecentEvents: React.FC = () => {
 
@@ -14,7 +14,7 @@ const RecentEvents: React.FC = () => {
   const recentEvents: Event[] = [
     {
       id: '1',
-      type: '결혼식',
+      type: EventType.WEDDING,
       title: '김철수 ♥ 이영희 결혼식',
       date: '2024-08-25',
       location: '강남구 웨딩홀',
@@ -23,7 +23,7 @@ const RecentEvents: React.FC = () => {
     },
     {
       id: '2',
-      type: '장례식',
+      type: EventType.FUNERAL,
       title: '박할머니 빈소',
       date: '2024-08-20',
       location: '서울병원 장례식장',
@@ -32,7 +32,7 @@ const RecentEvents: React.FC = () => {
     },
     {
       id: '3',
-      type: '돌잔치',
+      type: EventType.FIRST_BIRTHDAY,
       title: '최준호 돌잔치',
       date: '2024-08-30',
       location: '용산구 컨벤션센터',
