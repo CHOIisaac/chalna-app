@@ -557,10 +557,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#f8f9fa',
   },
-  optionsContainer: {
-    gap: 12,
-    padding: 12,
-  },
   memoInput: {
     height: 160,
     paddingTop: 12,
