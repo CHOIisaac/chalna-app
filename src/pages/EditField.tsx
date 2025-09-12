@@ -47,21 +47,21 @@ const EditField: React.FC = () => {
   const getFieldInfo = () => {
     switch (field) {
       case 'name':
-        return { label: '이름', icon: 'person' };
+        return { label: '이름' };
       case 'relationship':
-        return { label: '관계', icon: 'people' };
+        return { label: '관계' };
       case 'eventType':
-        return { label: '경조사 타입', icon: 'calendar' };
+        return { label: '경조사 타입' };
       case 'date':
-        return { label: '날짜', icon: 'calendar' };
+        return { label: '날짜' };
       case 'type':
-        return { label: '타입', icon: 'swap-horizontal' };
+        return { label: '타입' };
       case 'amount':
-        return { label: '금액', icon: 'cash' };
+        return { label: '금액' };
       case 'memo':
-        return { label: '메모', icon: 'document-text' };
+        return { label: '메모' };
       default:
-        return { label: '정보', icon: 'information' };
+        return { label: '정보' };
     }
   };
 
@@ -129,9 +129,6 @@ const EditField: React.FC = () => {
         <View style={styles.formSection}>
           <View style={styles.formCard}>
             <View style={styles.fieldHeader}>
-              <View style={styles.fieldIconContainer}>
-                <Ionicons name={fieldInfo.icon as any} size={24} color="#4a5568" />
-              </View>
               <View style={styles.fieldInfo}>
                 <Text style={styles.fieldLabel}>
                   {fieldInfo.label}
@@ -405,15 +402,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  fieldIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
   fieldInfo: {
     flex: 1,
   },
@@ -553,7 +541,7 @@ const styles = StyleSheet.create({
   confirmButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4a5568',
+    backgroundColor: '#000000',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 16,
