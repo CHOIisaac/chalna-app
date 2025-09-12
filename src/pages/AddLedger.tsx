@@ -352,17 +352,17 @@ const AddLedger: React.FC = () => {
           </View>
         </View>
 
-        {/* 액션 버튼 */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={styles.saveButton}
-            onPress={handleSave}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.saveButtonText}>작성</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+
+      {/* 저장 버튼 */}
+      <View style={styles.bottomSection}>
+        <TouchableOpacity 
+          style={styles.saveButton}
+          onPress={handleSave}
+        >
+          <Text style={styles.saveButtonText}>작성</Text>
+        </TouchableOpacity>
+      </View>
     </MobileLayout>
   );
 };
@@ -412,6 +412,7 @@ const styles = StyleSheet.create({
   formSection: {
     paddingHorizontal: 20,
     paddingTop: 20,
+    paddingBottom: 20
   },
   formCard: {
     backgroundColor: 'white',
@@ -587,18 +588,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
 
-  // 액션 버튼들
-  actionButtons: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+  bottomSection: {
+    paddingHorizontal: 26,
+    paddingVertical: 20,
+    backgroundColor: 'f8f9fa',
   },
   saveButton: {
+    backgroundColor: 'black',
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#000000',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 16,
   },
   saveButtonText: {
     fontSize: 16,
