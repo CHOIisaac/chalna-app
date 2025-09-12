@@ -123,9 +123,6 @@ const LedgerDetail: React.FC = () => {
               onPress={() => handleEditItem('name', ledgerDetail.name)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="person" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>이름</Text>
                   <Text style={styles.editValue}>{ledgerDetail.name}</Text>
@@ -140,9 +137,6 @@ const LedgerDetail: React.FC = () => {
               onPress={() => handleEditItem('relationship', ledgerDetail.relationship)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="people" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>관계</Text>
                   <Text style={styles.editValue}>{ledgerDetail.relationship}</Text>
@@ -157,9 +151,6 @@ const LedgerDetail: React.FC = () => {
               onPress={() => handleEditItem('eventType', ledgerDetail.events[0]?.eventType || '결혼식')}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="calendar" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>경조사 타입</Text>
                   <Text style={styles.editValue}>{ledgerDetail.events[0]?.eventType || '결혼식'}</Text>
@@ -174,12 +165,23 @@ const LedgerDetail: React.FC = () => {
               onPress={() => handleEditItem('date', ledgerDetail.events[0]?.date || ledgerDetail.lastEvent)}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="time" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>날짜</Text>
                   <Text style={styles.editValue}>{ledgerDetail.events[0]?.date || ledgerDetail.lastEvent}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#ccc" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.editItem} 
+              activeOpacity={0.7}
+              onPress={() => handleEditItem('type', ledgerDetail.events[0]?.type || 'given')}
+            >
+              <View style={styles.editItemLeft}>
+                <View style={styles.editItemContent}>
+                  <Text style={styles.editLabel}>타입</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.type === 'given' ? '나눔' : '받음'}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -191,9 +193,6 @@ const LedgerDetail: React.FC = () => {
               onPress={() => handleEditItem('amount', (ledgerDetail.events[0]?.amount || 0).toString())}
             >
               <View style={styles.editItemLeft}>
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="cash" size={18} color="#4a5568" />
-                </View>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>금액</Text>
                   <Text style={styles.editValue}>{ledgerDetail.events[0]?.amount.toLocaleString() || '0'}원</Text>
@@ -209,9 +208,6 @@ const LedgerDetail: React.FC = () => {
               onPress={() => handleEditItem('memo', ledgerDetail.memo)}
             >
               <View style={styles.memoHeader}>
-                <View style={styles.memoIconContainer}>
-                  <Ionicons name="document-text" size={20} color="#4a5568" />
-                </View>
                 <View style={styles.memoInfo}>
                   <Text style={styles.memoLabel}>메모</Text>
                 </View>
@@ -254,8 +250,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTop: {
     flexDirection: 'row',
@@ -350,56 +344,39 @@ const styles = StyleSheet.create({
   },
   editCard: {
     backgroundColor: 'white',
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
+    shadowRadius: 8,
+    elevation: 3,
   },
   editItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f8f9fa',
+    borderBottomColor: '#f1f5f9',
   },
   lastEditItem: {
     borderBottomWidth: 0,
   },
   editItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
-    marginRight: 12,
-  },
-  editIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
   },
   editItemContent: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   editLabel: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
+    color: '#64748b',
+    marginBottom: 4,
   },
   editValue: {
-    fontSize: 14,
-    color: '#1a1a1a',
+    fontSize: 16,
+    color: '#1e293b',
     fontWeight: '500',
   },
   memoValue: {
@@ -407,46 +384,30 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   memoItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f8f9fa',
-    backgroundColor: '#fafafa',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
   },
   memoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  memoIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+    marginBottom: 12,
   },
   memoInfo: {
     flex: 1,
   },
   memoLabel: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
+    color: '#64748b',
   },
   memoContent: {
-    marginLeft: 48,
-    minHeight: 50,
-    paddingVertical: 4,
-    paddingRight: 20,
+    paddingTop: 8,
   },
   memoText: {
-    fontSize: 14,
-    color: '#1a1a1a',
-    fontWeight: '500',
-    lineHeight: 20,
+    fontSize: 16,
+    color: '#1e293b',
+    lineHeight: 24,
   },
 
   // 액션 버튼들
