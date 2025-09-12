@@ -360,7 +360,7 @@ const AddLedger: React.FC = () => {
           style={styles.saveButton}
           onPress={handleSave}
         >
-          <Text style={styles.saveButtonText}>작성</Text>
+          <Text style={styles.saveButtonText}>저장</Text>
         </TouchableOpacity>
       </View>
     </MobileLayout>

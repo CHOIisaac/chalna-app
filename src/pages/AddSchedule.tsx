@@ -302,7 +302,7 @@ const AddSchedule: React.FC = () => {
           style={styles.saveButton}
           onPress={handleSave}
         >
-          <Text style={styles.saveButtonText}>일정 추가</Text>
+          <Text style={styles.saveButtonText}>저장</Text>
         </TouchableOpacity>
       </View>
     </MobileLayout>
