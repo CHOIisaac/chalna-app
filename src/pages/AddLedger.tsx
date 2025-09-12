@@ -3,13 +3,13 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { EventType, RelationshipType } from '../types';
@@ -39,8 +39,8 @@ const AddLedger: React.FC = () => {
   const eventTypes = Object.values(EventType);
   const relationshipTypes = Object.values(RelationshipType);
   const typeOptions = [
-    { value: 'given', label: '나눔', icon: 'arrow-up', color: '#e53e3e' },
-    { value: 'received', label: '받음', icon: 'arrow-down', color: '#38a169' }
+    { value: 'given', label: '나눔' },
+    { value: 'received', label: '받음' }
   ];
 
   const handleInputChange = (field: string, value: any) => {
@@ -125,10 +125,10 @@ const AddLedger: React.FC = () => {
             >
               <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
-            <Text style={styles.title}>장부 추가</Text>
+            <Text style={styles.title}>장부 작성</Text>
             <View style={styles.placeholder} />
           </View>
-          <Text style={styles.subtitle}>새로운 경조사 장부를 추가하세요</Text>
+          <Text style={styles.subtitle}>새로운 경조사 장부를 작성하세요</Text>
         </View>
 
         {/* 폼 섹션 */}
@@ -137,9 +137,6 @@ const AddLedger: React.FC = () => {
             {/* 이름 */}
             <View style={styles.fieldContainer}>
               <View style={styles.fieldHeader}>
-                <View style={styles.fieldIconContainer}>
-                  <Ionicons name="person" size={20} color="#4a5568" />
-                </View>
                 <Text style={styles.fieldLabel}>
                   이름 <Text style={styles.required}>*</Text>
                 </Text>
@@ -162,9 +159,6 @@ const AddLedger: React.FC = () => {
             {/* 관계 */}
             <View style={styles.fieldContainer}>
               <View style={styles.fieldHeader}>
-                <View style={styles.fieldIconContainer}>
-                  <Ionicons name="people" size={20} color="#4a5568" />
-                </View>
                 <Text style={styles.fieldLabel}>
                   관계 <Text style={styles.required}>*</Text>
                 </Text>
@@ -206,11 +200,8 @@ const AddLedger: React.FC = () => {
             {/* 경조사 타입 */}
             <View style={styles.fieldContainer}>
               <View style={styles.fieldHeader}>
-                <View style={styles.fieldIconContainer}>
-                  <Ionicons name="calendar" size={20} color="#4a5568" />
-                </View>
                 <Text style={styles.fieldLabel}>
-                  경조사 타입 <Text style={styles.required}>*</Text>
+                  경조사 <Text style={styles.required}>*</Text>
                 </Text>
               </View>
               <ScrollView 
@@ -250,9 +241,6 @@ const AddLedger: React.FC = () => {
             {/* 날짜 */}
             <View style={[styles.fieldContainer, styles.dateFieldContainer]}>
               <View style={styles.fieldHeader}>
-                <View style={styles.fieldIconContainer}>
-                  <Ionicons name="calendar" size={20} color="#4a5568" />
-                </View>
                 <Text style={styles.fieldLabel}>날짜</Text>
               </View>
               <TouchableOpacity
@@ -298,9 +286,6 @@ const AddLedger: React.FC = () => {
             {/* 금액 */}
             <View style={styles.fieldContainer}>
               <View style={styles.fieldHeader}>
-                <View style={styles.fieldIconContainer}>
-                  <Ionicons name="cash" size={20} color="#4a5568" />
-                </View>
                 <Text style={styles.fieldLabel}>
                   금액 <Text style={styles.required}>*</Text>
                 </Text>
@@ -324,10 +309,7 @@ const AddLedger: React.FC = () => {
             {/* 나눔/받음 타입 */}
             <View style={styles.fieldContainer}>
               <View style={styles.fieldHeader}>
-                <View style={styles.fieldIconContainer}>
-                  <Ionicons name="swap-vertical" size={20} color="#4a5568" />
-                </View>
-                <Text style={styles.fieldLabel}>타입</Text>
+                <Text style={styles.fieldLabel}>구분</Text>
               </View>
               <View style={styles.typeContainer}>
                 {typeOptions.map((option) => (
@@ -340,11 +322,6 @@ const AddLedger: React.FC = () => {
                     onPress={() => handleInputChange('type', option.value)}
                     activeOpacity={0.7}
                   >
-                    <Ionicons 
-                      name={option.icon as any} 
-                      size={20} 
-                      color={formData.type === option.value ? 'white' : option.color} 
-                    />
                     <Text style={[
                       styles.typeText,
                       formData.type === option.value && styles.selectedTypeText
@@ -359,9 +336,6 @@ const AddLedger: React.FC = () => {
             {/* 메모 */}
             <View style={styles.fieldContainer}>
               <View style={styles.fieldHeader}>
-                <View style={styles.fieldIconContainer}>
-                  <Ionicons name="document-text" size={20} color="#4a5568" />
-                </View>
                 <Text style={styles.fieldLabel}>메모</Text>
               </View>
               <TextInput
@@ -385,7 +359,7 @@ const AddLedger: React.FC = () => {
             onPress={handleSave}
             activeOpacity={0.8}
           >
-            <Text style={styles.saveButtonText}>장부 추가</Text>
+            <Text style={styles.saveButtonText}>작성</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -420,19 +394,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1a1a1a',
-    letterSpacing: -0.5,
   },
   placeholder: {
     width: 40,
     height: 40,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#666',
-    lineHeight: 20,
+    textAlign: 'center',
   },
 
   // 폼 섹션
@@ -459,15 +432,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-  },
-  fieldIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
   },
   fieldLabel: {
     fontSize: 16,
@@ -601,7 +565,6 @@ const styles = StyleSheet.create({
   },
   typeButton: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
@@ -610,11 +573,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e9ecef',
     backgroundColor: '#f8f9fa',
-    gap: 8,
   },
   selectedType: {
-    backgroundColor: '#4a5568',
-    borderColor: '#4a5568',
+    backgroundColor: '#6c757d',
+    borderColor: '#6c757d',
   },
   typeText: {
     fontSize: 16,
@@ -622,7 +584,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectedTypeText: {
-    color: 'white',
+    color: '#ffffff',
   },
 
   // 액션 버튼들
@@ -633,7 +595,7 @@ const styles = StyleSheet.create({
   saveButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4a5568',
+    backgroundColor: '#000000',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 16,
