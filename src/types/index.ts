@@ -105,7 +105,7 @@ export type RootStackParamList = {
   AddSchedule: undefined;
   ContactDetail: { id: string };
   LedgerDetail: { id: string };
-  EventDetail: { id: string };
+  ScheduleDetail: { id: string };
   Login: undefined;
   Settings: undefined;
   Notifications: undefined;
