@@ -490,7 +490,7 @@ const Events: React.FC = () => {
                       activeOpacity={0.8}
                       onPress={() => {
                         setIsModalVisible(false);
-                        router.push(`/edit-event?id=${event.id}`);
+                        router.push(`/event-detail?id=${event.id}`);
                       }}
                     >
                       {/* 날짜 표시 */}
