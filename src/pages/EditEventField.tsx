@@ -431,12 +431,10 @@ const styles = StyleSheet.create({
   bottomSection: {
     paddingHorizontal: 20,
     paddingVertical: 24,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    backgroundColor: 'f8f9fa',
   },
   confirmButton: {
-    backgroundColor: '#4a5568',
+    backgroundColor: 'black',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
