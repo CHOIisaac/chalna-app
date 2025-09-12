@@ -113,26 +113,6 @@ const Ledgers: React.FC = () => {
       }
     });
 
-  const getEventTypeColor = (eventType: string) => {
-    switch (eventType) {
-      case '결혼식': return '#FF6B9D';
-      case '장례식': return '#95A5A6';
-      case '돌잔치': return '#4ECDC4';
-      case '개업식': return '#45B7D1';
-      default: return '#96CEB4';
-    }
-  };
-
-  const getEventTypeIcon = (eventType: string): keyof typeof Ionicons.glyphMap => {
-    switch (eventType) {
-      case '결혼식': return 'heart';
-      case '장례식': return 'rose';
-      case '돌잔치': return 'gift';
-      case '개업식': return 'business';
-      default: return 'calendar';
-    }
-  };
-
   const totalGiven = ledgers.filter(ledger => ledger.type === 'given').reduce((sum, ledger) => sum + ledger.amount, 0);
   const totalReceived = ledgers.filter(ledger => ledger.type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
 
@@ -198,9 +178,6 @@ const Ledgers: React.FC = () => {
         <View style={styles.ledgersSection}>
           <View style={styles.ledgersList}>
             {filteredAndSortedLedgers.map((ledger) => {
-              const eventTypeColor = getEventTypeColor(ledger.eventType);
-              const eventTypeIcon = getEventTypeIcon(ledger.eventType);
-              
               return (
                 <TouchableOpacity 
                   key={ledger.id} 
@@ -208,13 +185,6 @@ const Ledgers: React.FC = () => {
                   activeOpacity={0.8}
                   onPress={() => router.push(`/ledger-detail?id=${ledger.id}`)}
                 >
-                  {/* 경조사 타입 아이콘 */}
-                  <View style={styles.eventTypeSection}>
-                    <View style={[styles.eventTypeIcon, { backgroundColor: eventTypeColor + '20' }]}>
-                      <Ionicons name={eventTypeIcon} size={20} color={eventTypeColor} />
-                    </View>
-                  </View>
-
                   {/* 정보 영역 */}
                   <View style={styles.ledgerInfo}>
                     <View style={styles.ledgerHeader}>
@@ -645,18 +615,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f0f0f0',
-  },
-  
-  // 경조사 타입 섹션
-  eventTypeSection: {
-    marginRight: 16,
-  },
-  eventTypeIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   // 장부 정보 섹션
