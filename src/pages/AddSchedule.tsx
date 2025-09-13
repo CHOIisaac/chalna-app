@@ -20,6 +20,7 @@ const AddSchedule: React.FC = () => {
   // 폼 상태
   const [title, setTitle] = useState('');
   const [eventType, setEventType] = useState('');
+  const [status, setStatus] = useState('');
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
@@ -34,6 +35,9 @@ const AddSchedule: React.FC = () => {
   // 경조사 타입 옵션
   const eventTypes = ['결혼식', '장례식', '돌잔치', '개업식', '생일', '졸업식', '기념일', '기타'];
   
+  // 상태 옵션
+  const statusOptions = ['예정', '완료'];
+  
   // 폼 검증
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -44,6 +48,10 @@ const AddSchedule: React.FC = () => {
     
     if (!eventType) {
       newErrors.eventType = '경조사 타입을 선택해주세요';
+    }
+    
+    if (!status) {
+      newErrors.status = '상태를 선택해주세요';
     }
     
     if (!time.trim()) {
@@ -65,6 +73,7 @@ const AddSchedule: React.FC = () => {
       console.log('일정 저장:', {
         title,
         eventType,
+        status,
         date,
         time,
         location,
@@ -174,6 +183,43 @@ const AddSchedule: React.FC = () => {
           </ScrollView>
           {errors.eventType && (
             <Text style={styles.errorText}>{errors.eventType}</Text>
+          )}
+        </View>
+
+        {/* 상태 */}
+        <View style={styles.fieldContainer}>
+          <View style={styles.fieldHeader}>
+            <Text style={styles.fieldLabel}>
+              상태 <Text style={styles.required}>*</Text>
+            </Text>
+          </View>
+          <View style={styles.statusContainer}>
+            {statusOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.statusButton,
+                  status === option && styles.selectedStatusButton
+                ]}
+                onPress={() => {
+                  setStatus(option);
+                  if (errors.status) {
+                    setErrors({...errors, status: ''});
+                  }
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={[
+                  styles.statusText,
+                  status === option && styles.selectedStatusText
+                ]}>
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {errors.status && (
+            <Text style={styles.errorText}>{errors.status}</Text>
           )}
         </View>
 
@@ -462,6 +508,35 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectedOptionText: {
+    color: '#000000',
+    fontWeight: '600',
+  },
+
+  // 상태 관련 스타일
+  statusContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statusButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedStatusButton: {
+    backgroundColor: '#ffffff',
+    borderColor: '#000000',
+  },
+  statusText: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontWeight: '500',
+  },
+  selectedStatusText: {
     color: '#000000',
     fontWeight: '600',
   },
