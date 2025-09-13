@@ -217,12 +217,42 @@ const Events: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.title}>함께할 순간</Text>
-            <TouchableOpacity 
-              style={styles.filterButton}
-              onPress={() => setShowFilterModal(true)}
-            >
-              <Ionicons name="options-outline" size={20} color="#1a1a1a" />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <View style={styles.viewToggleCompact}>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButtonCompact,
+                    viewMode === 'list' && styles.activeToggleButtonCompact,
+                  ]}
+                  onPress={() => setViewMode('list')}
+                >
+                  <Ionicons
+                    name="list"
+                    size={16}
+                    color={viewMode === 'list' ? 'white' : '#666'}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButtonCompact,
+                    viewMode === 'calendar' && styles.activeToggleButtonCompact,
+                  ]}
+                  onPress={() => setViewMode('calendar')}
+                >
+                  <Ionicons
+                    name="calendar"
+                    size={16}
+                    color={viewMode === 'calendar' ? 'white' : '#666'}
+                  />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity 
+                style={styles.filterButton}
+                onPress={() => setShowFilterModal(true)}
+              >
+                <Ionicons name="options-outline" size={20} color="#1a1a1a" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -242,46 +272,6 @@ const Events: React.FC = () => {
                 <Ionicons name="close-circle" size={18} color="#999" />
               </TouchableOpacity>
             )}
-          </View>
-        </View>
-
-        {/* 무신사 스타일 뷰 토글 */}
-        <View style={styles.toggleSection}>
-          <View style={styles.viewToggle}>
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                viewMode === 'list' && styles.activeToggleButton,
-              ]}
-              onPress={() => setViewMode('list')}
-            >
-              <Ionicons
-                name="list"
-                size={16}
-                color={viewMode === 'list' ? 'white' : '#666'}
-              />
-              <Text style={[
-                styles.toggleText,
-                viewMode === 'list' && styles.activeToggleText
-              ]}>목록</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                viewMode === 'calendar' && styles.activeToggleButton,
-              ]}
-              onPress={() => setViewMode('calendar')}
-            >
-              <Ionicons
-                name="calendar"
-                size={16}
-                color={viewMode === 'calendar' ? 'white' : '#666'}
-              />
-              <Text style={[
-                styles.toggleText,
-                viewMode === 'calendar' && styles.activeToggleText
-              ]}>달력</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -309,6 +299,7 @@ const Events: React.FC = () => {
             </View>
           </View>
         </View>
+
 
         {/* 뷰 모드에 따른 콘텐츠 */}
         {viewMode === 'list' ? (
@@ -841,46 +832,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // 토글 섹션
-  toggleSection: {
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  viewToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  toggleButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    gap: 6,
-  },
-  activeToggleButton: {
-    backgroundColor: 'black',
-  },
-  toggleText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-  },
-  activeToggleText: {
-    color: 'white',
-  },
 
   // 통계 섹션
   statsSection: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   statsCard: {
     backgroundColor: 'white',
@@ -1360,7 +1317,30 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // 필터 관련 스타일
+  // 헤더 액션 스타일
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  viewToggleCompact: {
+    flexDirection: 'row',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  toggleButtonCompact: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+  },
+  activeToggleButtonCompact: {
+    backgroundColor: 'black',
+  },
   filterButton: {
     width: 40,
     height: 40,
