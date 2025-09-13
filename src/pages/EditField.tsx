@@ -84,7 +84,7 @@ const EditField: React.FC = () => {
   };
 
   const handleSave = () => {
-    // 여기서 실제 저장 로직을 구현
+    // 여기서 실제 저장 로직을 구현철
     console.log(`Saving ${field}: ${value}`);
     
     // 바로 이전 페이지로 돌아가기
@@ -120,7 +120,6 @@ const EditField: React.FC = () => {
             >
               <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
-            <Text style={styles.title}>{fieldInfo.label} 수정</Text>
             <View style={styles.placeholder} />
           </View>
         </View>
@@ -134,16 +133,16 @@ const EditField: React.FC = () => {
                   {fieldInfo.label}
                   {field !== 'memo' && <Text style={styles.required}> *</Text>}
                 </Text>
-                {(field === 'eventType' || field === 'relationship' || field === 'type') && (
-                  <Text style={styles.fieldDescription}>
-                    {field === 'eventType' 
-                      ? '경조사 타입을 선택하세요' 
-                      : field === 'relationship'
-                      ? '관계를 선택하세요'
-                      : '나눔 또는 받음을 선택하세요'
-                    }
-                  </Text>
-                )}
+                {/*{(field === 'eventType' || field === 'relationship' || field === 'type') && (*/}
+                {/*  <Text style={styles.fieldDescription}>*/}
+                {/*    {field === 'eventType' */}
+                {/*      ? '경조사 타입을 선택하세요' */}
+                {/*      : field === 'relationship'*/}
+                {/*      ? '관계를 선택하세요'*/}
+                {/*      : '나눔 또는 받음을 선택하세요'*/}
+                {/*    }*/}
+                {/*  </Text>*/}
+                {/*)}*/}
               </View>
             </View>
 
@@ -347,8 +346,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTop: {
     flexDirection: 'row',
@@ -359,8 +356,6 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
