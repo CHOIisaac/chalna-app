@@ -29,7 +29,7 @@ export const colors = {
   successForeground: '#FFFFFF',
   warning: '#F59E0B',
   warningForeground: '#FFFFFF',
-  destructive: '#EF4444',
+  destructive: '#1a1a1a',
   destructiveForeground: '#FFFFFF',
   border: '#E5E5E5',
   input: '#F5F5F5',

@@ -58,7 +58,7 @@ const WelcomeHeader: React.FC = () => {
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>나눈 마음</Text>
-              <Text style={styles.statValue}>1,170,000</Text>
+              <Text style={styles.statValue}>1,170,000,000</Text>
               <Text style={styles.statChange}>전월 대비 +12%</Text>
             </View>
             <View style={styles.statItem}>
