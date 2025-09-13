@@ -26,8 +26,8 @@ export default function HomeScreen() {
         <RecentEvents />
       </ScrollView>
 
-      {/* 플로팅 액션 버튼 */}
-      <FloatingActionButton />
+      {/*/!* 플로팅 액션 버튼 *!/*/}
+      {/*<FloatingActionButton />*/}
     </MobileLayout>
   );
 }
