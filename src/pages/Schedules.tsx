@@ -323,6 +323,11 @@ const Events: React.FC = () => {
                     activeOpacity={0.8}
                     onPress={() => router.push(`/schedule-detail?id=${event.id}`)}
                   >
+                    {/* 메모 표시 - 카드 모서리 */}
+                    {event.memo && event.memo.trim() !== '' && (
+                      <View style={styles.memoCorner} />
+                    )}
+
                     {/* 날짜 표시 */}
                     <View style={styles.dateSection}>
                       <View style={styles.dateContainer}>
@@ -342,9 +347,6 @@ const Events: React.FC = () => {
                     <View style={styles.eventInfo}>
                       <View style={styles.eventHeader}>
                         <Text style={styles.eventTitle}>{event.title}</Text>
-                        {event.memo && event.memo.trim() !== '' && (
-                          <Ionicons name="checkmark-circle-outline" size={14} color="#666" />
-                        )}
                       </View>
 
                       <View style={styles.eventDetails}>
@@ -366,7 +368,6 @@ const Events: React.FC = () => {
                           {event.type}
                         </Text>
                       </View>
-                      <Text></Text>
                       <View style={[styles.statusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
                         <Text style={[styles.statusText, { color: getStatusColor(event.status).text }]}>
                           {getStatusText(event.status)}
@@ -492,6 +493,11 @@ const Events: React.FC = () => {
                         router.push(`/schedule-detail?id=${event.id}`);
                       }}
                     >
+                      {/* 메모 표시 - 카드 모서리 */}
+                      {event.memo && event.memo.trim() !== '' && (
+                        <View style={styles.memoCorner} />
+                      )}
+
                       {/* 날짜 표시 */}
                       <View style={styles.modalDateSection}>
                         <View style={styles.modalDateContainer}>
@@ -525,7 +531,6 @@ const Events: React.FC = () => {
                             {event.type}
                           </Text>
                         </View>
-                        <Text></Text>
                         <View style={[styles.modalStatusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
                           <Text style={[styles.modalStatusText, { color: getStatusColor(event.status).text }]}>
                             {getStatusText(event.status)}
@@ -942,6 +947,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    position: 'relative',
   },
 
   // 날짜 섹션
@@ -1038,6 +1044,19 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 11,
     fontWeight: '500',
+  },
+  memoCorner: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    borderTopWidth: 20,
+    borderTopColor: 'black',
+    borderLeftWidth: 20,
+    borderLeftColor: 'transparent',
+    borderTopRightRadius: 16,
+    zIndex: 1,
   },
 
   // 추천 섹션
@@ -1224,6 +1243,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    position: 'relative',
   },
 
   // 모달 날짜 섹션

@@ -190,13 +190,15 @@ const Ledgers: React.FC = () => {
                   activeOpacity={0.8}
                   onPress={() => router.push(`/ledger-detail?id=${ledger.id}`)}
                 >
+                  {/* 메모 표시 - 카드 모서리 */}
+                  {ledger.memo && ledger.memo.trim() !== '' && (
+                    <View style={styles.memoCorner} />
+                  )}
+
                   {/* 정보 영역 */}
                   <View style={styles.ledgerInfo}>
                     <View style={styles.ledgerHeader}>
                       <Text style={styles.ledgerName}>{ledger.name}</Text>
-                      {ledger.memo && ledger.memo.trim() !== '' && (
-                        <Ionicons name="checkmark-circle-outline" size={14} color="#666" />
-                      )}
                     </View>
                     
                     <View style={styles.ledgerDetails}>
@@ -618,6 +620,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    position: 'relative',
   },
 
   // 장부 정보 섹션
@@ -679,6 +682,19 @@ const styles = StyleSheet.create({
   typeLabel: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  memoCorner: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    borderTopWidth: 20,
+    borderTopColor: 'black',
+    borderLeftWidth: 20,
+    borderLeftColor: 'transparent',
+    borderTopRightRadius: 16,
+    zIndex: 1,
   },
 
   // 빈 상태
