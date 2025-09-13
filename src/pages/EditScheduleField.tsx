@@ -113,7 +113,6 @@ const EditScheduleField: React.FC = () => {
             >
               <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
-            <Text style={styles.title}>{fieldInfo.label} 수정</Text>
             <View style={styles.placeholder} />
           </View>
         </View>
@@ -266,7 +265,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
   },
   headerTop: {
     flexDirection: 'row',
@@ -277,8 +276,6 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
