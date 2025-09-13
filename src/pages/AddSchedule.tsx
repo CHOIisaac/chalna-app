@@ -22,15 +22,16 @@ const AddSchedule: React.FC = () => {
   const [eventType, setEventType] = useState('');
   const [status, setStatus] = useState('');
   const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState('');
+  const [time, setTime] = useState(new Date());
   const [location, setLocation] = useState('');
   const [memo, setMemo] = useState('');
   
   // 에러 상태
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   
-  // 날짜 피커 상태
+  // 피커 상태
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   
   // 경조사 타입 옵션
   const eventTypes = ['결혼식', '장례식', '돌잔치', '개업식', '생일', '졸업식', '기념일', '기타'];
@@ -54,8 +55,8 @@ const AddSchedule: React.FC = () => {
       newErrors.status = '상태를 선택해주세요';
     }
     
-    if (!time.trim()) {
-      newErrors.time = '시간을 입력해주세요';
+    if (!time) {
+      newErrors.time = '시간을 선택해주세요';
     }
     
     if (!location.trim()) {
@@ -89,6 +90,13 @@ const AddSchedule: React.FC = () => {
     const currentDate = selectedDate || date;
     setShowDatePicker(Platform.OS === 'ios');
     setDate(currentDate);
+  };
+
+  // 시간 변경 처리
+  const onTimeChange = (event: any, selectedTime?: Date) => {
+    const currentTime = selectedTime || time;
+    setShowTimePicker(Platform.OS === 'ios');
+    setTime(currentTime);
   };
 
   return (
@@ -269,27 +277,54 @@ const AddSchedule: React.FC = () => {
         </View>
 
         {/* 시간 */}
-        <View style={styles.fieldContainer}>
+        <View style={[styles.fieldContainer, styles.timeFieldContainer]}>
           <View style={styles.fieldHeader}>
             <Text style={styles.fieldLabel}>
               시간 <Text style={styles.required}>*</Text>
             </Text>
           </View>
-          <TextInput
+          <TouchableOpacity
             style={[
-              styles.textInput,
+              styles.timeButton,
               errors.time && styles.inputError
             ]}
-            value={time}
-            onChangeText={(text) => {
-              setTime(text);
-              if (errors.time) {
-                setErrors({...errors, time: ''});
-              }
-            }}
-            placeholder="예: 12:00"
-            placeholderTextColor="#999"
-          />
+            onPress={() => setShowTimePicker(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="time-outline" size={20} color="#666" />
+            <Text style={styles.timeButtonText}>
+              {time.toLocaleTimeString('ko-KR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              })}
+            </Text>
+          </TouchableOpacity>
+          
+          {showTimePicker && (
+            <View style={styles.timePickerContainer}>
+              {Platform.OS === 'ios' && (
+                <View style={styles.timePickerHeader}>
+                  <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+                    <Text style={styles.timePickerHeaderText}>완료</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              <View style={styles.timePickerWrapper}>
+                <DateTimePicker
+                  value={time}
+                  mode="time"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onTimeChange}
+                  textColor="#000000"
+                  accentColor="#4a5568"
+                  style={styles.timePicker}
+                  locale="ko-KR"
+                  minuteInterval={10}
+                />
+              </View>
+            </View>
+          )}
           {errors.time && (
             <Text style={styles.errorText}>{errors.time}</Text>
           )}
@@ -595,6 +630,65 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   datePicker: {
+    backgroundColor: 'white',
+  },
+
+  // 시간 관련 스타일
+  timeFieldContainer: {
+    position: 'relative',
+  },
+  timeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    gap: 12,
+  },
+  timeButtonText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  timePickerContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    marginTop: 12,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    overflow: 'hidden',
+    zIndex: 1000,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  timePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  timePickerHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4a5568',
+  },
+  timePickerWrapper: {
+    padding: 16,
+    backgroundColor: 'white',
+  },
+  timePicker: {
     backgroundColor: 'white',
   },
   errorText: {

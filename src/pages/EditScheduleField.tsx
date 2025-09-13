@@ -23,6 +23,7 @@ const EditScheduleField: React.FC = () => {
 
   const [value, setValue] = useState(currentValue);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [error, setError] = useState('');
   
   // 날짜 필드인 경우 Date 객체로 변환
@@ -41,8 +42,28 @@ const EditScheduleField: React.FC = () => {
     }
     return new Date();
   };
+
+  // 시간 필드인 경우 Date 객체로 변환
+  const getInitialTime = () => {
+    if (field === 'time') {
+      try {
+        // HH:MM 형식의 문자열을 Date 객체로 변환
+        const timeParts = currentValue.split(':');
+        if (timeParts.length === 2) {
+          const today = new Date();
+          today.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]), 0, 0);
+          return today;
+        }
+      } catch (error) {
+        console.error('시간 파싱 오류:', error);
+      }
+      return new Date();
+    }
+    return new Date();
+  };
   
   const [dateValue, setDateValue] = useState(getInitialDate());
+  const [timeValue, setTimeValue] = useState(getInitialTime());
 
   const getFieldInfo = () => {
     switch (field) {
@@ -93,7 +114,22 @@ const EditScheduleField: React.FC = () => {
     }
   };
 
+  const handleTimeChange = (event: any, selectedTime?: Date) => {
+    setShowTimePicker(Platform.OS === 'ios');
+    if (selectedTime) {
+      setTimeValue(selectedTime);
+      // 시간을 HH:MM 형식으로 변환하여 value에 저장
+      const formattedTime = selectedTime.toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      setValue(formattedTime);
+    }
+  };
+
   const isDateField = field === 'date';
+  const isTimeField = field === 'time';
   const isSelectField = field === 'type' || field === 'status';
   const isMemoField = field === 'memo';
 
@@ -161,6 +197,47 @@ const EditScheduleField: React.FC = () => {
                         accentColor="#4a5568"
                         style={styles.datePicker}
                         locale="ko-KR"
+                      />
+                    </View>
+                  </View>
+                )}
+              </View>
+            ) : isTimeField ? (
+              <View style={styles.timeFieldContainer}>
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => setShowTimePicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="time-outline" size={20} color="#666" />
+                  <Text style={styles.timeButtonText}>
+                    {timeValue.toLocaleTimeString('ko-KR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    })}
+                  </Text>
+                </TouchableOpacity>
+                {showTimePicker && (
+                  <View style={styles.timePickerContainer}>
+                    {Platform.OS === 'ios' && (
+                      <View style={styles.timePickerHeader}>
+                        <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+                          <Text style={styles.timePickerHeaderText}>완료</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    <View style={styles.timePickerWrapper}>
+                      <DateTimePicker
+                        value={timeValue}
+                        mode="time"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={handleTimeChange}
+                        textColor="#000000"
+                        accentColor="#4a5568"
+                        style={styles.timePicker}
+                        locale="ko-KR"
+                        minuteInterval={10}
                       />
                     </View>
                   </View>
@@ -457,6 +534,63 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   datePicker: {
+    width: '100%',
+  },
+
+  // 시간 선택 스타일
+  timeFieldContainer: {
+    position: 'relative',
+  },
+  timeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'white',
+  },
+  timeButtonText: {
+    fontSize: 16,
+    color: '#2d3748',
+    flex: 1,
+  },
+  timePickerContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 1000,
+    marginTop: 4,
+  },
+  timePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  timePickerHeaderText: {
+    fontSize: 16,
+    color: '#4a5568',
+    fontWeight: '600',
+  },
+  timePickerWrapper: {
+    padding: 16,
+  },
+  timePicker: {
     width: '100%',
   },
 
