@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
@@ -6,6 +5,7 @@ import { Platform } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -18,6 +18,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
+        // 탭 전환 애니메이션 커스터마이징
+        animation: 'none', // 'shift', 'fade', 'none' 중 선택
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
@@ -43,6 +45,8 @@ export default function TabLayout() {
               color={color} 
             />
           ),
+          // 개별 탭 애니메이션 설정 (지원되는 애니메이션만 사용)
+          // animation: 'slide_from_right', // 지원되지 않는 애니메이션 제거
         }}
       />
       <Tabs.Screen
@@ -56,6 +60,7 @@ export default function TabLayout() {
               color={color} 
             />
           ),
+          // animation: 'slide_from_bottom', // 지원되지 않는 애니메이션 제거
         }}
       />
       <Tabs.Screen
@@ -69,6 +74,7 @@ export default function TabLayout() {
               color={color} 
             />
           ),
+          // animation: 'fade', // 지원되지 않는 애니메이션 제거
         }}
       />
       <Tabs.Screen
@@ -82,6 +88,7 @@ export default function TabLayout() {
               color={color} 
             />
           ),
+          // animation: 'slide_from_top', // 지원되지 않는 애니메이션 제거
         }}
       />
       <Tabs.Screen
@@ -95,6 +102,7 @@ export default function TabLayout() {
               color={color} 
             />
           ),
+          // animation: 'scale', // 지원되지 않는 애니메이션 제거
         }}
       />
     </Tabs>

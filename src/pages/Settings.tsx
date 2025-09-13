@@ -20,7 +20,7 @@ const Settings: React.FC = () => {
     autoBackup: true,
   });
 
-  const handleSettingToggle = (key: string) => {
+  const handleSettingToggle = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
 

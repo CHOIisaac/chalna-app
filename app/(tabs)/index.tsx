@@ -1,15 +1,23 @@
 import React from 'react';
 import {
     ScrollView,
-    StyleSheet
+    StyleSheet,
+    Text,
+    TouchableOpacity
 } from 'react-native';
-import FloatingActionButton from '../../src/components/common/FloatingActionButton';
 import QuickStats from '../../src/components/dashboard/QuickStats';
 import RecentEvents from '../../src/components/dashboard/RecentEvents';
 import WelcomeHeader from '../../src/components/dashboard/WelcomeHeader';
 import MobileLayout from '../../src/components/layout/MobileLayout';
 
 export default function HomeScreen() {
+  const handleShowSplash = () => {
+    // 개발 모드에서만 스플래시 다시 보기
+    if (__DEV__) {
+      (global as any).resetSplash?.();
+    }
+  };
+
   return (
     <MobileLayout currentPage="home">
       <ScrollView 
@@ -24,6 +32,13 @@ export default function HomeScreen() {
 
         {/* 최근 경조사 */}
         <RecentEvents />
+
+        {/* 개발용 스플래시 버튼 */}
+        {__DEV__ && (
+          <TouchableOpacity style={styles.devSplashButton} onPress={handleShowSplash}>
+            <Text style={styles.devSplashButtonText}>스플래시 다시 보기</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
 
       {/*/!* 플로팅 액션 버튼 *!/*/}
@@ -35,5 +50,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
+  },
+  devSplashButton: {
+    backgroundColor: '#f0f0f0',
+    margin: 20,
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  devSplashButtonText: {
+    color: '#666666',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

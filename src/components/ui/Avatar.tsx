@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ViewStyle,
-  ImageSourcePropType,
+    Image,
+    ImageSourcePropType,
+    ImageStyle,
+    StyleSheet,
+    Text,
+    View,
+    ViewStyle,
 } from 'react-native';
 import { colors } from '../../lib/utils';
 
@@ -53,6 +54,35 @@ const Avatar: React.FC<AvatarProps> = ({
     }
   };
 
+  const getImageStyles = (): ImageStyle => {
+    switch (size) {
+      case 'sm':
+        return {
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+        };
+      case 'lg':
+        return {
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+        };
+      case 'xl':
+        return {
+          width: 80,
+          height: 80,
+          borderRadius: 40,
+        };
+      default:
+        return {
+          width: 48,
+          height: 48,
+          borderRadius: 24,
+        };
+    }
+  };
+
   const getTextSize = (): number => {
     switch (size) {
       case 'sm':
@@ -67,12 +97,13 @@ const Avatar: React.FC<AvatarProps> = ({
   };
 
   const sizeStyles = getSizeStyles();
+  const imageStyles = getImageStyles();
   const textSize = getTextSize();
 
   return (
     <View style={[styles.avatar, sizeStyles, style]}>
       {src ? (
-        <Image source={src} style={sizeStyles} />
+        <Image source={src} style={imageStyles} />
       ) : (
         <Text style={[styles.fallback, { fontSize: textSize }]}>
           {fallback || alt?.charAt(0) || '?'}
