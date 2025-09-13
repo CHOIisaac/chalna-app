@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.destructive,
+    backgroundColor: '#EF4444',
   },
   mainCard: {
     marginHorizontal: 24,
