@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   fieldHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   fieldInfo: {
     flex: 1,
