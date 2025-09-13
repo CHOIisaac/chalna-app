@@ -818,12 +818,10 @@ const styles = StyleSheet.create({
 
   // 헤더 스타일
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTop: {
     flexDirection: 'row',
@@ -845,11 +843,9 @@ const styles = StyleSheet.create({
 
   // 토글 섹션
   toggleSection: {
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   viewToggle: {
     flexDirection: 'row',
@@ -1368,24 +1364,20 @@ const styles = StyleSheet.create({
   filterButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   // 검색 섹션
   searchSection: {
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
