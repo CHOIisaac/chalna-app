@@ -41,6 +41,7 @@ const Events: React.FC = () => {
       location: "롯데호텔 크리스탈볼룸",
       time: "12:00",
       status: "completed", // completed, upcoming
+      memo: "신랑과 대학 동기입니다. 축가 부를 예정입니다.",
     },
     {
       id: "2",
@@ -50,6 +51,7 @@ const Events: React.FC = () => {
       location: "서울추모공원",
       time: "14:00",
       status: "upcoming",
+      memo: "",
     },
     {
       id: "3",
@@ -59,6 +61,7 @@ const Events: React.FC = () => {
       location: "강남구청 웨딩홀",
       time: "11:30",
       status: "upcoming",
+      memo: "아이 돌선물 준비하기",
     },
     {
       id: "4",
@@ -68,6 +71,7 @@ const Events: React.FC = () => {
       location: "강남구 상가",
       time: "10:00",
       status: "upcoming",
+      memo: "",
     },
     {
       id: "5",
@@ -77,6 +81,7 @@ const Events: React.FC = () => {
       location: "웨딩홀",
       time: "15:00",
       status: "completed",
+      memo: "헌금 10만원 전달 완료",
     }
   ];
 
@@ -337,6 +342,9 @@ const Events: React.FC = () => {
                     <View style={styles.eventInfo}>
                       <View style={styles.eventHeader}>
                         <Text style={styles.eventTitle}>{event.title}</Text>
+                        {event.memo && event.memo.trim() !== '' && (
+                          <Ionicons name="checkmark-circle-outline" size={14} color="#666" />
+                        )}
                       </View>
 
                       <View style={styles.eventDetails}>

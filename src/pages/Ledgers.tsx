@@ -36,7 +36,8 @@ const Ledgers: React.FC = () => {
       amount: 100000,
       eventType: "결혼식",
       date: "2024-03-15",
-      type: "given" // given: 준 금액, received: 받은 금액
+      type: "given", // given: 준 금액, received: 받은 금액
+      memo: "대학 동기, 축가 부름"
     },
     {
       id: 2,
@@ -45,7 +46,8 @@ const Ledgers: React.FC = () => {
       amount: 50000,
       eventType: "돌잔치",
       date: "2024-02-20",
-      type: "received"
+      type: "received",
+      memo: ""
     },
     {
       id: 3,
@@ -54,7 +56,8 @@ const Ledgers: React.FC = () => {
       amount: 200000,
       eventType: "장례식",
       date: "2024-01-10",
-      type: "given"
+      type: "given",
+      memo: "외삼촌 장례식"
     },
     {
       id: 4,
@@ -63,7 +66,8 @@ const Ledgers: React.FC = () => {
       amount: 30000,
       eventType: "개업식",
       date: "2023-12-25",
-      type: "received"
+      type: "received",
+      memo: ""
     },
     {
       id: 5,
@@ -72,7 +76,8 @@ const Ledgers: React.FC = () => {
       amount: 150000,
       eventType: "결혼식",
       date: "2023-11-10",
-      type: "given"
+      type: "given",
+      memo: "신혼여행 선물로 추가"
     },
     {
       id: 6,
@@ -189,6 +194,9 @@ const Ledgers: React.FC = () => {
                   <View style={styles.ledgerInfo}>
                     <View style={styles.ledgerHeader}>
                       <Text style={styles.ledgerName}>{ledger.name}</Text>
+                      {ledger.memo && ledger.memo.trim() !== '' && (
+                        <Ionicons name="checkmark-circle-outline" size={14} color="#666" />
+                      )}
                     </View>
                     
                     <View style={styles.ledgerDetails}>
@@ -626,6 +634,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
+    flex: 1,
+    marginRight: 8,
   },
   ledgerDetails: {
     flexDirection: 'row',
