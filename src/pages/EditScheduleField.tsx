@@ -98,7 +98,7 @@ const EditScheduleField: React.FC = () => {
   const isMemoField = field === 'memo';
 
   const eventTypes = Object.values(EventType);
-  const statusOptions = ['예정', '진행중', '완료'];
+  const statusOptions = ['예정', '완료'];
 
   return (
     <MobileLayout currentPage="edit-event-field">
@@ -168,28 +168,51 @@ const EditScheduleField: React.FC = () => {
                 )}
               </View>
             ) : isSelectField ? (
-              <ScrollView style={styles.optionsScrollContainer} showsVerticalScrollIndicator={false}>
-                <View style={styles.optionsContainer}>
-                  {(field === 'type' ? eventTypes : statusOptions).map((option, index) => (
+              field === 'status' ? (
+                <View style={styles.typeOptionsContainer}>
+                  {statusOptions.map((option, index) => (
                     <TouchableOpacity
                       key={index}
                       style={[
-                        styles.optionButton,
-                        value === option && styles.selectedOption
+                        styles.typeOptionButton,
+                        value === option && styles.selectedTypeOption
                       ]}
                       onPress={() => setValue(option)}
                       activeOpacity={0.7}
                     >
                       <Text style={[
-                        styles.optionText,
-                        value === option && styles.selectedOptionText
+                        styles.typeOptionText,
+                        value === option && styles.selectedTypeOptionText
                       ]}>
                         {option}
                       </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
-              </ScrollView>
+              ) : (
+                <ScrollView style={styles.optionsScrollContainer} showsVerticalScrollIndicator={false}>
+                  <View style={styles.optionsContainer}>
+                    {eventTypes.map((option, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.optionButton,
+                          value === option && styles.selectedOption
+                        ]}
+                        onPress={() => setValue(option)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={[
+                          styles.optionText,
+                          value === option && styles.selectedOptionText
+                        ]}>
+                          {option}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
+              )
             ) : (
               <TextInput
                 style={[
@@ -349,6 +372,36 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectedOptionText: {
+    color: '#000000',
+    fontWeight: '600',
+  },
+
+  // 타입 옵션 스타일 (EditField.tsx와 동일)
+  typeOptionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  typeOptionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+  },
+  selectedTypeOption: {
+    backgroundColor: '#ffffff',
+    borderColor: '#000000',
+  },
+  typeOptionText: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontWeight: '500',
+  },
+  selectedTypeOptionText: {
     color: '#000000',
     fontWeight: '600',
   },
