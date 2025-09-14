@@ -12,7 +12,6 @@ import MobileLayout from '../components/layout/MobileLayout';
 
 const Notifications: React.FC = () => {
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<'all' | 'unread'>('all');
   const [notifications, setNotifications] = useState([
     {
       id: "1",
@@ -109,9 +108,7 @@ const Notifications: React.FC = () => {
     }
   };
 
-  const filteredNotifications = viewMode === 'unread' 
-    ? notifications.filter(notification => !notification.read)
-    : notifications;
+  const filteredNotifications = notifications;
 
   return (
     <MobileLayout currentPage="notifications">
@@ -144,53 +141,6 @@ const Notifications: React.FC = () => {
           </View>
         </View>
 
-        {/* 알림 필터 섹션 */}
-        <View style={styles.filterSection}>
-          <View style={styles.filterHeader}>
-            <Text style={styles.filterTitle}>알림 필터</Text>
-            <View style={styles.filterBadge}>
-              <Text style={styles.filterBadgeText}>
-                {notifications.filter(n => !n.read).length}개 새 알림
-              </Text>
-            </View>
-          </View>
-          <View style={styles.filterButtons}>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                viewMode === 'all' && styles.activeFilterButton,
-              ]}
-              onPress={() => setViewMode('all')}
-            >
-              <Ionicons
-                name="list-outline"
-                size={18}
-                color={viewMode === 'all' ? 'white' : '#666'}
-              />
-              <Text style={[
-                styles.filterButtonText,
-                viewMode === 'all' && styles.activeFilterButtonText
-              ]}>전체 알림</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                viewMode === 'unread' && styles.activeFilterButton,
-              ]}
-              onPress={() => setViewMode('unread')}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={18}
-                color={viewMode === 'unread' ? 'white' : '#666'}
-              />
-              <Text style={[
-                styles.filterButtonText,
-                viewMode === 'unread' && styles.activeFilterButtonText
-              ]}>새 알림만</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* 알림 요약 카드 */}
         <View style={styles.summarySection}>
@@ -232,9 +182,6 @@ const Notifications: React.FC = () => {
 
         {/* 알림 목록 */}
         <View style={styles.notificationsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>경조사 알림</Text>
-          </View>
           
           <View style={styles.notificationsList}>
             {filteredNotifications.map((notification) => {
@@ -335,13 +282,10 @@ const Notifications: React.FC = () => {
               <Ionicons name="notifications-off-outline" size={48} color="#ddd" />
             </View>
             <Text style={styles.emptyTitle}>
-              {viewMode === 'unread' ? '안읽은 알림이 없습니다' : '알림이 없습니다'}
+              알림이 없습니다
             </Text>
             <Text style={styles.emptyDescription}>
-              {viewMode === 'unread' 
-                ? '모든 알림을 확인했습니다.' 
-                : '새로운 경조사 알림이 오면 여기에 표시됩니다.'
-              }
+              새로운 경조사 알림이 오면 여기에 표시됩니다.
             </Text>
           </View>
         )}
@@ -358,12 +302,10 @@ const styles = StyleSheet.create({
   
   // 헤더 스타일
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTop: {
     flexDirection: 'row',
@@ -400,70 +342,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // 필터 섹션
-  filterSection: {
-    backgroundColor: 'white',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  filterHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  filterTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  filterBadge: {
-    backgroundColor: '#ff6b6b',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  filterBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'white',
-  },
-  filterButtons: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  filterButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    gap: 6,
-  },
-  activeFilterButton: {
-    backgroundColor: '#ff6b6b',
-    borderColor: '#ff6b6b',
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-  },
-  activeFilterButtonText: {
-    color: 'white',
-  },
 
   // 요약 섹션
   summarySection: {
@@ -527,12 +409,6 @@ const styles = StyleSheet.create({
   notificationsSection: {
     paddingHorizontal: 20,
     paddingBottom: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,

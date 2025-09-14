@@ -8,7 +8,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import MobileLayout from '../components/layout/MobileLayout';
 
 const NotificationDetail: React.FC = () => {
@@ -58,7 +57,7 @@ const NotificationDetail: React.FC = () => {
 
   return (
     <MobileLayout>
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         {/* 헤더 */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -177,7 +176,7 @@ const NotificationDetail: React.FC = () => {
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </MobileLayout>
   );
 };
@@ -192,10 +191,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    paddingTop: 8,
+    paddingBottom: 16,
+    backgroundColor: '#f8f9fa',
   },
   backButton: {
     padding: 8,
