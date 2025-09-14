@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
 import {
@@ -9,10 +8,11 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
 
 const Stats: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'year'>('month');
+  const [selectedType, setSelectedType] = useState<'wedding' | 'condolence'>('wedding');
   const [selectedTab, setSelectedTab] = useState<'total' | 'items' | 'network' | 'events'>('total');
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -26,13 +26,22 @@ const Stats: React.FC = () => {
   }, [fadeAnim]);
 
   // Mock data for charts
-  const monthlyData = [
+  const weddingMonthlyData = [
     { month: '1월', amount: 1200000 },
     { month: '2월', amount: 1500000 },
     { month: '3월', amount: 1800000 },
     { month: '4월', amount: 2200000 },
     { month: '5월', amount: 1900000 },
     { month: '6월', amount: 2500000 },
+  ];
+
+  const condolenceMonthlyData = [
+    { month: '1월', amount: 80000 },
+    { month: '2월', amount: 120000 },
+    { month: '3월', amount: 90000 },
+    { month: '4월', amount: 150000 },
+    { month: '5월', amount: 110000 },
+    { month: '6월', amount: 180000 },
   ];
 
   const topItems = [
@@ -65,27 +74,29 @@ const Stats: React.FC = () => {
     { range: '20만원 이상', count: 3, percentage: 21.4 },
   ];
 
-  const chartColors = ['#4A90E2', '#7ED321', '#F5A623', '#D0021B'];
+  const chartColors = ['#6B7280', '#9CA3AF', '#D1D5DB', '#E5E7EB', '#F3F4F6', '#374151'];
 
   const renderTotalAnalysis = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>총액 및 추세 분석</Text>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>총액 및 추세 분석</Text>
+        </View>
         <View style={styles.periodToggle}>
           <TouchableOpacity
-            style={[styles.periodToggleButton, selectedPeriod === 'month' && styles.periodToggleButtonActive]}
-            onPress={() => setSelectedPeriod('month')}
+            style={[styles.periodToggleButton, selectedType === 'wedding' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('wedding')}
           >
-            <Text style={[styles.periodToggleText, selectedPeriod === 'month' && styles.periodToggleTextActive]}>
-              월별
+            <Text style={[styles.periodToggleText, selectedType === 'wedding' && styles.periodToggleTextActive]}>
+              축의
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.periodToggleButton, selectedPeriod === 'year' && styles.periodToggleButtonActive]}
-            onPress={() => setSelectedPeriod('year')}
+            style={[styles.periodToggleButton, selectedType === 'condolence' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('condolence')}
           >
-            <Text style={[styles.periodToggleText, selectedPeriod === 'year' && styles.periodToggleTextActive]}>
-              연도별
+            <Text style={[styles.periodToggleText, selectedType === 'condolence' && styles.periodToggleTextActive]}>
+              조의
             </Text>
           </TouchableOpacity>
         </View>
@@ -93,38 +104,52 @@ const Stats: React.FC = () => {
 
       <View style={styles.summaryCards}>
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>총 축의금</Text>
-          <Text style={styles.summaryAmount}>8,050,000원</Text>
-          <Text style={styles.summaryChange}>+12% 전월 대비</Text>
+          <View style={styles.summaryCardContent}>
+            <Text style={styles.summaryLabel}>총 축의금</Text>
+            <Text style={styles.summaryAmount}>8,050,000원</Text>
+          </View>
         </View>
+        
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>총 조의금</Text>
-          <Text style={styles.summaryAmount}>320,000원</Text>
-          <Text style={styles.summaryChange}>-5% 전월 대비</Text>
+          <View style={styles.summaryCardContent}>
+            <Text style={styles.summaryLabel}>총 조의금</Text>
+            <Text style={styles.summaryAmount}>320,000원</Text>
+          </View>
         </View>
       </View>
 
       <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>월별 금액 추세</Text>
+        <View style={styles.chartHeader}>
+          <Text style={styles.chartTitle}>
+            {selectedType === 'wedding' ? '월별 축의금 추세' : '월별 조의금 추세'}
+          </Text>
+        </View>
         <View style={styles.lineChartContainer}>
-          {monthlyData.map((item, index) => (
-            <View key={index} style={styles.monthBar}>
-              <View style={styles.monthInfo}>
-                <Text style={styles.monthLabel}>{item.month}</Text>
-                <Text style={styles.monthAmount}>{item.amount.toLocaleString()}원</Text>
+          {(selectedType === 'wedding' ? weddingMonthlyData : condolenceMonthlyData).map((item, index) => {
+            const currentData = selectedType === 'wedding' ? weddingMonthlyData : condolenceMonthlyData;
+            return (
+              <View key={index} style={styles.monthBar}>
+                <View style={styles.monthInfo}>
+                  <View style={styles.monthInfoLeft}>
+                    <View style={[styles.monthDot, { backgroundColor: chartColors[index % chartColors.length] }]} />
+                    <Text style={styles.monthLabel}>{item.month}</Text>
+                  </View>
+                  <Text style={styles.monthAmount}>{item.amount.toLocaleString()}원</Text>
+                </View>
+                <View style={styles.monthBarContainer}>
+                  <View 
+                    style={[
+                      styles.monthBarFill, 
+                      { 
+                        backgroundColor: chartColors[index % chartColors.length],
+                        width: `${(item.amount / Math.max(...currentData.map(m => m.amount))) * 100}%` 
+                      }
+                    ]} 
+                  />
+                </View>
               </View>
-              <View style={styles.monthBarContainer}>
-                <View 
-                  style={[
-                    styles.monthBarFill, 
-                    { 
-                      width: `${(item.amount / Math.max(...monthlyData.map(m => m.amount))) * 100}%` 
-                    }
-                  ]} 
-                />
-              </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </View>
     </View>
@@ -133,13 +158,20 @@ const Stats: React.FC = () => {
   const renderItemsAnalysis = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>항목별 상세 분석</Text>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>항목별 상세 분석</Text>
+        </View>
       </View>
 
       <View style={styles.topItemsContainer}>
-        <Text style={styles.subsectionTitle}>TOP 5 항목</Text>
+        <View style={styles.subsectionTitleContainer}>
+          <Text style={styles.subsectionTitle}>TOP 5 항목</Text>
+        </View>
         {topItems.map((item, index) => (
           <View key={index} style={styles.topItemCard}>
+            <View style={styles.rankBadge}>
+              <Text style={styles.rankNumber}>{index + 1}</Text>
+            </View>
             <View style={styles.topItemInfo}>
               <Text style={styles.topItemName}>{item.name}</Text>
               <Text style={styles.topItemType}>{item.type}</Text>
@@ -150,13 +182,29 @@ const Stats: React.FC = () => {
       </View>
 
       <View style={styles.distributionContainer}>
-        <Text style={styles.subsectionTitle}>금액 구간별 분포</Text>
+        <View style={styles.subsectionTitleContainer}>
+          <Text style={styles.subsectionTitle}>금액 구간별 분포</Text>
+        </View>
         <View style={styles.distributionLegend}>
           {amountDistribution.map((item, index) => (
-            <View key={index} style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: chartColors[index] }]} />
-              <Text style={styles.legendText}>{item.range}</Text>
-              <Text style={styles.legendPercentage}>{item.percentage}%</Text>
+            <View key={index} style={styles.distributionItem}>
+              <View style={styles.distributionHeader}>
+                <View style={[styles.distributionColor, { backgroundColor: chartColors[index % chartColors.length] }]} />
+                <Text style={styles.distributionRange}>{item.range}</Text>
+                <Text style={styles.distributionPercentage}>{item.percentage}%</Text>
+              </View>
+              <View style={styles.distributionBar}>
+                <View 
+                  style={[
+                    styles.distributionBarFill, 
+                    { 
+                      backgroundColor: chartColors[index % chartColors.length],
+                      width: `${item.percentage}%` 
+                    }
+                  ]} 
+                />
+              </View>
+              <Text style={styles.distributionCount}>{item.count}건</Text>
             </View>
           ))}
         </View>
@@ -167,28 +215,38 @@ const Stats: React.FC = () => {
   const renderNetworkAnalysis = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>인맥 네트워크 분석</Text>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>인맥 네트워크 분석</Text>
+        </View>
       </View>
 
       {networkData.map((person, index) => (
         <View key={index} style={styles.networkCard}>
           <View style={styles.networkHeader}>
             <View style={styles.networkInfo}>
-              <Text style={styles.networkName}>{person.name}</Text>
-              <Text style={styles.networkRelationship}>{person.relationship}</Text>
+              <View style={styles.networkAvatar}>
+                <Text style={styles.networkAvatarText}>{person.name[0]}</Text>
+              </View>
+              <View style={styles.networkDetails}>
+                <Text style={styles.networkName}>{person.name}</Text>
+                <Text style={styles.networkRelationship}>{person.relationship}</Text>
+              </View>
             </View>
             <View style={styles.networkStats}>
               <Text style={styles.networkTotal}>{person.total.toLocaleString()}원</Text>
               <Text style={styles.networkCount}>({person.count}회)</Text>
             </View>
           </View>
-          <View style={styles.networkDetails}>
+          <View style={styles.networkProgressContainer}>
             <Text style={styles.networkAvg}>평균: {person.avg.toLocaleString()}원</Text>
             <View style={styles.networkBar}>
               <View 
                 style={[
                   styles.networkBarFill, 
-                  { width: `${(person.total / Math.max(...networkData.map(p => p.total))) * 100}%` }
+                  { 
+                    backgroundColor: chartColors[index % chartColors.length],
+                    width: `${(person.total / Math.max(...networkData.map(p => p.total))) * 100}%` 
+                  }
                 ]} 
               />
             </View>
@@ -201,13 +259,20 @@ const Stats: React.FC = () => {
   const renderEventsAnalysis = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>함께한 순간</Text>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>함께한 순간</Text>
+        </View>
       </View>
 
       <View style={styles.eventStatsContainer}>
-        <Text style={styles.subsectionTitle}>이벤트별 기록</Text>
+        <View style={styles.subsectionTitleContainer}>
+          <Text style={styles.subsectionTitle}>이벤트별 기록</Text>
+        </View>
         {eventData.map((event, index) => (
           <View key={index} style={styles.eventCard}>
+            <View style={[styles.eventIcon, { backgroundColor: chartColors[index % chartColors.length] }]}>
+              <Text style={styles.eventIconText}>{event.type[0]}</Text>
+            </View>
             <View style={styles.eventInfo}>
               <Text style={styles.eventType}>{event.type}</Text>
               <Text style={styles.eventCount}>{event.count}회</Text>
@@ -218,7 +283,9 @@ const Stats: React.FC = () => {
       </View>
 
       <View style={styles.eventTrendContainer}>
-        <Text style={styles.subsectionTitle}>이벤트 건수 추세</Text>
+        <View style={styles.subsectionTitleContainer}>
+          <Text style={styles.subsectionTitle}>이벤트 건수 추세</Text>
+        </View>
         <View style={styles.barChartContainer}>
           {eventData.map((event, index) => (
             <View key={index} style={styles.eventBar}>
@@ -228,6 +295,7 @@ const Stats: React.FC = () => {
                   style={[
                     styles.eventBarFill, 
                     { 
+                      backgroundColor: chartColors[index % chartColors.length],
                       width: `${(event.count / Math.max(...eventData.map(e => e.count))) * 100}%` 
                     }
                   ]} 
@@ -257,38 +325,28 @@ const Stats: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <MobileLayout currentPage="stats">
       <LinearGradient
         colors={['#F8F9FA', '#FFFFFF']}
         style={styles.header}
       >
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>활동 분석</Text>
-          <Text style={styles.headerSubtitle}>참석 패턴 및 통계</Text>
-          <TouchableOpacity style={styles.periodButton}>
-            <Text style={styles.periodButtonText}>최근 6개월</Text>
-            <Ionicons name="chevron-down" size={16} color="#666666" />
-          </TouchableOpacity>
         </View>
       </LinearGradient>
 
       <View style={styles.tabContainer}>
         {[
-          { key: 'total', label: '총액', icon: 'trending-up' },
-          { key: 'items', label: '항목', icon: 'list' },
-          { key: 'network', label: '인맥', icon: 'people' },
-          { key: 'events', label: '순간', icon: 'calendar' },
+          { key: 'total', label: '총액' },
+          { key: 'items', label: '항목' },
+          { key: 'network', label: '인맥' },
+          { key: 'events', label: '순간' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.key}
             style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
             onPress={() => setSelectedTab(tab.key as any)}
           >
-            <Ionicons 
-              name={tab.icon as any} 
-              size={20} 
-              color={selectedTab === tab.key ? '#FFFFFF' : '#666666'} 
-            />
             <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
               {tab.label}
             </Text>
@@ -301,7 +359,7 @@ const Stats: React.FC = () => {
           {renderTabContent()}
         </ScrollView>
       </Animated.View>
-    </View>
+    </MobileLayout>
   );
 };
 
@@ -311,7 +369,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 24,
     paddingHorizontal: 24,
   },
@@ -323,29 +381,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.foreground,
     marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#666666',
-    marginBottom: 16,
-  },
-  periodButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  periodButtonText: {
-    fontSize: 14,
-    color: '#666666',
-    marginRight: 4,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -362,7 +397,6 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
@@ -376,7 +410,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#666666',
-    marginLeft: 6,
   },
   tabTextActive: {
     color: '#FFFFFF',
@@ -393,6 +426,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     marginBottom: 16,
+  },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   sectionTitle: {
     fontSize: 20,
@@ -436,21 +474,27 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  summaryCardContent: {
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   summaryLabel: {
     fontSize: 14,
     color: '#666666',
     marginBottom: 8,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   summaryAmount: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.foreground,
     marginBottom: 4,
-  },
-  summaryChange: {
-    fontSize: 12,
-    color: '#4A90E2',
+    textAlign: 'center',
   },
   chartContainer: {
     backgroundColor: 'white',
@@ -463,30 +507,37 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  chartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
   chartTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.foreground,
-    marginBottom: 16,
   },
   lineChartContainer: {
-    height: 200,
+    // 자동 높이 조정
   },
   monthBar: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   monthInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    alignItems: 'center',
+    marginBottom: 6,
   },
   monthLabel: {
     fontSize: 14,
     color: '#666666',
+    fontWeight: '500',
   },
   monthAmount: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: colors.foreground,
   },
   monthBarContainer: {
@@ -494,9 +545,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     borderRadius: 4,
   },
+  monthInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  monthDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
   monthBarFill: {
     height: 8,
-    backgroundColor: '#4A90E2',
     borderRadius: 4,
   },
   topItemsContainer: {
@@ -511,35 +571,55 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 24,
   },
+  subsectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
   subsectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.foreground,
-    marginBottom: 16,
   },
   topItemCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    gap: 12,
   },
   topItemInfo: {
     flex: 1,
   },
   topItemName: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
     color: colors.foreground,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   topItemType: {
     fontSize: 12,
     color: '#666666',
+    fontWeight: '500',
+  },
+  rankBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankNumber: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: 'white',
   },
   topItemAmount: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
     color: colors.foreground,
   },
@@ -559,31 +639,47 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   distributionLegend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 16,
   },
-  legendItem: {
+  distributionItem: {
+    marginBottom: 16,
+  },
+  distributionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '48%',
     marginBottom: 8,
   },
-  legendColor: {
+  distributionColor: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: 12,
   },
-  legendText: {
-    fontSize: 12,
-    color: '#666666',
+  distributionRange: {
     flex: 1,
-  },
-  legendPercentage: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 14,
     color: colors.foreground,
+    fontWeight: '500',
+  },
+  distributionPercentage: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.foreground,
+  },
+  distributionBar: {
+    height: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 3,
+    marginBottom: 4,
+  },
+  distributionBarFill: {
+    height: 6,
+    borderRadius: 3,
+  },
+  distributionCount: {
+    fontSize: 12,
+    color: '#6B7280',
+    textAlign: 'right',
   },
   networkCard: {
     backgroundColor: 'white',
@@ -604,17 +700,37 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   networkInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  networkAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#666666',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  networkAvatarText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  networkDetails: {
     flex: 1,
   },
   networkName: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.foreground,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   networkRelationship: {
     fontSize: 12,
     color: '#666666',
+    fontWeight: '500',
   },
   networkStats: {
     alignItems: 'flex-end',
@@ -628,14 +744,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666666',
   },
-  networkDetails: {
+  networkProgressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
   networkAvg: {
     fontSize: 12,
     color: '#666666',
+    fontWeight: '500',
   },
   networkBar: {
     flex: 1,
@@ -646,7 +764,6 @@ const styles = StyleSheet.create({
   },
   networkBarFill: {
     height: 4,
-    backgroundColor: '#4A90E2',
     borderRadius: 2,
   },
   eventStatsContainer: {
@@ -663,27 +780,41 @@ const styles = StyleSheet.create({
   },
   eventCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    gap: 12,
   },
   eventInfo: {
     flex: 1,
   },
   eventType: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
     color: colors.foreground,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   eventCount: {
     fontSize: 12,
     color: '#666666',
+    fontWeight: '500',
+  },
+  eventIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventIconText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
   },
   eventAvg: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
     color: colors.foreground,
   },
@@ -699,15 +830,15 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   barChartContainer: {
-    height: 200,
+    // 자동 높이 조정
   },
   eventBar: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
   eventBarLabel: {
     fontSize: 14,
     color: '#666666',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   eventBarContainer: {
     height: 8,
@@ -717,7 +848,6 @@ const styles = StyleSheet.create({
   },
   eventBarFill: {
     height: 8,
-    backgroundColor: '#4A90E2',
     borderRadius: 4,
   },
   eventBarCount: {
