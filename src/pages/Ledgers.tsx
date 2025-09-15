@@ -136,7 +136,7 @@ const Ledgers: React.FC = () => {
         {/* 무신사 스타일 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <Text style={styles.title}>인연 장부</Text>
+            <Text style={styles.title}>장부</Text>
             <TouchableOpacity 
               style={styles.filterButton}
               onPress={() => setShowFilterModal(true)}
@@ -169,7 +169,7 @@ const Ledgers: React.FC = () => {
         <View style={styles.statsSection}>
           <View style={styles.statsCard}>
             <View style={styles.statsHeader}>
-              <Text style={styles.statsTitle}>전체 요약</Text>
+              <Text style={styles.statsTitle}>이번 달</Text>
               <View style={styles.statsBadge}>
                 <Text style={styles.statsBadgeText}>{ledgers.length}명</Text>
               </View>
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     color: '#1a1a1a',
     letterSpacing: -0.5,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   statsTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
   },
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 4,
