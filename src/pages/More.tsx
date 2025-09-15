@@ -9,7 +9,7 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
-import { colors, shadows } from '../lib/utils';
+import { shadows } from '../lib/utils';
 
 const More: React.FC = () => {
   const navigation = useNavigation();
@@ -23,12 +23,6 @@ const More: React.FC = () => {
   );
 
   const menuItems = [
-    {
-      icon: 'notifications-outline' as keyof typeof Ionicons.glyphMap,
-      title: '알림 설정',
-      description: '경조사 알림 관리',
-      onPress: () => navigation.navigate('Notifications' as never),
-    },
     {
       icon: 'settings-outline' as keyof typeof Ionicons.glyphMap,
       title: '설정',
@@ -113,7 +107,7 @@ const More: React.FC = () => {
         {/* 주요 기능 */}
         <View style={styles.menuSection}>
           <View style={styles.menuGrid}>
-            {menuItems.slice(0, 2).map((item, index) => (
+            {menuItems.slice(0, 1).map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.menuCard}
@@ -136,7 +130,7 @@ const More: React.FC = () => {
         {/* 기타 기능 */}
         <View style={styles.additionalMenuSection}>
           <View style={styles.additionalMenuList}>
-            {menuItems.slice(2).map((item, index) => (
+            {menuItems.slice(1).map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.additionalMenuItem}
@@ -176,17 +170,6 @@ const More: React.FC = () => {
           </View>
         </View>
 
-        {/* 로그아웃 버튼 */}
-        <View style={styles.logoutSection}>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={() => navigation.navigate('Login' as never)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="log-out-outline" size={20} color={colors.destructive} />
-            <Text style={styles.logoutText}>로그아웃</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </MobileLayout>
   );
@@ -478,27 +461,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // 로그아웃 섹션
-  logoutSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FEE2E2',
-    backgroundColor: '#FEF2F2',
-  },
-  logoutText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#DC2626',
-  },
 });
 
 export default More;
