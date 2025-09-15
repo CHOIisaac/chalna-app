@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import {
-    Animated,
-    Easing,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Easing,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 
@@ -84,19 +85,16 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish, isDevMod
           ]}
         >
           <View style={styles.tossLogo}>
-            <Text style={styles.tossLogoText}>찰나</Text>
+            <View style={styles.iconBackground}>
+              <Image 
+                source={require('../../assets/images/chalna-app-icon.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </View>
           </View>
         </Animated.View>
 
-        {/* 토스 스타일 텍스트 */}
-        <Animated.View
-          style={[
-            styles.textContainer,
-            { opacity: textOpacityAnim },
-          ]}
-        >
-          <Text style={styles.tossSubtitle}>마음을 나누는 순간</Text>
-        </Animated.View>
 
         {/* 개발 모드일 때 수동 전환 버튼 */}
         {isDevMode && (
@@ -117,30 +115,22 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationFinish, isDevMod
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#f8f9fa',
   },
   tossBackground: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
   },
   logoContainer: {
     marginBottom: 40,
     alignItems: 'center',
   },
   tossLogo: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#0064FF', // 토스의 정확한 파란색
+    width: 150,
+    height: 150,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#0064FF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 6,
   },
   tossLogoText: {
     fontSize: 32,
@@ -149,15 +139,25 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     letterSpacing: 1,
   },
+  iconBackground: {
+    backgroundColor: '#f8f9fa',
+    padding: 20,
+    borderRadius: 35,
+  },
+  logoImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 30,
+    backgroundColor: 'transparent',
+  },
   textContainer: {
     alignItems: 'center',
   },
   tossSubtitle: {
     fontSize: 24,
     fontWeight: '400',
-    color: '#191F28', // 토스의 정확한 텍스트 색상
+    color: '#333333',
     fontFamily: 'System',
-    letterSpacing: -0.5,
     textAlign: 'center',
     lineHeight: 32,
   },
@@ -167,15 +167,13 @@ const styles = StyleSheet.create({
     right: 24,
   },
   tossDevButton: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F5F5F5',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
+    borderRadius: 8,
   },
   tossDevButtonText: {
-    color: '#6C757D',
+    color: '#666666',
     fontSize: 13,
     fontWeight: '500',
   },
