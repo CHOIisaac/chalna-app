@@ -1061,7 +1061,7 @@ const styles = StyleSheet.create({
     width: 0,
     height: 0,
     borderTopWidth: 20,
-    borderTopColor: 'black',
+    borderTopColor: '#E5E5E5',
     borderLeftWidth: 20,
     borderLeftColor: 'transparent',
     borderTopRightRadius: 16,

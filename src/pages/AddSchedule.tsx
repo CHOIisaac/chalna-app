@@ -11,7 +11,7 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 const DateTimePicker = require('@react-native-community/datetimepicker').default;
 
 const AddSchedule: React.FC = () => {
