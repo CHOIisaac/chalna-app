@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
     ScrollView,
     StyleSheet,
@@ -14,6 +14,14 @@ import { colors, shadows } from '../lib/utils';
 
 const More: React.FC = () => {
   const navigation = useNavigation();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }, [])
+  );
 
   const menuItems = [
     {
@@ -60,7 +68,7 @@ const More: React.FC = () => {
 
   return (
     <MobileLayout currentPage="more">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 무신사 스타일 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>

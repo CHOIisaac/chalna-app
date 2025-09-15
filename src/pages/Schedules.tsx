@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Modal,
     ScrollView,
@@ -15,7 +16,15 @@ import MobileLayout from '../components/layout/MobileLayout';
 
 const Events: React.FC = () => {
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }, [])
+  );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   
@@ -217,7 +226,7 @@ const Events: React.FC = () => {
 
   return (
     <MobileLayout currentPage="schedules">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 무신사 스타일 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>

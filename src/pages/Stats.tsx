@@ -1,5 +1,6 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Animated,
     ScrollView,
@@ -16,6 +17,14 @@ const Stats: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<'total' | 'items' | 'network' | 'events'>('total');
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }, [])
+  );
 
   React.useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -355,7 +364,7 @@ const Stats: React.FC = () => {
       </View>
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
           {renderTabContent()}
         </ScrollView>
       </Animated.View>

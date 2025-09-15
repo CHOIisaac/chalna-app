@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Modal,
     ScrollView,
@@ -16,8 +17,16 @@ import { colors } from '../lib/utils';
 
 const Ledgers: React.FC = () => {
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }, [])
+  );
   
   // 필터 상태
   const [filterType, setFilterType] = useState<'all' | 'given' | 'received'>('all');
@@ -123,7 +132,7 @@ const Ledgers: React.FC = () => {
 
   return (
     <MobileLayout currentPage="contacts">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 무신사 스타일 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>

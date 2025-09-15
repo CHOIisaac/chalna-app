@@ -1,4 +1,5 @@
-import React from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useRef } from 'react';
 import {
     ScrollView,
     StyleSheet,
@@ -11,6 +12,15 @@ import WelcomeHeader from '../../src/components/dashboard/WelcomeHeader';
 import MobileLayout from '../../src/components/layout/MobileLayout';
 
 export default function HomeScreen() {
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }, [])
+  );
+
   const handleShowSplash = () => {
     // 개발 모드에서만 스플래시 다시 보기
     if (__DEV__) {
@@ -21,6 +31,7 @@ export default function HomeScreen() {
   return (
     <MobileLayout currentPage="home">
       <ScrollView 
+        ref={scrollViewRef}
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
       >
