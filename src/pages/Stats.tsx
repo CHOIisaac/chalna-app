@@ -69,6 +69,14 @@ const Stats: React.FC = () => {
     { name: '정민호', total: 180000, count: 1, avg: 180000, relationship: '친구' },
   ];
 
+  // 관계별 통계 데이터 (상위 4개만)
+  const relationshipStats = [
+    { relationship: '가족', count: 3, totalAmount: 1200000, avgAmount: 400000, color: '#1F2937' },
+    { relationship: '친구', count: 8, totalAmount: 1400000, avgAmount: 175000, color: '#9CA3AF' },
+    { relationship: '직장동료', count: 5, totalAmount: 750000, avgAmount: 150000, color: '#1E40AF' },
+    { relationship: '친척', count: 4, totalAmount: 600000, avgAmount: 150000, color: '#6B7280' },
+  ];
+
   const eventData = [
     { type: '결혼식', count: 8, avgAmount: 350000 },
     { type: '출산', count: 3, avgAmount: 200000 },
@@ -83,7 +91,7 @@ const Stats: React.FC = () => {
     { range: '20만원 이상', count: 3, percentage: 21.4 },
   ];
 
-  const chartColors = ['#6B7280', '#9CA3AF', '#D1D5DB', '#E5E7EB', '#F3F4F6', '#374151'];
+  const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
 
   const renderTotalAnalysis = () => (
     <View style={styles.section}>
@@ -225,21 +233,47 @@ const Stats: React.FC = () => {
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>인맥 네트워크 분석</Text>
+          <Text style={styles.sectionTitle}>관계별 분석</Text>
         </View>
+      </View>
+
+      {/* 관계별 분석 */}
+      <View style={styles.relationshipContainer}>
+        {relationshipStats.map((stat, index) => (
+          <View key={index} style={styles.relationshipItem}>
+            <View style={styles.relationshipLeft}>
+              <Text style={styles.relationshipName}>{stat.relationship}</Text>
+              <Text style={styles.relationshipCount}>{stat.count}회 참여</Text>
+            </View>
+            <View style={styles.relationshipRight}>
+              <Text style={styles.relationshipAmount}>{stat.totalAmount.toLocaleString()}원</Text>
+              <View style={styles.relationshipBar}>
+                <View 
+                  style={[
+                    styles.relationshipBarFill, 
+                    { 
+                      backgroundColor: stat.color,
+                      width: `${(stat.totalAmount / Math.max(...relationshipStats.map(s => s.totalAmount))) * 100}%`
+                    }
+                  ]} 
+                />
+              </View>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* 개인별 상세 분석 */}
+      <View style={styles.subsectionTitleContainer}>
+        <Text style={styles.subsectionTitle}>개인별 상세</Text>
       </View>
 
       {networkData.map((person, index) => (
         <View key={index} style={styles.networkCard}>
           <View style={styles.networkHeader}>
             <View style={styles.networkInfo}>
-              <View style={styles.networkAvatar}>
-                <Text style={styles.networkAvatarText}>{person.name[0]}</Text>
-              </View>
-              <View style={styles.networkDetails}>
-                <Text style={styles.networkName}>{person.name}</Text>
-                <Text style={styles.networkRelationship}>{person.relationship}</Text>
-              </View>
+              <Text style={styles.networkName}>{person.name}</Text>
+              <Text style={styles.networkRelationship}>{person.relationship}</Text>
             </View>
             <View style={styles.networkStats}>
               <Text style={styles.networkTotal}>{person.total.toLocaleString()}원</Text>
@@ -279,9 +313,6 @@ const Stats: React.FC = () => {
         </View>
         {eventData.map((event, index) => (
           <View key={index} style={styles.eventCard}>
-            <View style={[styles.eventIcon, { backgroundColor: chartColors[index % chartColors.length] }]}>
-              <Text style={styles.eventIconText}>{event.type[0]}</Text>
-            </View>
             <View style={styles.eventInfo}>
               <Text style={styles.eventType}>{event.type}</Text>
               <Text style={styles.eventCount}>{event.count}회</Text>
@@ -336,7 +367,7 @@ const Stats: React.FC = () => {
   return (
     <MobileLayout currentPage="stats">
       <LinearGradient
-        colors={['#F8F9FA', '#FFFFFF']}
+        colors={['#f8f9fa', '#f8f9fa']}
         style={styles.header}
       >
         <View style={styles.headerContent}>
@@ -348,7 +379,7 @@ const Stats: React.FC = () => {
         {[
           { key: 'total', label: '총액' },
           { key: 'items', label: '항목' },
-          { key: 'network', label: '인맥' },
+          { key: 'network', label: '관계' },
           { key: 'events', label: '순간' },
         ].map((tab) => (
           <TouchableOpacity
@@ -709,23 +740,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   networkInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     flex: 1,
-    gap: 12,
-  },
-  networkAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#666666',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  networkAvatarText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
+    gap: 4,
   },
   networkDetails: {
     flex: 1,
@@ -810,18 +828,6 @@ const styles = StyleSheet.create({
     color: '#666666',
     fontWeight: '500',
   },
-  eventIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  eventIconText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
-  },
   eventAvg: {
     fontSize: 15,
     fontWeight: 'bold',
@@ -863,6 +869,60 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666666',
     textAlign: 'right',
+  },
+
+  // 관계별 분석 스타일
+  relationshipContainer: {
+    marginBottom: 20,
+  },
+  relationshipItem: {
+    backgroundColor: 'white',
+    marginHorizontal: 24,
+    marginBottom: 8,
+    padding: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  relationshipLeft: {
+    flex: 1,
+  },
+  relationshipName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.foreground,
+    marginBottom: 2,
+  },
+  relationshipCount: {
+    fontSize: 13,
+    color: '#666666',
+  },
+  relationshipRight: {
+    alignItems: 'flex-end',
+    minWidth: 120,
+  },
+  relationshipAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.foreground,
+    marginBottom: 6,
+  },
+  relationshipBar: {
+    width: 80,
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  relationshipBarFill: {
+    height: 4,
+    borderRadius: 2,
   },
 });
 
