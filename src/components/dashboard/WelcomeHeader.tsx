@@ -18,13 +18,7 @@ const WelcomeHeader: React.FC = () => {
       {/* 상단 네비게이션 바 */}
       <View style={styles.topBar}>
         <View style={styles.userInfo}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={16} color={colors.primaryForeground} />
-          </View>
-          <View>
-            <Text style={styles.greeting}>안녕하세요</Text>
-            <Text style={styles.userName}>김경조님</Text>
-          </View>
+          <Text style={styles.logoText}>CHALNA</Text>
         </View>
         
         <TouchableOpacity
@@ -88,6 +82,13 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f8f9fa',
   },
+  logoText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000000',
+    letterSpacing: 1,
+    fontFamily: 'System',
+  },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -100,25 +101,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  greeting: {
-    fontSize: 12,
-    color: colors.mutedForeground,
-    lineHeight: 16,
-  },
-  userName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.foreground,
-    lineHeight: 18,
   },
   notificationButton: {
     position: 'relative',
