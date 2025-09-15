@@ -66,7 +66,7 @@ const RecentEvents: React.FC = () => {
       {/* 무신사 스타일 이벤트 리스트 */}
       <View style={styles.eventsSection}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>최근 함께한 순간</Text>
+          <Text style={styles.sectionTitle}>최근 나눈 마음</Text>
         </View>
 
         <View style={styles.eventsList}>
