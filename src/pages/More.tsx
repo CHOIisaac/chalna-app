@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useRef } from 'react';
 import {
     ScrollView,
@@ -24,18 +23,6 @@ const More: React.FC = () => {
   );
 
   const menuItems = [
-    {
-      icon: 'bookmark-outline' as keyof typeof Ionicons.glyphMap,
-      title: '방명록',
-      description: '소중한 인연들의 메시지',
-      onPress: () => navigation.navigate('Guestbook' as never),
-    },
-    {
-      icon: 'business-outline' as keyof typeof Ionicons.glyphMap,
-      title: '업체 정보',
-      description: '웨딩홀, 장례식장 등',
-      onPress: () => navigation.navigate('Venues' as never),
-    },
     {
       icon: 'notifications-outline' as keyof typeof Ionicons.glyphMap,
       title: '알림 설정',
@@ -69,57 +56,38 @@ const More: React.FC = () => {
   return (
     <MobileLayout currentPage="more">
       <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 무신사 스타일 헤더 */}
+        {/* 자연스러운 헤더 */}
         <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <Text style={styles.title}>더보기</Text>
-            <TouchableOpacity 
-              style={styles.settingsButton}
-              onPress={() => navigation.navigate('Settings' as never)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="settings-outline" size={20} color={colors.foreground} />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.subtitle}>앱의 모든 기능을 확인하세요</Text>
         </View>
 
         {/* 사용자 프로필 카드 */}
         <View style={styles.profileSection}>
           <View style={styles.profileCard}>
-            <LinearGradient
-              colors={['#FFFFFF', '#F8F9FA']}
-              style={styles.profileGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.profileContent}>
-                <View style={styles.profileInfo}>
-                  <View style={styles.avatar}>
-                    <Ionicons name="person" size={24} color={colors.primaryForeground} />
-                  </View>
-                  <View style={styles.userDetails}>
-                    <Text style={styles.userName}>김경조님</Text>
-                    <Text style={styles.userEmail}>kim.kyungjo@email.com</Text>
-                    <View style={styles.userStats}>
-                      <Text style={styles.statsText}>총 127명의 소중한 인연</Text>
-                    </View>
+            <View style={styles.profileContent}>
+              <View style={styles.profileInfo}>
+                <View style={styles.avatar}>
+                  <Ionicons name="person" size={28} color="#6B7280" />
+                </View>
+                <View style={styles.userDetails}>
+                  <Text style={styles.userName}>김경조님</Text>
+                  <Text style={styles.userEmail}>kim.kyungjo@email.com</Text>
+                  <View style={styles.userStats}>
+                    <Ionicons name="people" size={14} color="#9CA3AF" />
+                    <Text style={styles.statsText}>127명의 소중한 인연</Text>
                   </View>
                 </View>
-                <TouchableOpacity style={styles.editButton} activeOpacity={0.7}>
-                  <Ionicons name="pencil" size={16} color={colors.primary} />
-                </TouchableOpacity>
               </View>
-            </LinearGradient>
+            </View>
           </View>
         </View>
 
-        {/* 빠른 통계 */}
+        {/* 이번 달 활동 */}
         <View style={styles.quickStatsSection}>
           <View style={styles.statsCard}>
             <View style={styles.statsHeader}>
               <Text style={styles.statsTitle}>이번 달 활동</Text>
               <View style={styles.statsBadge}>
+                <Ionicons name="trending-up" size={12} color="#059669" />
                 <Text style={styles.statsBadgeText}>활발</Text>
               </View>
             </View>
@@ -142,41 +110,33 @@ const More: React.FC = () => {
           </View>
         </View>
 
-        {/* 메인 기능 메뉴 */}
+        {/* 주요 기능 */}
         <View style={styles.menuSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>주요 기능</Text>
-          </View>
-          
           <View style={styles.menuGrid}>
-            {menuItems.slice(0, 4).map((item, index) => (
+            {menuItems.slice(0, 2).map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.menuCard}
                 onPress={item.onPress}
-                activeOpacity={0.8}
+                activeOpacity={0.7}
               >
                 <View style={styles.menuIconContainer}>
-                  <Ionicons name={item.icon} size={24} color={colors.foreground} />
+                  <Ionicons name={item.icon} size={22} color="#6B7280" />
                 </View>
                 <View style={styles.menuTextContainer}>
                   <Text style={styles.menuTitle}>{item.title}</Text>
                   <Text style={styles.menuDescription}>{item.description}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+                <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* 추가 기능 메뉴 */}
+        {/* 기타 기능 */}
         <View style={styles.additionalMenuSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>기타</Text>
-          </View>
-          
           <View style={styles.additionalMenuList}>
-            {menuItems.slice(4).map((item, index) => (
+            {menuItems.slice(2).map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.additionalMenuItem}
@@ -185,13 +145,13 @@ const More: React.FC = () => {
               >
                 <View style={styles.additionalMenuContent}>
                   <View style={styles.additionalMenuIcon}>
-                    <Ionicons name={item.icon} size={20} color={colors.foreground} />
+                    <Ionicons name={item.icon} size={18} color="#6B7280" />
                   </View>
                   <View style={styles.additionalMenuText}>
                     <Text style={styles.additionalMenuTitle}>{item.title}</Text>
                     <Text style={styles.additionalMenuDescription}>{item.description}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+                  <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
                 </View>
               </TouchableOpacity>
             ))}
@@ -203,10 +163,10 @@ const More: React.FC = () => {
           <View style={styles.appInfoCard}>
             <View style={styles.appInfoHeader}>
               <View style={styles.appIcon}>
-                <Ionicons name="heart" size={24} color={colors.primary} />
+                <Ionicons name="heart" size={22} color="#EF4444" />
               </View>
               <View style={styles.appDetails}>
-                <Text style={styles.appName}>Remember My Moments</Text>
+                <Text style={styles.appName}>찰나</Text>
                 <Text style={styles.appVersion}>버전 1.0.0</Text>
               </View>
             </View>
@@ -242,49 +202,34 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: 'white',
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingTop: 20,
+    paddingBottom: 24,
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  headerContent: {
     alignItems: 'center',
-    marginBottom: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    letterSpacing: -0.5,
-  },
-  settingsButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 20,
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
   },
 
   // 프로필 섹션
   profileSection: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingBottom: 16,
   },
   profileCard: {
-    borderRadius: 16,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
     ...shadows.soft,
-  },
-  profileGradient: {
-    padding: 28,
-    borderRadius: 16,
   },
   profileContent: {
     flexDirection: 'row',
@@ -297,10 +242,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -308,33 +253,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 6,
+    color: '#6B7280',
+    marginBottom: 8,
   },
   userStats: {
-    backgroundColor: '#e2e8f0',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   statsText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#4a5568',
+    fontWeight: '500',
+    color: '#9CA3AF',
   },
   editButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -342,11 +285,11 @@ const styles = StyleSheet.create({
   // 빠른 통계 섹션
   quickStatsSection: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 16,
   },
   statsCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     ...shadows.soft,
   },
@@ -357,20 +300,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   statsTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#1F2937',
   },
   statsBadge: {
-    backgroundColor: '#e2e8f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
   },
   statsBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#4a5568',
+    fontWeight: '500',
+    color: '#059669',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -381,100 +327,96 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1F2937',
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 13,
-    color: '#666',
+    fontSize: 12,
+    color: '#6B7280',
     fontWeight: '500',
   },
   statDivider: {
     width: 1,
-    height: 40,
-    backgroundColor: '#e9ecef',
-    marginHorizontal: 20,
+    height: 32,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 16,
   },
 
   // 메뉴 섹션
   menuSection: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 16,
   },
   sectionHeader: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#1F2937',
   },
   menuGrid: {
-    gap: 12,
+    gap: 8,
   },
   menuCard: {
     backgroundColor: 'white',
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     ...shadows.soft,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
   },
   menuIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#f8f9fa',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   menuTextContainer: {
     flex: 1,
   },
   menuTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: 2,
   },
   menuDescription: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
+    color: '#6B7280',
   },
 
   // 추가 메뉴 섹션
   additionalMenuSection: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 16,
   },
   additionalMenuList: {
     backgroundColor: 'white',
     borderRadius: 16,
     ...shadows.soft,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
   },
   additionalMenuItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#F3F4F6',
   },
   additionalMenuContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
   },
   additionalMenuIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f8f9fa',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -482,28 +424,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   additionalMenuTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
-    color: '#1a1a1a',
+    color: '#1F2937',
     marginBottom: 2,
   },
   additionalMenuDescription: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
+    color: '#6B7280',
   },
 
   // 앱 정보 섹션
   appInfoSection: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 16,
   },
   appInfoCard: {
     backgroundColor: 'white',
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     ...shadows.soft,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
   },
   appInfoHeader: {
     flexDirection: 'row',
@@ -512,10 +452,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   appIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary + '20',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FEF2F2',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -525,17 +465,17 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#1F2937',
     marginBottom: 2,
   },
   appVersion: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
+    color: '#6B7280',
   },
   appDescription: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    fontSize: 13,
+    color: '#6B7280',
+    lineHeight: 18,
   },
 
   // 로그아웃 섹션
@@ -548,16 +488,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.destructive + '40',
-    backgroundColor: colors.destructive + '10',
+    borderColor: '#FEE2E2',
+    backgroundColor: '#FEF2F2',
   },
   logoutText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
-    color: colors.destructive,
+    color: '#DC2626',
   },
 });
 
