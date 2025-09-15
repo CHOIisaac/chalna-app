@@ -24,13 +24,14 @@ const More: React.FC = () => {
 
   const menuItems = [
     {
-      icon: 'settings-outline' as keyof typeof Ionicons.glyphMap,
-      title: '설정',
-      description: '앱 설정 및 계정 관리',
-      onPress: () => navigation.navigate('Settings' as never),
+      title: '엑셀파일로 내보내기',
+      description: '경조사 데이터를 엑셀 파일로 저장',
+      onPress: () => {
+        // TODO: 엑셀 내보내기 기능 구현
+        console.log('엑셀 내보내기 기능 실행');
+      },
     },
     {
-      icon: 'help-circle-outline' as keyof typeof Ionicons.glyphMap,
       title: '도움말',
       description: '사용법 및 문의사항',
       onPress: () => {
@@ -38,7 +39,6 @@ const More: React.FC = () => {
       },
     },
     {
-      icon: 'information-circle-outline' as keyof typeof Ionicons.glyphMap,
       title: '앱 정보',
       description: '버전 정보 및 라이선스',
       onPress: () => {
@@ -52,6 +52,13 @@ const More: React.FC = () => {
       <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 자연스러운 헤더 */}
         <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate('Settings' as never)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="settings-outline" size={18} color="#1F2937" />
+          </TouchableOpacity>
         </View>
 
         {/* 사용자 프로필 카드 */}
@@ -104,33 +111,10 @@ const More: React.FC = () => {
           </View>
         </View>
 
-        {/* 주요 기능 */}
-        <View style={styles.menuSection}>
-          <View style={styles.menuGrid}>
-            {menuItems.slice(0, 1).map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.menuCard}
-                onPress={item.onPress}
-                activeOpacity={0.7}
-              >
-                <View style={styles.menuIconContainer}>
-                  <Ionicons name={item.icon} size={22} color="#6B7280" />
-                </View>
-                <View style={styles.menuTextContainer}>
-                  <Text style={styles.menuTitle}>{item.title}</Text>
-                  <Text style={styles.menuDescription}>{item.description}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* 기타 기능 */}
+        {/* 메뉴 항목 */}
         <View style={styles.additionalMenuSection}>
           <View style={styles.additionalMenuList}>
-            {menuItems.slice(1).map((item, index) => (
+            {menuItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.additionalMenuItem}
@@ -138,9 +122,6 @@ const More: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <View style={styles.additionalMenuContent}>
-                  <View style={styles.additionalMenuIcon}>
-                    <Ionicons name={item.icon} size={18} color="#6B7280" />
-                  </View>
                   <View style={styles.additionalMenuText}>
                     <Text style={styles.additionalMenuTitle}>{item.title}</Text>
                     <Text style={styles.additionalMenuDescription}>{item.description}</Text>
@@ -156,9 +137,6 @@ const More: React.FC = () => {
         <View style={styles.appInfoSection}>
           <View style={styles.appInfoCard}>
             <View style={styles.appInfoHeader}>
-              <View style={styles.appIcon}>
-                <Ionicons name="heart" size={22} color="#EF4444" />
-              </View>
               <View style={styles.appDetails}>
                 <Text style={styles.appName}>찰나</Text>
                 <Text style={styles.appVersion}>버전 1.0.0</Text>
@@ -183,10 +161,20 @@ const styles = StyleSheet.create({
   
   // 헤더 스타일
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 24,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  settingsButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerContent: {
     alignItems: 'center',
@@ -327,52 +315,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
 
-  // 메뉴 섹션
-  menuSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  sectionHeader: {
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  menuGrid: {
-    gap: 8,
-  },
-  menuCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    ...shadows.soft,
-  },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  menuTextContainer: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  menuDescription: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
 
   // 추가 메뉴 섹션
   additionalMenuSection: {
@@ -393,15 +335,7 @@ const styles = StyleSheet.create({
   additionalMenuContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  additionalMenuIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   additionalMenuText: {
     flex: 1,
@@ -420,6 +354,7 @@ const styles = StyleSheet.create({
   // 앱 정보 섹션
   appInfoSection: {
     paddingHorizontal: 20,
+    paddingTop: 0,
     paddingBottom: 16,
   },
   appInfoCard: {
@@ -433,14 +368,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     marginBottom: 12,
-  },
-  appIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FEF2F2',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   appDetails: {
     flex: 1,
