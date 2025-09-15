@@ -195,8 +195,7 @@ const Notifications: React.FC = () => {
                   key={notification.id}
                   style={[
                     styles.notificationCard,
-                    !notification.read && styles.unreadCard,
-                    isUrgent && styles.urgentCard
+                    notification.read ? styles.readCard : styles.unreadCard
                   ]}
                   activeOpacity={0.8}
                   onPress={() => handleNotificationPress(notification.id)}
@@ -224,7 +223,7 @@ const Notifications: React.FC = () => {
                       <Text 
                         style={[
                           styles.notificationTitle,
-                          !notification.read && styles.unreadTitle
+                          notification.read ? styles.readTitle : styles.unreadTitle
                         ]}
                         numberOfLines={1}
                         ellipsizeMode="tail"
@@ -244,7 +243,10 @@ const Notifications: React.FC = () => {
                     </View>
                     
                     <Text 
-                      style={styles.notificationMessage}
+                      style={[
+                        styles.notificationMessage,
+                        notification.read ? styles.readMessage : styles.unreadMessage
+                      ]}
                       numberOfLines={2}
                       ellipsizeMode="tail"
                     >
@@ -444,12 +446,12 @@ const styles = StyleSheet.create({
     borderColor: '#f0f0f0',
   },
   unreadCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#ff6b6b',
+    backgroundColor: '#FFFFFF',
+    opacity: 1,
   },
-  urgentCard: {
-    borderColor: '#ff6b6b',
-    backgroundColor: '#fff5f5',
+  readCard: {
+    backgroundColor: '#F8F9FA',
+    opacity: 0.7,
   },
 
   // 알림 아이콘
@@ -463,17 +465,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  unreadDot: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#ff6b6b',
-    borderWidth: 2,
-    borderColor: 'white',
   },
 
   // 알림 내용
@@ -496,6 +487,17 @@ const styles = StyleSheet.create({
   },
   unreadTitle: {
     fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  readTitle: {
+    fontWeight: '500',
+    color: '#999999',
+  },
+  unreadMessage: {
+    color: '#666666',
+  },
+  readMessage: {
+    color: '#CCCCCC',
   },
   notificationMeta: {
     alignItems: 'flex-end',
