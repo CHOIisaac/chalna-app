@@ -264,8 +264,10 @@ const Stats: React.FC = () => {
       </View>
 
       {/* 개인별 상세 분석 */}
-      <View style={styles.subsectionTitleContainer}>
-        <Text style={styles.subsectionTitle}>개인별 상세</Text>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>개인별 상세</Text>
+        </View>
       </View>
 
       {networkData.map((person, index) => (
@@ -371,7 +373,7 @@ const Stats: React.FC = () => {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>활동 분석</Text>
+          <Text style={styles.headerTitle}>찰나 기록</Text>
         </View>
       </LinearGradient>
 
@@ -414,10 +416,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   headerContent: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.foreground,
     marginBottom: 8,
@@ -473,7 +475,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.foreground,
   },
