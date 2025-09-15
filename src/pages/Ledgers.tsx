@@ -132,38 +132,39 @@ const Ledgers: React.FC = () => {
 
   return (
     <MobileLayout currentPage="contacts">
-      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 무신사 스타일 헤더 */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <Text style={styles.title}>장부</Text>
-            <TouchableOpacity 
-              style={styles.filterButton}
-              onPress={() => setShowFilterModal(true)}
-            >
-              <Ionicons name="options-outline" size={20} color={colors.foreground} />
-            </TouchableOpacity>
-          </View>
+      {/* 고정 헤더 */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.title}>장부</Text>
+          <TouchableOpacity 
+            style={styles.filterButton}
+            onPress={() => setShowFilterModal(true)}
+          >
+            <Ionicons name="options-outline" size={20} color={colors.foreground} />
+          </TouchableOpacity>
         </View>
+      </View>
 
-        {/* 무신사 스타일 검색바 */}
-        <View style={styles.searchSection}>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="이름이나 관계로 검색..."
-              placeholderTextColor="#999"
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-            />
-            {searchTerm.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
-                <Ionicons name="close-circle" size={18} color="#999" />
-              </TouchableOpacity>
-            )}
-          </View>
+      {/* 고정 검색바 */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="이름이나 관계로 검색..."
+            placeholderTextColor="#999"
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+          />
+          {searchTerm.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
+              <Ionicons name="close-circle" size={18} color="#999" />
+            </TouchableOpacity>
+          )}
         </View>
+      </View>
+
+      <ScrollView ref={scrollViewRef} style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
 
         {/* 무신사 스타일 통계 카드 */}
         <View style={styles.statsSection}>
@@ -483,6 +484,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
+  scrollContainer: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
   
   // 헤더 스타일
   header: {
@@ -520,7 +525,7 @@ const styles = StyleSheet.create({
   searchSection: {
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 8,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -548,12 +553,14 @@ const styles = StyleSheet.create({
   // 통계 섹션
   statsSection: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
   statsCard: {
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
+    minHeight: 140,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

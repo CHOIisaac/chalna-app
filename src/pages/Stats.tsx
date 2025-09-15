@@ -1,13 +1,12 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useRef, useState } from 'react';
 import {
-    Animated,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
@@ -368,39 +367,38 @@ const Stats: React.FC = () => {
 
   return (
     <MobileLayout currentPage="stats">
-      <LinearGradient
-        colors={['#f8f9fa', '#f8f9fa']}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>찰나 기록</Text>
+      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* 헤더 */}
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>찰나 기록</Text>
+          </View>
         </View>
-      </LinearGradient>
 
-      <View style={styles.tabContainer}>
-        {[
-          { key: 'total', label: '총액' },
-          { key: 'items', label: '항목' },
-          { key: 'network', label: '관계' },
-          { key: 'events', label: '순간' },
-        ].map((tab) => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
-            onPress={() => setSelectedTab(tab.key as any)}
-          >
-            <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        {/* 탭 컨테이너 */}
+        <View style={styles.tabContainer}>
+          {[
+            { key: 'total', label: '총액' },
+            { key: 'items', label: '항목' },
+            { key: 'network', label: '관계' },
+            { key: 'events', label: '순간' },
+          ].map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
+              onPress={() => setSelectedTab(tab.key as any)}
+            >
+              <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           {renderTabContent()}
-        </ScrollView>
-      </Animated.View>
+        </Animated.View>
+      </ScrollView>
     </MobileLayout>
   );
 };
@@ -408,27 +406,31 @@ const Stats: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f8f9fa',
   },
   header: {
-    paddingTop: 20,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 20,
+    paddingTop: 23,
+    paddingBottom: 20,
   },
-  headerContent: {
-    alignItems: 'flex-start',
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: colors.foreground,
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: -0.5,
   },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: 'white',
-    marginHorizontal: 24,
-    marginBottom: 24,
+    marginHorizontal: 20,
+    marginBottom: 16,
     borderRadius: 16,
     padding: 4,
     shadowColor: '#000',
@@ -457,7 +459,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   content: {
-    flex: 1,
+    // flex: 1 제거
   },
   section: {
     marginBottom: 32,
