@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     color: '#1a1a1a',
     letterSpacing: -0.5,
