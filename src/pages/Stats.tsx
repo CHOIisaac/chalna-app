@@ -367,34 +367,34 @@ const Stats: React.FC = () => {
 
   return (
     <MobileLayout currentPage="stats">
-      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 헤더 */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <Text style={styles.title}>찰나 기록</Text>
-          </View>
+      {/* 고정 헤더 */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.title}>찰나 기록</Text>
         </View>
+      </View>
 
-        {/* 탭 컨테이너 */}
-        <View style={styles.tabContainer}>
-          {[
-            { key: 'total', label: '총액' },
-            { key: 'items', label: '항목' },
-            { key: 'network', label: '관계' },
-            { key: 'events', label: '순간' },
-          ].map((tab) => (
-            <TouchableOpacity
-              key={tab.key}
-              style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
-              onPress={() => setSelectedTab(tab.key as any)}
-            >
-              <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+      {/* 고정 탭 컨테이너 */}
+      <View style={styles.tabContainer}>
+        {[
+          { key: 'total', label: '총액' },
+          { key: 'items', label: '항목' },
+          { key: 'network', label: '관계' },
+          { key: 'events', label: '순간' },
+        ].map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
+            onPress={() => setSelectedTab(tab.key as any)}
+          >
+            <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
+      <ScrollView ref={scrollViewRef} style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           {renderTabContent()}
         </Animated.View>
@@ -405,6 +405,10 @@ const Stats: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  scrollContainer: {
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
