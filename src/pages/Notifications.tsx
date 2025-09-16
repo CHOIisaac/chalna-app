@@ -181,7 +181,7 @@ const Notifications: React.FC = () => {
         </View>
 
         {/* 스크롤 가능한 컨텐츠 */}
-        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
         {/* 알림 목록 */}
         <View style={styles.notificationsSection}>
           
