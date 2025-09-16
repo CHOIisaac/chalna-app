@@ -127,7 +127,6 @@ const Notifications: React.FC = () => {
             <View style={styles.titleRow}>
               <Text style={styles.title}>알림</Text>
             </View>
-              <Text style={styles.subtitle}>소중한 순간을 놓치지 마세요</Text>
             </View>
             <TouchableOpacity 
               style={styles.settingsButton} 
@@ -142,46 +141,47 @@ const Notifications: React.FC = () => {
         </View>
 
 
-        {/* 알림 요약 카드 */}
-        <View style={styles.summarySection}>
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryHeader}>
-              <View style={styles.summaryInfo}>
-                <Text style={styles.summaryTitle}>이번 주 경조사</Text>
-                <Text style={styles.summarySubtitle}>
-                  {new Date().getFullYear()}년 {new Date().getMonth() + 1}월
-                </Text>
+        {/* 스크롤 가능한 컨텐츠 */}
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+          
+          {/* 알림 요약 카드 */}
+          <View style={styles.summarySection}>
+            <View style={styles.summaryCard}>
+              <View style={styles.summaryHeader}>
+                <View style={styles.summaryInfo}>
+                  <Text style={styles.summaryTitle}>이번 주 경조사</Text>
+                  <Text style={styles.summarySubtitle}>
+                    {new Date().getFullYear()}년 {new Date().getMonth() + 1}월
+                  </Text>
+                </View>
               </View>
-            </View>
-            <View style={styles.summaryStats}>
-              <View style={styles.summaryStatItem}>
-                <Text style={styles.summaryStatValue}>{notifications.filter(n => !n.read).length}</Text>
-                <Text style={styles.summaryStatLabel}>새 알림</Text>
-              </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryStatItem}>
-                <Text style={styles.summaryStatValue}>{notifications.length}</Text>
-                <Text style={styles.summaryStatLabel}>총 알림</Text>
-              </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryStatItem}>
-                <Text style={styles.summaryStatValue}>
-                  {notifications.filter(n => {
-                    const today = new Date();
-                    const eventDate = n.date;
-                    const diffTime = eventDate.getTime() - today.getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    return diffDays >= 0 && diffDays <= 7;
-                  }).length}
-                </Text>
-                <Text style={styles.summaryStatLabel}>이번 주</Text>
+              <View style={styles.summaryStats}>
+                <View style={styles.summaryStatItem}>
+                  <Text style={styles.summaryStatValue}>{notifications.filter(n => !n.read).length}</Text>
+                  <Text style={styles.summaryStatLabel}>새 알림</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryStatItem}>
+                  <Text style={styles.summaryStatValue}>{notifications.length}</Text>
+                  <Text style={styles.summaryStatLabel}>총 알림</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryStatItem}>
+                  <Text style={styles.summaryStatValue}>
+                    {notifications.filter(n => {
+                      const today = new Date();
+                      const eventDate = n.date;
+                      const diffTime = eventDate.getTime() - today.getTime();
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      return diffDays >= 0 && diffDays <= 7;
+                    }).length}
+                  </Text>
+                  <Text style={styles.summaryStatLabel}>이번 주</Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
 
-        {/* 스크롤 가능한 컨텐츠 */}
-        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
         {/* 알림 목록 */}
         <View style={styles.notificationsSection}>
           
@@ -314,7 +314,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 20,
     zIndex: 1000,
   },
   
@@ -322,7 +321,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    paddingTop: 160, // 헤더와 통계 높이만큼 여백
+    paddingTop: 60, // 헤더 높이만큼 여백 (요약카드가 스크롤 안으로 이동했으므로)
   },
   headerTop: {
     flexDirection: 'row',
