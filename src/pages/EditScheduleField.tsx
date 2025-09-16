@@ -138,7 +138,6 @@ const EditScheduleField: React.FC = () => {
 
   return (
     <MobileLayout currentPage="edit-event-field">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
         {/* 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
@@ -152,6 +151,9 @@ const EditScheduleField: React.FC = () => {
             <View style={styles.placeholder} />
           </View>
         </View>
+
+        {/* 스크롤 가능한 컨텐츠 */}
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {/* 폼 섹션 */}
         <View style={styles.formSection}>
@@ -339,10 +341,19 @@ const styles = StyleSheet.create({
   
   // 헤더 스타일
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 20,
+    zIndex: 1000,
+  },
+  scrollContent: {
+    flex: 1,
     backgroundColor: '#f8f9fa',
+    paddingTop: 60, // 헤더 높이만큼 여백
   },
   headerTop: {
     flexDirection: 'row',
