@@ -50,20 +50,18 @@ const More: React.FC = () => {
   return (
     <MobileLayout currentPage="more">
       <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 자연스러운 헤더 */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => navigation.navigate('Settings' as never)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="settings-outline" size={18} color="#1F2937" />
-          </TouchableOpacity>
-        </View>
-
         {/* 사용자 프로필 카드 */}
         <View style={styles.profileSection}>
           <View style={styles.profileCard}>
+            {/* 설정 버튼 */}
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => navigation.navigate('Settings' as never)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="settings-outline" size={18} color="#1F2937" />
+            </TouchableOpacity>
+            
             <View style={styles.profileContent}>
               <View style={styles.profileInfo}>
                 <View style={styles.avatar}>
@@ -86,26 +84,22 @@ const More: React.FC = () => {
         <View style={styles.quickStatsSection}>
           <View style={styles.statsCard}>
             <View style={styles.statsHeader}>
-              <Text style={styles.statsTitle}>이번 달 활동</Text>
-              <View style={styles.statsBadge}>
-                <Ionicons name="trending-up" size={12} color="#059669" />
-                <Text style={styles.statsBadgeText}>활발</Text>
-              </View>
+              <Text style={styles.statsTitle}>이번 달 요약</Text>
             </View>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>3</Text>
-                <Text style={styles.statLabel}>경조사</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>5</Text>
-                <Text style={styles.statLabel}>새 인연</Text>
+                <Text style={styles.statLabel}>참여한 경조사</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>1.2M</Text>
-                <Text style={styles.statLabel}>나눈 마음</Text>
+                <Text style={styles.statLabel}>총 지출</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>800K</Text>
+                <Text style={styles.statLabel}>총 수입</Text>
               </View>
             </View>
           </View>
@@ -170,11 +164,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   settingsButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+    zIndex: 1,
   },
   headerContent: {
     alignItems: 'center',
@@ -194,12 +193,14 @@ const styles = StyleSheet.create({
   // 프로필 섹션
   profileSection: {
     paddingHorizontal: 20,
+    paddingTop: 30,
     paddingBottom: 16,
   },
   profileCard: {
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 24,
+    position: 'relative',
     ...shadows.soft,
   },
   profileContent: {
