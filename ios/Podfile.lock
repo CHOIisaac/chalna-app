@@ -36,7 +36,7 @@ PODS:
     - ExpoModulesCore
   - ExpoHaptics (15.0.7):
     - ExpoModulesCore
-  - ExpoHead (6.0.1):
+  - ExpoHead (6.0.5):
     - ExpoModulesCore
     - RNScreens
   - ExpoImage (3.0.8):
@@ -2443,7 +2443,7 @@ SPEC CHECKSUMS:
   ExpoFileSystem: 4fb06865906e781329eb67166bd64fc4749c3019
   ExpoFont: 86ceec09ffed1c99cfee36ceb79ba149074901b5
   ExpoHaptics: 807476b0c39e9d82b7270349d6487928ce32df84
-  ExpoHead: 9539b6c97faa57b2deb0414205e084b0a2bc15f1
+  ExpoHead: bd65071c501ef18c54b68e5003d595154e04f896
   ExpoImage: e88f500585913969b930e13a4be47277eb7c6de8
   ExpoKeepAwake: 1a2e820692e933c94a565ec3fbbe38ac31658ffe
   ExpoLinearGradient: a464898cb95153125e3b81894fd479bcb1c7dd27
@@ -2537,6 +2537,6 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   Yoga: 051f086b5ccf465ff2ed38a2cf5a558ae01aaaa1
 
-PODFILE CHECKSUM: 140ca6322da1bc3f873eeefbf2efe024c596a94a
+PODFILE CHECKSUM: 84681ec51ab70abf794b9177cf4799bd5b427cb2
 
 COCOAPODS: 1.16.2
