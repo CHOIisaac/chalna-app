@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     ScrollView,
@@ -14,12 +13,9 @@ import MobileLayout from '../components/layout/MobileLayout';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
-  const router = useRouter();
   const [settings, setSettings] = useState({
     notifications: true,
-    darkMode: false,
     autoBackup: true,
-    biometric: false,
   });
 
   const handleSettingToggle = (key: keyof typeof settings) => {
@@ -49,7 +45,7 @@ export default function SettingsScreen() {
           <View style={styles.profileCard}>
             <View style={styles.profileHeader}>
               <View style={styles.avatar}>
-                <Ionicons name="person" size={32} color="#4a5568" />
+                <Ionicons name="person" size={32} color="#6B7280" />
               </View>
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>김경조님</Text>
@@ -61,7 +57,7 @@ export default function SettingsScreen() {
                 activeOpacity={0.8}
                 onPress={() => {}}
               >
-                <Ionicons name="pencil" size={16} color="#4a5568" />
+                <Ionicons name="pencil" size={16} color="#6B7280" />
               </TouchableOpacity>
             </View>
           </View>
@@ -77,7 +73,7 @@ export default function SettingsScreen() {
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
                 <View style={styles.settingIconContainer}>
-                  <Ionicons name="notifications" size={20} color="#4a5568" />
+                  <Ionicons name="notifications" size={20} color="#6B7280" />
                 </View>
                 <View style={styles.settingTextContainer}>
                   <Text style={styles.settingTitle}>푸시 알림</Text>
@@ -93,93 +89,9 @@ export default function SettingsScreen() {
               />
             </View>
 
-            <TouchableOpacity 
-              style={styles.settingItem}
-              onPress={() => router.push('/notifications')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.settingLeft}>
-                <View style={styles.settingIconContainer}>
-                  <Ionicons name="settings-outline" size={20} color="#4a5568" />
-                </View>
-                <View style={styles.settingTextContainer}>
-                  <Text style={styles.settingTitle}>알림 상세 설정</Text>
-                  <Text style={styles.settingDescription}>알림 유형 및 시간 설정</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-            </TouchableOpacity>
           </View>
         </View>
 
-        {/* 화면 및 접근성 */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>화면 및 접근성</Text>
-          </View>
-          
-          <View style={styles.settingsList}>
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <View style={styles.settingIconContainer}>
-                  <Ionicons name="moon" size={20} color="#4a5568" />
-                </View>
-                <View style={styles.settingTextContainer}>
-                  <Text style={styles.settingTitle}>다크 모드</Text>
-                  <Text style={styles.settingDescription}>어두운 테마 사용</Text>
-                </View>
-              </View>
-              <Switch
-                value={settings.darkMode}
-                onValueChange={() => handleSettingToggle('darkMode')}
-                trackColor={{ false: '#e9ecef', true: '#4a5568' }}
-                thumbColor={'#ffffff'}
-                ios_backgroundColor="#e9ecef"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* 보안 */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>보안</Text>
-          </View>
-          
-          <View style={styles.settingsList}>
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <View style={styles.settingIconContainer}>
-                  <Ionicons name="finger-print" size={20} color="#4a5568" />
-                </View>
-                <View style={styles.settingTextContainer}>
-                  <Text style={styles.settingTitle}>생체 인증</Text>
-                  <Text style={styles.settingDescription}>Touch ID / Face ID 사용</Text>
-                </View>
-              </View>
-              <Switch
-                value={settings.biometric}
-                onValueChange={() => handleSettingToggle('biometric')}
-                trackColor={{ false: '#e9ecef', true: '#4a5568' }}
-                thumbColor={'#ffffff'}
-                ios_backgroundColor="#e9ecef"
-              />
-            </View>
-
-            <TouchableOpacity style={styles.settingItem} activeOpacity={0.7}>
-              <View style={styles.settingLeft}>
-                <View style={styles.settingIconContainer}>
-                  <Ionicons name="shield-checkmark" size={20} color="#4a5568" />
-                </View>
-                <View style={styles.settingTextContainer}>
-                  <Text style={styles.settingTitle}>개인정보 보호</Text>
-                  <Text style={styles.settingDescription}>데이터 보호 설정</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* 데이터 관리 */}
         <View style={styles.section}>
@@ -191,7 +103,7 @@ export default function SettingsScreen() {
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
                 <View style={styles.settingIconContainer}>
-                  <Ionicons name="cloud" size={20} color="#4a5568" />
+                  <Ionicons name="cloud" size={20} color="#6B7280" />
                 </View>
                 <View style={styles.settingTextContainer}>
                   <Text style={styles.settingTitle}>자동 백업</Text>
@@ -209,11 +121,11 @@ export default function SettingsScreen() {
 
             <TouchableOpacity style={styles.settingItem} activeOpacity={0.7}>
               <View style={styles.settingLeft}>
-                <View style={[styles.settingIconContainer, { backgroundColor: '#fee2e2' }]}>
-                  <Ionicons name="trash" size={20} color="#ef4444" />
+                <View style={styles.settingIconContainer}>
+                  <Ionicons name="trash" size={20} color="#6B7280" />
                 </View>
                 <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: '#ef4444' }]}>데이터 초기화</Text>
+                  <Text style={styles.settingTitle}>데이터 초기화</Text>
                   <Text style={styles.settingDescription}>모든 데이터 삭제 (복구 불가)</Text>
                 </View>
               </View>
@@ -222,17 +134,50 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* 로그아웃 */}
-        <View style={styles.logoutSection}>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={() => navigation.navigate('Login' as never)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-            <Text style={styles.logoutText}>로그아웃</Text>
-          </TouchableOpacity>
+        {/* 계정 */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>계정</Text>
+          </View>
+          
+          <View style={styles.settingsList}>
+            <TouchableOpacity 
+              style={styles.settingItem}
+              onPress={() => navigation.navigate('Login' as never)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.settingIconContainer}>
+                  <Ionicons name="log-out-outline" size={20} color="#6B7280" />
+                </View>
+                <View style={styles.settingTextContainer}>
+                  <Text style={styles.settingTitle}>로그아웃</Text>
+                  <Text style={styles.settingDescription}>계정에서 안전하게 로그아웃</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.settingItem, { borderBottomWidth: 0 }]}
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingLeft}>
+                <View style={styles.settingIconContainer}>
+                  <Ionicons name="person-remove" size={20} color="#6B7280" />
+                </View>
+                <View style={styles.settingTextContainer}>
+                  <Text style={styles.settingTitle}>탈퇴하기</Text>
+                  <Text style={styles.settingDescription}>계정 및 모든 데이터 삭제</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+            </TouchableOpacity>
+          </View>
         </View>
+        
+        {/* 하단 여백 */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </MobileLayout>
   );
@@ -401,30 +346,8 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 
-  // 로그아웃 섹션
-  logoutSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#ef4444',
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ef4444',
+  // 하단 여백
+  bottomSpacer: {
+    height: 32,
   },
 });
