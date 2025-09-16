@@ -202,7 +202,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 24,
     zIndex: 1000,
   },
   
@@ -210,7 +209,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    paddingTop: 100, // 헤더 높이만큼 여백
+    paddingTop: 60, // 헤더 높이만큼 여백
   },
   headerTop: {
     flexDirection: 'row',
