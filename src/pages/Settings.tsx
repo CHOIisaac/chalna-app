@@ -103,24 +103,24 @@ export default function SettingsScreen() {
           </View>
           
           <View style={styles.settingsList}>
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <View style={styles.settingIconContainer}>
-                  <Ionicons name="cloud" size={20} color="#6B7280" />
-                </View>
-                <View style={styles.settingTextContainer}>
-                  <Text style={styles.settingTitle}>자동 백업</Text>
-                  <Text style={styles.settingDescription}>클라우드 자동 백업</Text>
-                </View>
-              </View>
-              <Switch
-                value={settings.autoBackup}
-                onValueChange={() => handleSettingToggle('autoBackup')}
-                trackColor={{ false: '#e9ecef', true: '#4a5568' }}
-                thumbColor={'#ffffff'}
-                ios_backgroundColor="#e9ecef"
-              />
-            </View>
+            {/*<View style={styles.settingItem}>*/}
+            {/*  <View style={styles.settingLeft}>*/}
+            {/*    <View style={styles.settingIconContainer}>*/}
+            {/*      <Ionicons name="cloud" size={20} color="#6B7280" />*/}
+            {/*    </View>*/}
+            {/*    <View style={styles.settingTextContainer}>*/}
+            {/*      <Text style={styles.settingTitle}>자동 백업</Text>*/}
+            {/*      <Text style={styles.settingDescription}>클라우드 자동 백업</Text>*/}
+            {/*    </View>*/}
+            {/*  </View>*/}
+            {/*  <Switch*/}
+            {/*    value={settings.autoBackup}*/}
+            {/*    onValueChange={() => handleSettingToggle('autoBackup')}*/}
+            {/*    trackColor={{ false: '#e9ecef', true: '#4a5568' }}*/}
+            {/*    thumbColor={'#ffffff'}*/}
+            {/*    ios_backgroundColor="#e9ecef"*/}
+            {/*  />*/}
+            {/*</View>*/}
 
             <TouchableOpacity style={styles.settingItem} activeOpacity={0.7}>
               <View style={styles.settingLeft}>
