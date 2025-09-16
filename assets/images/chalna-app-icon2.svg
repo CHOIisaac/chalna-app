@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 검은색 배경 -->
+  <rect width="512" height="512" fill="#000000" rx="80"/>
+  
+  <!-- CHALNA 텍스트 - C와 A가 조금 벗어나게 -->
+  <text x="256" y="300" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="#F8F9FA" text-anchor="middle" dominant-baseline="middle" letter-spacing="8">CHALNA</text>
+</svg>
