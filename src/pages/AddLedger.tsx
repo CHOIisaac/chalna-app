@@ -123,7 +123,7 @@ const AddLedger: React.FC = () => {
               onPress={() => router.back()}
               activeOpacity={0.7}
             >
-              <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+              <Ionicons name="chevron-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
             <Text style={styles.title}>장부 작성</Text>
             <View style={styles.placeholder} />

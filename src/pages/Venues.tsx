@@ -1,18 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../lib/utils';
 import MobileLayout from '../components/layout/MobileLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { useNavigation } from '@react-navigation/native';
+import { Card, CardContent } from '../components/ui/Card';
+import { colors } from '../lib/utils';
 
 const Venues: React.FC = () => {
   const navigation = useNavigation();
@@ -111,7 +111,7 @@ const Venues: React.FC = () => {
             onPress={() => navigation.goBack()}
             activeOpacity={0.7}
           >
-            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+            <Ionicons name="chevron-back" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text style={styles.title}>업체 정보</Text>
           <View style={styles.placeholder} />

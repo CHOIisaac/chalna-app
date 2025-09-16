@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useRef } from 'react';
 import {
     ScrollView,
@@ -13,6 +14,7 @@ import { shadows } from '../lib/utils';
 
 const More: React.FC = () => {
   const navigation = useNavigation();
+  const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
@@ -22,27 +24,51 @@ const More: React.FC = () => {
     }, [])
   );
 
-  const menuItems = [
+  const quickActions = [
     {
-      title: '엑셀파일로 내보내기',
-      description: '경조사 데이터를 엑셀 파일로 저장',
+      title: '내 데이터 내보내기',
+      description: '경조사 데이터를 파일로 저장',
+      icon: 'download-outline',
+      color: '#059669',
       onPress: () => {
-        // TODO: 엑셀 내보내기 기능 구현
-        console.log('엑셀 내보내기 기능 실행');
+        // TODO: 내보내기 기능 구현
+        console.log('데이터 내보내기 기능 실행');
       },
     },
     {
-      title: '도움말',
-      description: '사용법 및 문의사항',
+      title: '공유하기',
+      description: '친구에게 앱 추천하기',
+      icon: 'share-outline',
+      color: '#3b82f6',
       onPress: () => {
-        // Help screen navigation
+        // TODO: 공유 기능 구현
+      },
+    },
+  ];
+
+  const serviceMenuItems = [
+    {
+      title: '고객센터',
+      description: '문의사항 및 신고하기',
+      icon: 'headset-outline',
+      onPress: () => {
+        // TODO: 고객센터 기능
       },
     },
     {
-      title: '앱 정보',
-      description: '버전 정보 및 라이선스',
+      title: '공지사항',
+      description: '앱 업데이트 및 이벤트 소식',
+      icon: 'megaphone-outline',
       onPress: () => {
-        // App info screen navigation
+        // TODO: 공지사항 기능
+      },
+    },
+    {
+      title: '이용약관',
+      description: '서비스 이용약관 및 정책',
+      icon: 'document-text-outline',
+      onPress: () => {
+        // TODO: 이용약관 기능
       },
     },
   ];
@@ -53,30 +79,53 @@ const More: React.FC = () => {
         {/* 사용자 프로필 카드 */}
         <View style={styles.profileSection}>
           <View style={styles.profileCard}>
-            {/* 설정 버튼 */}
-            <TouchableOpacity
+            {/* 설정 버튼 - 우측 상단 */}
+            <TouchableOpacity 
               style={styles.settingsButton}
-              onPress={() => navigation.navigate('Settings' as never)}
+              onPress={() => router.push('/settings')}
               activeOpacity={0.7}
             >
-              <Ionicons name="settings-outline" size={18} color="#1F2937" />
+              <Ionicons name="settings-outline" size={20} color="#6B7280" />
             </TouchableOpacity>
             
             <View style={styles.profileContent}>
               <View style={styles.profileInfo}>
                 <View style={styles.avatar}>
-                  <Ionicons name="person" size={28} color="#6B7280" />
+                  <Ionicons name="person" size={32} color="#6B7280" />
                 </View>
                 <View style={styles.userDetails}>
                   <Text style={styles.userName}>김경조님</Text>
                   <Text style={styles.userEmail}>kim.kyungjo@email.com</Text>
-                  <View style={styles.userStats}>
-                    <Ionicons name="people" size={14} color="#9CA3AF" />
-                    <Text style={styles.statsText}>127명의 소중한 인연</Text>
-                  </View>
+                  <Text style={styles.userStatus}>인증된 계정</Text>
                 </View>
               </View>
             </View>
+          </View>
+        </View>
+
+        {/* 빠른 액션 */}
+        <View style={styles.quickActionsSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>내 서비스</Text>
+          </View>
+          <View style={styles.quickActionsGrid}>
+            {quickActions.map((action, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.quickActionCard}
+                onPress={action.onPress}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}15` }]}>
+                  <Ionicons name={action.icon as any} size={24} color={action.color} />
+                </View>
+                <View style={styles.quickActionText}>
+                  <Text style={styles.quickActionTitle}>{action.title}</Text>
+                  <Text style={styles.quickActionDescription}>{action.description}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -105,10 +154,13 @@ const More: React.FC = () => {
           </View>
         </View>
 
-        {/* 메뉴 항목 */}
+        {/* 고객지원 */}
         <View style={styles.additionalMenuSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>고객지원</Text>
+          </View>
           <View style={styles.additionalMenuList}>
-            {menuItems.map((item, index) => (
+            {serviceMenuItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.additionalMenuItem}
@@ -116,9 +168,14 @@ const More: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <View style={styles.additionalMenuContent}>
-                  <View style={styles.additionalMenuText}>
-                    <Text style={styles.additionalMenuTitle}>{item.title}</Text>
-                    <Text style={styles.additionalMenuDescription}>{item.description}</Text>
+                  <View style={styles.menuItemLeft}>
+                    <View style={styles.menuItemIcon}>
+                      <Ionicons name={item.icon as any} size={20} color="#4a5568" />
+                    </View>
+                    <View style={styles.additionalMenuText}>
+                      <Text style={styles.additionalMenuTitle}>{item.title}</Text>
+                      <Text style={styles.additionalMenuDescription}>{item.description}</Text>
+                    </View>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
                 </View>
@@ -167,12 +224,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F9FAFB',
     zIndex: 1,
   },
   headerContent: {
@@ -193,13 +249,13 @@ const styles = StyleSheet.create({
   // 프로필 섹션
   profileSection: {
     paddingHorizontal: 20,
-    paddingTop: 30,
-    paddingBottom: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
   },
   profileCard: {
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 16,
+    padding: 20,
     position: 'relative',
     ...shadows.soft,
   },
@@ -223,6 +279,8 @@ const styles = StyleSheet.create({
   },
   userDetails: {
     flex: 1,
+    justifyContent: 'center',
+    marginTop: 10
   },
   userName: {
     fontSize: 18,
@@ -233,7 +291,12 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 8,
+    marginBottom: 4,
+  },
+  userStatus: {
+    fontSize: 12,
+    color: '#4a5568',
+    fontWeight: '500',
   },
   userStats: {
     flexDirection: 'row',
@@ -257,11 +320,11 @@ const styles = StyleSheet.create({
   // 빠른 통계 섹션
   quickStatsSection: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   statsCard: {
     backgroundColor: 'white',
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 20,
     ...shadows.soft,
   },
@@ -317,10 +380,58 @@ const styles = StyleSheet.create({
   },
 
 
+  // 빠른 액션 섹션
+  quickActionsSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
+  quickActionsGrid: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    ...shadows.soft,
+  },
+  quickActionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  quickActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  quickActionText: {
+    flex: 1,
+  },
+  quickActionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 2,
+  },
+  quickActionDescription: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+
   // 추가 메뉴 섹션
   additionalMenuSection: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 12,
+  },
+  sectionHeader: {
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
   },
   additionalMenuList: {
     backgroundColor: 'white',
@@ -337,6 +448,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  menuItemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   additionalMenuText: {
     flex: 1,
@@ -356,12 +481,12 @@ const styles = StyleSheet.create({
   appInfoSection: {
     paddingHorizontal: 20,
     paddingTop: 0,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   appInfoCard: {
     backgroundColor: 'white',
     borderRadius: 16,
-    padding: 16,
+    padding: 20,
     ...shadows.soft,
   },
   appInfoHeader: {

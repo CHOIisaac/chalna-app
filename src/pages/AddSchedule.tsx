@@ -11,8 +11,8 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
- 
-const DateTimePicker = require('@react-native-community/datetimepicker').default;
+
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const AddSchedule: React.FC = () => {
   const router = useRouter();
@@ -110,7 +110,7 @@ const AddSchedule: React.FC = () => {
               onPress={() => router.back()}
               activeOpacity={0.7}
             >
-              <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+              <Ionicons name="chevron-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
             <Text style={styles.title}>일정 추가</Text>
             <View style={styles.placeholder} />
@@ -373,6 +373,7 @@ const AddSchedule: React.FC = () => {
             textAlignVertical="top"
           />
         </View>
+
           </View>
         </View>
       </ScrollView>

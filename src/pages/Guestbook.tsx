@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../lib/utils';
+import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Avatar } from '../components/ui/Avatar';
 import Button from '../components/ui/Button';
-import { useNavigation } from '@react-navigation/native';
+import { Card, CardContent } from '../components/ui/Card';
+import { colors } from '../lib/utils';
 
 const Guestbook: React.FC = () => {
   const navigation = useNavigation();
@@ -55,7 +55,7 @@ const Guestbook: React.FC = () => {
             onPress={() => navigation.goBack()}
             activeOpacity={0.7}
           >
-            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+            <Ionicons name="chevron-back" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text style={styles.title}>방명록</Text>
           <TouchableOpacity

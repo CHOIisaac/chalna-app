@@ -65,7 +65,7 @@ const NotificationDetail: React.FC = () => {
             onPress={() => router.back()}
             activeOpacity={0.7}
           >
-            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color="#333" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>알림 상세</Text>
           <View style={styles.headerRight} />
