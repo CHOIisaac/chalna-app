@@ -3,11 +3,13 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef } from 'react';
 import {
+    Platform,
     ScrollView,
+    Share,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { shadows } from '../lib/utils';
@@ -40,8 +42,62 @@ const More: React.FC = () => {
       description: '친구에게 앱 추천하기',
       icon: 'share-outline',
       color: '#3b82f6',
-      onPress: () => {
-        // TODO: 공유 기능 구현
+      onPress: async () => {
+        try {
+          // 앱스토어/플레이스토어 링크 (나중에 실제 링크로 교체)
+          const appStoreUrl = Platform.select({
+            ios: 'https://apps.apple.com/app/chalna',
+            android: 'https://play.google.com/store/apps/details?id=com.chalna.app',
+          });
+
+          const shareContent = {
+            message: `📱 찰나 앱 - 소중한 순간을 놓치지 마세요!
+
+💝 경조사 관리를 쉽고 체계적으로
+📅 일정 관리부터 장부 기록까지
+🎁 축하금 관리와 인맥 정리까지
+
+지금 바로 다운로드하세요!
+${appStoreUrl || ''}`,
+            title: '찰나 앱 추천',
+            url: appStoreUrl, // iOS에서 링크 미리보기로 표시
+          };
+
+          const result = await Share.share(shareContent, {
+            dialogTitle: '📱 찰나 앱을 친구에게 추천해보세요!',
+            ...(Platform.OS === 'ios' && {
+              excludedActivityTypes: [
+                'com.apple.UIKit.activity.PostToTwitter',
+                'com.apple.UIKit.activity.PostToFacebook',
+              ],
+            }),
+          });
+
+          if (result.action === Share.sharedAction) {
+            console.log('✅ 공유 완료');
+            if (result.activityType) {
+              console.log('📤 공유된 앱:', result.activityType);
+            }
+          } else if (result.action === Share.dismissedAction) {
+            console.log('❌ 공유 취소');
+          }
+        } catch (error) {
+          console.error('🚨 공유 실패:', error);
+          
+          // 에러 발생 시 간단한 텍스트 공유로 폴백
+          try {
+            const result = await Share.share({
+              message: '📱 찰나 앱 - 소중한 순간을 놓치지 마세요!\n경조사 관리를 쉽게 해보세요.',
+              title: '찰나 앱 추천',
+            });
+            
+            if (result.action === Share.sharedAction) {
+              console.log('✅ 폴백 공유 완료');
+            }
+          } catch (fallbackError) {
+            console.error('🚨 폴백 공유도 실패:', fallbackError);
+          }
+        }
       },
     },
   ];
