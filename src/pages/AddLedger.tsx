@@ -114,9 +114,9 @@ const AddLedger: React.FC = () => {
 
   return (
     <MobileLayout currentPage="add-ledger">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
-        {/* 헤더 */}
-        <View style={styles.header}>
+      <View style={styles.container}>
+        {/* 고정 헤더 */}
+        <View style={styles.fixedHeader}>
           <View style={styles.headerTop}>
             <TouchableOpacity
               style={styles.backButton}
@@ -128,8 +128,10 @@ const AddLedger: React.FC = () => {
             <Text style={styles.title}>장부 작성</Text>
             <View style={styles.placeholder} />
           </View>
-          <Text style={styles.subtitle}>새로운 경조사 장부를 작성하세요</Text>
         </View>
+
+        {/* 스크롤 가능한 컨텐츠 */}
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
 
         {/* 폼 섹션 */}
         <View style={styles.formSection}>
@@ -350,18 +352,17 @@ const AddLedger: React.FC = () => {
               />
             </View>
           </View>
+          {/* 저장 버튼 */}
+          <View style={styles.bottomSection}>
+            <TouchableOpacity 
+              style={styles.saveButton}
+              onPress={handleSave}
+            >
+              <Text style={styles.saveButtonText}>저장</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-      </ScrollView>
-
-      {/* 저장 버튼 */}
-      <View style={styles.bottomSection}>
-        <TouchableOpacity 
-          style={styles.saveButton}
-          onPress={handleSave}
-        >
-          <Text style={styles.saveButtonText}>저장</Text>
-        </TouchableOpacity>
+        </ScrollView>
       </View>
     </MobileLayout>
   );
@@ -373,12 +374,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   
-  // 헤더 스타일
-  header: {
+  // 고정 헤더 스타일
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 20,
+    // paddingBottom: 20,
+    zIndex: 1000,
+  },
+  
+  // 스크롤 컨텐츠
+  scrollContent: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingTop: 60, // 헤더 높이만큼 여백
   },
   headerTop: {
     flexDirection: 'row',

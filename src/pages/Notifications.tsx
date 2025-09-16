@@ -112,9 +112,9 @@ const Notifications: React.FC = () => {
 
   return (
     <MobileLayout currentPage="notifications">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 알림 전용 헤더 */}
-        <View style={styles.header}>
+      <View style={styles.container}>
+        {/* 고정 헤더 */}
+        <View style={styles.fixedHeader}>
           <View style={styles.headerTop}>
             <TouchableOpacity
               style={styles.backButton}
@@ -180,6 +180,8 @@ const Notifications: React.FC = () => {
           </View>
         </View>
 
+        {/* 스크롤 가능한 컨텐츠 */}
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* 알림 목록 */}
         <View style={styles.notificationsSection}>
           
@@ -291,7 +293,8 @@ const Notifications: React.FC = () => {
             </Text>
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      </View>
     </MobileLayout>
   );
 };
@@ -302,12 +305,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   
-  // 헤더 스타일
-  header: {
+  // 고정 헤더 스타일
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
+    zIndex: 1000,
+  },
+  
+  // 스크롤 컨텐츠
+  scrollContent: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingTop: 160, // 헤더와 통계 높이만큼 여백
   },
   headerTop: {
     flexDirection: 'row',

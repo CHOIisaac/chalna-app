@@ -115,7 +115,6 @@ const AddSchedule: React.FC = () => {
             <Text style={styles.title}>일정 추가</Text>
             <View style={styles.placeholder} />
           </View>
-          <Text style={styles.subtitle}>새로운 경조사 일정을 추가하세요</Text>
         </View>
 
         {/* 폼 섹션 */}
@@ -400,7 +399,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 20,
+    // paddingBottom: 20,
     backgroundColor: '#f8f9fa',
   },
   headerTop: {

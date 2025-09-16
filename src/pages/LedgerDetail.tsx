@@ -97,9 +97,9 @@ const LedgerDetail: React.FC = () => {
 
   return (
     <MobileLayout currentPage="ledger-detail">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 헤더 */}
-        <View style={styles.header}>
+      <View style={styles.container}>
+        {/* 고정 헤더 */}
+        <View style={styles.fixedHeader}>
           <View style={styles.headerTop}>
             <TouchableOpacity
               style={styles.backButton}
@@ -112,6 +112,9 @@ const LedgerDetail: React.FC = () => {
             <View style={styles.placeholder} />
           </View>
         </View>
+
+        {/* 스크롤 가능한 컨텐츠 */}
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
 
         {/* 장부 정보 수정 섹션 */}
@@ -233,7 +236,8 @@ const LedgerDetail: React.FC = () => {
             <Text style={styles.secondaryActionText}>일정 보기</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </MobileLayout>
   );
 };
@@ -244,12 +248,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   
-  // 헤더 스타일
-  header: {
-    backgroundColor: '8f9fa',
+  // 고정 헤더 스타일
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
+    zIndex: 1000,
+  },
+  
+  // 스크롤 컨텐츠
+  scrollContent: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingTop: 80, // 헤더 높이만큼 여백
   },
   headerTop: {
     flexDirection: 'row',
@@ -280,8 +296,8 @@ const styles = StyleSheet.create({
   },
 
 
-  // 프로필 섹션
-  profileSection: {
+  // 수정 섹션
+  editSection: {
     paddingHorizontal: 20,
     paddingTop: 20,
   },
@@ -329,11 +345,6 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 
-  // 장부 정보 수정 섹션
-  editSection: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
