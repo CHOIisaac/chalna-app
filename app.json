@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "",
+    "name": "찰",
     "slug": "chalna",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/chalna-app-icon.png",
+    "icon": "./assets/images/chalna-app-icon1.png",
     "scheme": "chalna",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/chalna-app-icon.png",
+        "foregroundImage": "./assets/images/chalna-app-icon1.png",
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true
@@ -23,23 +23,23 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/chalna-app-icon.png"
+      "favicon": "./assets/images/chalna-app-icon1.png"
     },
     "plugins": [
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/chalna-app-icon.png",
+          "image": "./assets/images/chalna-app-icon1.png",
           "imageWidth": 200,
-          "resizeMode": "contain",
+          "resizeMode": "cover",
           "backgroundColor": "#000000",
           "dark": {
-            "image": "./assets/images/chalna-app-icon.png",
+            "image": "./assets/images/chalna-app-icon1.png",
             "backgroundColor": "#000000"
           },
           "light": {
-            "image": "./assets/images/chalna-app-icon.png",
-            "backgroundColor": "#000000"
+            "image": "./assets/images/chalna-app-icon1.png",
+            "backgroundColor": "#0000FF"
           }
         }
       ]
