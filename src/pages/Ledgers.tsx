@@ -131,11 +131,11 @@ const Ledgers: React.FC = () => {
   const totalReceived = ledgers.filter(ledger => ledger.type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
 
   return (
-    <MobileLayout currentPage="contacts">
+    <MobileLayout currentPage="ledgers">
       {/* 고정 헤더 */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.title}>장부</Text>
+          <Text style={styles.title}>장부 기록</Text>
           <TouchableOpacity 
             style={styles.filterButton}
             onPress={() => setShowFilterModal(true)}

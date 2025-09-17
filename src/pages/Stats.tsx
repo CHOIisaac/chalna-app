@@ -370,7 +370,7 @@ const Stats: React.FC = () => {
       {/* 고정 헤더 */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.title}>찰나 기록</Text>
+          <Text style={styles.title}>찰나 통계</Text>
         </View>
       </View>
 
