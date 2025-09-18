@@ -185,30 +185,6 @@ ${appStoreUrl || ''}`,
           </View>
         </View>
 
-        {/* 이번 달 활동 */}
-        <View style={styles.quickStatsSection}>
-          <View style={styles.statsCard}>
-            <View style={styles.statsHeader}>
-              <Text style={styles.statsTitle}>이번 달 요약</Text>
-            </View>
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>3</Text>
-                <Text style={styles.statLabel}>참여한 경조사</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>1.2M</Text>
-                <Text style={styles.statLabel}>총 지출</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>800K</Text>
-                <Text style={styles.statLabel}>총 수입</Text>
-              </View>
-            </View>
-          </View>
-        </View>
 
         {/* 고객지원 */}
         <View style={styles.additionalMenuSection}>
@@ -373,67 +349,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // 빠른 통계 섹션
-  quickStatsSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-  },
-  statsCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    ...shadows.soft,
-  },
-  statsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  statsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  statsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  statsBadgeText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#059669',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: 16,
-  },
 
 
   // 빠른 액션 섹션
