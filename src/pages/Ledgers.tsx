@@ -3,14 +3,15 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
@@ -20,11 +21,20 @@ const Ledgers: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  
+  // 현재 열린 Swipeable 관리
+  const openSwipeableRefs = useRef<{[key: number]: any}>({});
 
-  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동 및 스와이프 닫기
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      // 탭 전환 시 열린 스와이프 모두 닫기
+      Object.values(openSwipeableRefs.current).forEach(ref => {
+        if (ref && ref.close) {
+          ref.close();
+        }
+      });
     }, [])
   );
   
@@ -36,8 +46,8 @@ const Ledgers: React.FC = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Mock data for ledgers - 경조사 내역 목록
-  const ledgers = [
+  // Mock data for ledgers - 경조사 내역 목록 (상태로 관리하여 삭제 가능하게)
+  const [ledgers, setLedgers] = useState([
     {
       id: 1,
       name: "김철수",
@@ -97,7 +107,70 @@ const Ledgers: React.FC = () => {
       date: "2023-10-05",
       type: "received"
     }
-  ];
+  ]);
+
+  // 삭제된 항목과 되돌리기 상태
+  const [deletedLedger, setDeletedLedger] = useState<any>(null);
+  const [showUndoToast, setShowUndoToast] = useState(false);
+
+  // 삭제 함수 (즉시 삭제)
+  const handleDeleteLedger = (ledgerId: number) => {
+    const ledgerToDelete = ledgers.find(ledger => ledger.id === ledgerId);
+    if (ledgerToDelete) {
+      // 바로 삭제
+      setLedgers(prevLedgers => prevLedgers.filter(ledger => ledger.id !== ledgerId));
+      
+      // 되돌리기를 위해 삭제된 항목 저장
+      setDeletedLedger(ledgerToDelete);
+      setShowUndoToast(true);
+      
+      // 5초 후에 되돌리기 토스트 자동 사라짐
+      setTimeout(() => {
+        setShowUndoToast(false);
+        setDeletedLedger(null);
+      }, 5000);
+    }
+  };
+
+  // 되돌리기 함수
+  const handleUndoDelete = () => {
+    if (deletedLedger) {
+      setLedgers(prevLedgers => [...prevLedgers, deletedLedger].sort((a, b) => a.id - b.id));
+      setDeletedLedger(null);
+      setShowUndoToast(false);
+    }
+  };
+
+  // 모든 열린 Swipeable 닫기
+  const closeAllSwipeables = () => {
+    Object.values(openSwipeableRefs.current).forEach(ref => {
+      if (ref && ref.close) {
+        ref.close();
+      }
+    });
+  };
+
+  // Swipeable ref 등록
+  const registerSwipeableRef = useCallback((id: number, ref: any) => {
+    if (ref) {
+      openSwipeableRefs.current[id] = ref;
+    } else {
+      delete openSwipeableRefs.current[id];
+    }
+  }, []);
+
+  // 스와이프 삭제 버튼 렌더링 (현업 표준)
+  const renderRightActions = (ledgerId: number) => {
+    return (
+      <TouchableOpacity
+        style={styles.deleteAction}
+        onPress={() => handleDeleteLedger(ledgerId)}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.deleteActionText}>삭제</Text>
+      </TouchableOpacity>
+    );
+  };
 
   // 필터링 및 정렬 로직
   const filteredAndSortedLedgers = ledgers
@@ -133,12 +206,15 @@ const Ledgers: React.FC = () => {
   return (
     <MobileLayout currentPage="ledgers">
       {/* 고정 헤더 */}
-      <View style={styles.header}>
+      <View style={styles.header} onTouchStart={closeAllSwipeables}>
         <View style={styles.headerTop}>
           <Text style={styles.title}>장부 기록</Text>
           <TouchableOpacity 
             style={styles.filterButton}
-            onPress={() => setShowFilterModal(true)}
+            onPress={() => {
+              closeAllSwipeables();
+              setShowFilterModal(true);
+            }}
           >
             <Ionicons name="options-outline" size={20} color={colors.foreground} />
           </TouchableOpacity>
@@ -155,6 +231,7 @@ const Ledgers: React.FC = () => {
             placeholderTextColor="#999"
             value={searchTerm}
             onChangeText={setSearchTerm}
+            onFocus={closeAllSwipeables}
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
@@ -164,7 +241,12 @@ const Ledgers: React.FC = () => {
         </View>
       </View>
 
-      <ScrollView ref={scrollViewRef} style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        ref={scrollViewRef} 
+        style={styles.scrollContainer} 
+        showsVerticalScrollIndicator={false}
+        onTouchStart={closeAllSwipeables}
+      >
 
         {/* 무신사 스타일 통계 카드 */}
         <View style={styles.statsSection}>
@@ -194,44 +276,61 @@ const Ledgers: React.FC = () => {
           <View style={styles.ledgersList}>
             {filteredAndSortedLedgers.map((ledger) => {
               return (
-                <TouchableOpacity 
-                  key={ledger.id} 
-                  style={styles.ledgerCard}
-                  activeOpacity={0.8}
-                  onPress={() => router.push(`/ledger-detail?id=${ledger.id}`)}
+                <Swipeable 
+                  key={ledger.id}
+                  ref={ref => registerSwipeableRef(ledger.id, ref)}
+                  renderRightActions={() => renderRightActions(ledger.id)}
+                  rightThreshold={40}
+                  onSwipeableWillOpen={() => {
+                    // 다른 Swipeable들 닫기
+                    Object.entries(openSwipeableRefs.current).forEach(([id, ref]) => {
+                      if (parseInt(id) !== ledger.id && ref && ref.close) {
+                        ref.close();
+                      }
+                    });
+                  }}
                 >
-                  {/* 메모 표시 - 카드 모서리 */}
-                  {ledger.memo && ledger.memo.trim() !== '' && (
-                    <View style={styles.memoCorner} />
-                  )}
+                  <TouchableOpacity 
+                    style={styles.ledgerCard}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      closeAllSwipeables();
+                      router.push(`/ledger-detail?id=${ledger.id}`);
+                    }}
+                  >
+                    {/* 메모 표시 - 카드 모서리 */}
+                    {ledger.memo && ledger.memo.trim() !== '' && (
+                      <View style={styles.memoCorner} />
+                    )}
 
-                  {/* 정보 영역 */}
-                  <View style={styles.ledgerInfo}>
-                    <View style={styles.ledgerHeader}>
-                      <Text style={styles.ledgerName}>{ledger.name}</Text>
+                    {/* 정보 영역 */}
+                    <View style={styles.ledgerInfo}>
+                      <View style={styles.ledgerHeader}>
+                        <Text style={styles.ledgerName}>{ledger.name}</Text>
+                      </View>
+                      
+                      <View style={styles.ledgerDetails}>
+                        <Text style={styles.relationshipText}>{ledger.relationship}</Text>
+                        <Text style={styles.separator}>•</Text>
+                        <Text style={styles.eventTypeText}>{ledger.eventType}</Text>
+                      </View>
+                      
+                      <View style={styles.ledgerMeta}>
+                        <Text style={styles.dateText}>{ledger.date}</Text>
+                      </View>
                     </View>
-                    
-                    <View style={styles.ledgerDetails}>
-                      <Text style={styles.relationshipText}>{ledger.relationship}</Text>
-                      <Text style={styles.separator}>•</Text>
-                      <Text style={styles.eventTypeText}>{ledger.eventType}</Text>
-                    </View>
-                    
-                    <View style={styles.ledgerMeta}>
-                      <Text style={styles.dateText}>{ledger.date}</Text>
-                    </View>
-                  </View>
 
-                  {/* 금액 영역 */}
-                  <View style={styles.amountSection}>
-                    <Text style={[styles.amountText, { color: '#4a5568' }]}>
-                      {ledger.amount.toLocaleString()}원
-                    </Text>
-                    <Text style={[styles.typeLabel, { color: ledger.type === 'given' ? '#4a5568' : '#718096' }]}>
-                      {ledger.type === 'given' ? '나눔' : '받음'}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                    {/* 금액 영역 */}
+                    <View style={styles.amountSection}>
+                      <Text style={[styles.amountText, { color: '#4a5568' }]}>
+                        {ledger.amount.toLocaleString()}원
+                      </Text>
+                      <Text style={[styles.typeLabel, { color: ledger.type === 'given' ? '#4a5568' : '#718096' }]}>
+                        {ledger.type === 'given' ? '나눔' : '받음'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </Swipeable>
               );
             })}
           </View>
@@ -251,6 +350,24 @@ const Ledgers: React.FC = () => {
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton />
+
+      {/* 되돌리기 토스트 */}
+      {showUndoToast && (
+        <View style={styles.undoToast}>
+          <View style={styles.undoToastContent}>
+            <Text style={styles.undoToastText}>
+              {deletedLedger?.name} 기록이 삭제되었습니다
+            </Text>
+            <TouchableOpacity 
+              style={styles.undoButton}
+              onPress={handleUndoDelete}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.undoButtonText}>되돌리기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* 필터 모달 */}
       <Modal
@@ -846,6 +963,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+
+  // 스와이프 삭제 스타일 (현업 표준)
+  deleteAction: {
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    borderRadius: 16,
+  },
+  deleteActionText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // 되돌리기 토스트 스타일
+  undoToast: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  undoToastContent: {
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  undoToastText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+    marginRight: 16,
+  },
+  undoButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  undoButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

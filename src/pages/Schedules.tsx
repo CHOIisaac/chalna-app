@@ -9,8 +9,9 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
 
@@ -18,11 +19,20 @@ const Events: React.FC = () => {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  
+  // 현재 열린 Swipeable 관리
+  const openSwipeableRefs = useRef<{[key: string]: any}>({});
 
-  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동 및 스와이프 닫기
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      // 탭 전환 시 열린 스와이프 모두 닫기
+      Object.values(openSwipeableRefs.current).forEach(ref => {
+        if (ref && ref.close) {
+          ref.close();
+        }
+      });
     }, [])
   );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -40,8 +50,8 @@ const Events: React.FC = () => {
   const [showEventTypeDropdown, setShowEventTypeDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Mock data for events
-  const events = [
+  // Mock data for events (상태로 관리하여 삭제 가능하게)
+  const [events, setEvents] = useState([
     {
       id: "1",
       title: "김철수 결혼식",
@@ -92,7 +102,70 @@ const Events: React.FC = () => {
       status: "completed",
       memo: "헌금 10만원 전달 완료",
     }
-  ];
+  ]);
+
+  // 삭제된 항목과 되돌리기 상태
+  const [deletedEvent, setDeletedEvent] = useState<any>(null);
+  const [showUndoToast, setShowUndoToast] = useState(false);
+
+  // 삭제 함수 (즉시 삭제)
+  const handleDeleteEvent = (eventId: string) => {
+    const eventToDelete = events.find(event => event.id === eventId);
+    if (eventToDelete) {
+      // 바로 삭제
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+      
+      // 되돌리기를 위해 삭제된 항목 저장
+      setDeletedEvent(eventToDelete);
+      setShowUndoToast(true);
+      
+      // 5초 후에 되돌리기 토스트 자동 사라짐
+      setTimeout(() => {
+        setShowUndoToast(false);
+        setDeletedEvent(null);
+      }, 5000);
+    }
+  };
+
+  // 되돌리기 함수
+  const handleUndoDelete = () => {
+    if (deletedEvent) {
+      setEvents(prevEvents => [...prevEvents, deletedEvent].sort((a, b) => a.id.localeCompare(b.id)));
+      setDeletedEvent(null);
+      setShowUndoToast(false);
+    }
+  };
+
+  // 모든 열린 Swipeable 닫기
+  const closeAllSwipeables = () => {
+    Object.values(openSwipeableRefs.current).forEach(ref => {
+      if (ref && ref.close) {
+        ref.close();
+      }
+    });
+  };
+
+  // Swipeable ref 등록
+  const registerSwipeableRef = useCallback((id: string, ref: any) => {
+    if (ref) {
+      openSwipeableRefs.current[id] = ref;
+    } else {
+      delete openSwipeableRefs.current[id];
+    }
+  }, []);
+
+  // 스와이프 삭제 버튼 렌더링 (현업 표준)
+  const renderRightActions = (eventId: string) => {
+    return (
+      <TouchableOpacity
+        style={styles.deleteAction}
+        onPress={() => handleDeleteEvent(eventId)}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.deleteActionText}>삭제</Text>
+      </TouchableOpacity>
+    );
+  };
 
   // 필터링 및 정렬 로직
   const filteredAndSortedEvents = events
@@ -227,7 +300,7 @@ const Events: React.FC = () => {
   return (
     <MobileLayout currentPage="schedules">
       {/* 고정 헤더 */}
-      <View style={styles.header}>
+      <View style={styles.header} onTouchStart={closeAllSwipeables}>
         <View style={styles.headerTop}>
           <Text style={styles.title}>함께할 순간</Text>
           <View style={styles.headerActions}>
@@ -237,7 +310,10 @@ const Events: React.FC = () => {
                   styles.toggleButtonCompact,
                   viewMode === 'list' && styles.activeToggleButtonCompact,
                 ]}
-                onPress={() => setViewMode('list')}
+                onPress={() => {
+                  closeAllSwipeables();
+                  setViewMode('list');
+                }}
               >
                 <Ionicons
                   name="list"
@@ -250,7 +326,10 @@ const Events: React.FC = () => {
                   styles.toggleButtonCompact,
                   viewMode === 'calendar' && styles.activeToggleButtonCompact,
                 ]}
-                onPress={() => setViewMode('calendar')}
+                onPress={() => {
+                  closeAllSwipeables();
+                  setViewMode('calendar');
+                }}
               >
                 <Ionicons
                   name="calendar"
@@ -261,7 +340,10 @@ const Events: React.FC = () => {
             </View>
             <TouchableOpacity 
               style={styles.filterButton}
-              onPress={() => setShowFilterModal(true)}
+              onPress={() => {
+                closeAllSwipeables();
+                setShowFilterModal(true);
+              }}
             >
               <Ionicons name="options-outline" size={20} color="#1a1a1a" />
             </TouchableOpacity>
@@ -279,6 +361,7 @@ const Events: React.FC = () => {
             placeholderTextColor="#999"
             value={searchTerm}
             onChangeText={setSearchTerm}
+            onFocus={closeAllSwipeables}
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
@@ -288,7 +371,12 @@ const Events: React.FC = () => {
         </View>
       </View>
 
-      <ScrollView ref={scrollViewRef} style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        ref={scrollViewRef} 
+        style={styles.scrollContainer} 
+        showsVerticalScrollIndicator={false}
+        onTouchStart={closeAllSwipeables}
+      >
 
         {/* 무신사 스타일 통계 카드 */}
         <View style={styles.statsSection}>
@@ -327,12 +415,28 @@ const Events: React.FC = () => {
                 const isTomorrow = event.date.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
 
                 return (
-                  <TouchableOpacity
+                  <Swipeable 
                     key={event.id}
-                    style={styles.eventCard}
-                    activeOpacity={0.8}
-                    onPress={() => router.push(`/schedule-detail?id=${event.id}`)}
+                    ref={ref => registerSwipeableRef(event.id, ref)}
+                    renderRightActions={() => renderRightActions(event.id)}
+                    rightThreshold={40}
+                    onSwipeableWillOpen={() => {
+                      // 다른 Swipeable들 닫기
+                      Object.entries(openSwipeableRefs.current).forEach(([id, ref]) => {
+                        if (id !== event.id && ref && ref.close) {
+                          ref.close();
+                        }
+                      });
+                    }}
                   >
+                    <TouchableOpacity
+                      style={styles.eventCard}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        closeAllSwipeables();
+                        router.push(`/schedule-detail?id=${event.id}`);
+                      }}
+                    >
                     {/* 메모 표시 - 카드 모서리 */}
                     {event.memo && event.memo.trim() !== '' && (
                       <View style={styles.memoCorner} />
@@ -384,7 +488,8 @@ const Events: React.FC = () => {
                         </Text>
                       </View>
                     </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </Swipeable>
                 );
               })}
             </View>
@@ -566,6 +671,24 @@ const Events: React.FC = () => {
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton />
+
+      {/* 되돌리기 토스트 */}
+      {showUndoToast && (
+        <View style={styles.undoToast}>
+          <View style={styles.undoToastContent}>
+            <Text style={styles.undoToastText}>
+              {deletedEvent?.title} 일정이 삭제되었습니다
+            </Text>
+            <TouchableOpacity 
+              style={styles.undoButton}
+              onPress={handleUndoDelete}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.undoButtonText}>되돌리기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* 필터 모달 */}
       <Modal
@@ -1531,6 +1654,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+
+  // 스와이프 삭제 스타일 (현업 표준)
+  deleteAction: {
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    borderRadius: 16,
+  },
+  deleteActionText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // 되돌리기 토스트 스타일
+  undoToast: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  undoToastContent: {
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  undoToastText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+    marginRight: 16,
+  },
+  undoButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  undoButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
