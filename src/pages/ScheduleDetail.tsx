@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
+    Alert,
     ScrollView,
     StyleSheet,
     Text,
@@ -25,6 +26,29 @@ const ScheduleDetail: React.FC = () => {
         title: eventDetail.title
       }
     });
+  };
+
+  // 삭제 핸들러
+  const handleDelete = () => {
+    Alert.alert(
+      "",
+      `'${eventDetail.title}' 일정을 삭제하시겠습니까?`,
+      [
+        {
+          text: "취소",
+          style: "cancel"
+        },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: () => {
+            // 실제로는 API 호출로 삭제
+            console.log(`일정 ${id} 삭제됨`);
+            router.back(); // 목록으로 돌아가기
+          }
+        }
+      ]
+    );
   };
 
   // Mock data for event detail
@@ -55,7 +79,13 @@ const ScheduleDetail: React.FC = () => {
               <Ionicons name="chevron-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
             <Text style={styles.title}>상세 정보</Text>
-            <View style={styles.placeholder} />
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={handleDelete}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash-outline" size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -244,8 +274,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a1a1a',
   },
-  placeholder: {
+  deleteButton: {
     width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
   },
 
   // 수정 섹션 스타일

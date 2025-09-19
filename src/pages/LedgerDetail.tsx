@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
+    Alert,
     ScrollView,
     StyleSheet,
     Text,
@@ -25,6 +26,29 @@ const LedgerDetail: React.FC = () => {
         name: ledgerDetail.name
       }
     });
+  };
+
+  // 삭제 핸들러
+  const handleDelete = () => {
+    Alert.alert(
+      "",
+      `${ledgerDetail.name}님과의 장부 내역을 삭제하시겠습니까?`,
+      [
+        {
+          text: "취소",
+          style: "cancel"
+        },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: () => {
+            // 실제로는 API 호출로 삭제
+            console.log(`장부 기록 ${id} 삭제됨`);
+            router.back(); // 목록으로 돌아가기
+          }
+        }
+      ]
+    );
   };
 
   // Mock data for ledger detail
@@ -109,7 +133,13 @@ const LedgerDetail: React.FC = () => {
               <Ionicons name="chevron-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
             <Text style={styles.title}>상세 정보</Text>
-            <View style={styles.placeholder} />
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={handleDelete}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash-outline" size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -284,9 +314,12 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     letterSpacing: -0.5,
   },
-  placeholder: {
+  deleteButton: {
     width: 40,
     height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
   },
   subtitle: {
     fontSize: 15,
