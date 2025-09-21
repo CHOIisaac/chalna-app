@@ -45,7 +45,9 @@ export class AuthService {
   // 액세스 토큰 가져오기
   static async getAccessToken(): Promise<string | null> {
     try {
-      return await AsyncStorage.getItem(TOKEN_KEY);
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
+      console.log('🔑 저장된 토큰:', token ? '있음' : '없음');
+      return token;
     } catch (error) {
       console.error('토큰 조회 실패:', error);
       return null;
