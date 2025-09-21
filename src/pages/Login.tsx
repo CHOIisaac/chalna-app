@@ -1,34 +1,72 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../lib/utils';
-import MobileLayout from '../components/layout/MobileLayout';
 import { Card, CardContent } from '../components/ui/Card';
 import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
-import { useNavigation } from '@react-navigation/native';
+import { colors } from '../lib/utils';
+import { authService, handleApiError } from '../services/api';
 
 const Login: React.FC = () => {
   const navigation = useNavigation();
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleLogin = () => {
-    // Login logic here
-    navigation.navigate('Home' as never);
+  const handleLogin = async () => {
+    if (!formData.username || !formData.password) {
+      Alert.alert('입력 오류', '이메일과 비밀번호를 모두 입력해주세요.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authService.login(formData.username, formData.password);
+      
+      if (response.success) {
+        Alert.alert('로그인 성공', '환영합니다!', [
+          {
+            text: '확인',
+            onPress: () => navigation.navigate('Home' as never),
+          },
+        ]);
+      } else {
+        Alert.alert('로그인 실패', response.error || '로그인에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('로그인 오류:', error);
+      Alert.alert('로그인 실패', handleApiError(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKakaoLogin = async () => {
+    try {
+      setLoading(true);
+      // 카카오 SDK 로그인은 나중에 구현
+      Alert.alert('카카오 로그인', '카카오 로그인은 준비 중입니다.');
+    } catch (error) {
+      console.error('카카오 로그인 오류:', error);
+      Alert.alert('로그인 실패', '카카오 로그인에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,7 +96,7 @@ const Login: React.FC = () => {
                 <Input
                   label="이메일"
                   placeholder="이메일을 입력하세요"
-                  value={formData.email}
+                  value={formData.username}
                   onChangeText={(value) => handleInputChange('email', value)}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -76,11 +114,21 @@ const Login: React.FC = () => {
                   <Text style={styles.forgotPasswordText}>비밀번호를 잊으셨나요?</Text>
                 </TouchableOpacity>
 
-                <Button
-                  title="로그인"
+                <TouchableOpacity
                   onPress={handleLogin}
-                  style={styles.loginButton}
-                />
+                  style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  {loading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="small" color="white" />
+                      <Text style={styles.loginButtonText}>로그인 중...</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.loginButtonText}>로그인</Text>
+                  )}
+                </TouchableOpacity>
 
                 <View style={styles.divider}>
                   <View style={styles.dividerLine} />
@@ -88,9 +136,14 @@ const Login: React.FC = () => {
                   <View style={styles.dividerLine} />
                 </View>
 
-                <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                  <Ionicons name="logo-google" size={20} color={colors.foreground} />
-                  <Text style={styles.socialButtonText}>Google로 계속하기</Text>
+                <TouchableOpacity 
+                  style={[styles.socialButton, loading && styles.socialButtonDisabled]} 
+                  activeOpacity={0.7}
+                  onPress={handleKakaoLogin}
+                  disabled={loading}
+                >
+                  <Ionicons name="chatbubble" size={20} color={colors.foreground} />
+                  <Text style={styles.socialButtonText}>카카오로 계속하기</Text>
                 </TouchableOpacity>
 
                 <View style={styles.signupContainer}>
@@ -173,7 +226,34 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: colors.primary,
+    paddingVertical: 16,
+    borderRadius: 12,
     marginBottom: 24,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#999',
+    shadowOpacity: 0.1,
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  socialButtonDisabled: {
+    opacity: 0.5,
   },
   divider: {
     flexDirection: 'row',
