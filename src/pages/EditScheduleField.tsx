@@ -158,9 +158,11 @@ const EditScheduleField: React.FC = () => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setDateValue(selectedDate);
-      // 날짜를 YYYY-MM-DD 형식으로 변환하여 value에 저장
-      const formattedDate = selectedDate.toISOString().split('T')[0];
-      setValue(formattedDate);
+      // 로컬 시간대를 기준으로 날짜 포맷팅 (UTC 변환 방지)
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      setValue(`${year}-${month}-${day}`);
     }
   };
 

@@ -162,7 +162,11 @@ const EditField: React.FC = () => {
     }
     if (selectedDate) {
       setDateValue(selectedDate);
-      setValue(selectedDate.toISOString().split('T')[0]); // YYYY-MM-DD 형식으로 변환
+      // 로컬 시간대를 기준으로 날짜 포맷팅 (UTC 변환 방지)
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      setValue(`${year}-${month}-${day}`);
       setError(''); // 날짜 선택 시 에러 제거
     }
   };
