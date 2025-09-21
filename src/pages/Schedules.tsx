@@ -20,6 +20,13 @@ const Schedules: React.FC = () => {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+
+  // 시간 포맷팅 함수 (초 제거)
+  const formatTime = (timeString: string) => {
+    if (!timeString) return '';
+    // HH:MM:SS 형식을 HH:MM으로 변환
+    return timeString.substring(0, 5);
+  };
   
   // 현재 열린 Swipeable 관리
   const openSwipeableRefs = useRef<{[key: number]: any}>({});
@@ -497,7 +504,13 @@ const Schedules: React.FC = () => {
                       activeOpacity={0.8}
                       onPress={() => {
                         closeAllSwipeables();
-                        router.push(`/schedule-detail?id=${event.id}`);
+                        router.push({
+                          pathname: '/schedule-detail',
+                          params: {
+                            id: event.id,
+                            data: JSON.stringify(event)
+                          }
+                        });
                       }}
                     >
                     {/* 메모 표시 - 카드 모서리 */}
@@ -529,7 +542,7 @@ const Schedules: React.FC = () => {
                       <View style={styles.eventDetails}>
                         <View style={styles.detailRow}>
                           <Ionicons name="time-outline" size={14} color="#666" />
-                          <Text style={styles.detailText}>{event.event_time}</Text>
+                          <Text style={styles.detailText}>{formatTime(event.event_time)}</Text>
                         </View>
                         <View style={styles.detailRow}>
                           <Ionicons name="location-outline" size={14} color="#666" />
@@ -668,7 +681,13 @@ const Schedules: React.FC = () => {
                       activeOpacity={0.8}
                       onPress={() => {
                         setIsModalVisible(false);
-                        router.push(`/schedule-detail?id=${event.id}`);
+                        router.push({
+                          pathname: '/schedule-detail',
+                          params: {
+                            id: event.id,
+                            data: JSON.stringify(event)
+                          }
+                        });
                       }}
                     >
                       {/* 메모 표시 - 카드 모서리 */}
@@ -693,7 +712,7 @@ const Schedules: React.FC = () => {
                         <View style={styles.modalEventDetails}>
                           <View style={styles.modalDetailRow}>
                             <Ionicons name="time-outline" size={14} color="#666" />
-                            <Text style={styles.modalDetailText}>{event.event_time}</Text>
+                            <Text style={styles.modalDetailText}>{formatTime(event.event_time)}</Text>
                           </View>
                           <View style={styles.modalDetailRow}>
                             <Ionicons name="location-outline" size={14} color="#666" />

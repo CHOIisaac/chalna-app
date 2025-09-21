@@ -3,20 +3,23 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     Platform,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { handleApiError, scheduleService } from '../services/api';
 import { EventType } from '../types';
 
 const EditScheduleField: React.FC = () => {
   const router = useRouter();
-  const { field, currentValue } = useLocalSearchParams<{
+  const { id, field, currentValue } = useLocalSearchParams<{
+    id: string;
     field: string;
     currentValue: string;
   }>();
@@ -25,6 +28,7 @@ const EditScheduleField: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // 날짜 필드인 경우 Date 객체로 변환
   const getInitialDate = () => {
@@ -69,16 +73,14 @@ const EditScheduleField: React.FC = () => {
     switch (field) {
       case 'title':
         return { label: '일정명' };
-      case 'type':
+      case 'event_type':
         return { label: '경조사 타입' };
-      case 'date':
+      case 'event_date':
         return { label: '날짜' };
-      case 'time':
+      case 'event_time':
         return { label: '시간' };
       case 'location':
         return { label: '장소' };
-      case 'amount':
-        return { label: '금액' };
       case 'status':
         return { label: '상태' };
       case 'memo':
@@ -90,18 +92,66 @@ const EditScheduleField: React.FC = () => {
 
   const fieldInfo = getFieldInfo();
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // 유효성 검사
     if (!value.trim() && field !== 'memo') {
       setError(`${fieldInfo.label}을(를) 입력해주세요.`);
       return;
     }
 
-    // 여기서 실제 저장 로직을 구현
-    console.log(`Saving ${field}:`, field === 'date' ? dateValue : value);
-    
-    // 상세 페이지로 돌아가기
-    router.back();
+    try {
+      setLoading(true);
+      setError('');
+
+      // API 형식에 맞게 데이터 변환
+      const updateData: any = {};
+      
+      // 필드명을 API 형식으로 매핑
+      switch (field) {
+        case 'title':
+          updateData.title = value;
+          break;
+        case 'event_type':
+          updateData.event_type = value;
+          break;
+        case 'event_date':
+          updateData.event_date = value;
+          break;
+        case 'event_time':
+          updateData.event_time = value;
+          break;
+        case 'location':
+          updateData.location = value;
+          break;
+        case 'status':
+          updateData.status = value;
+          break;
+        case 'memo':
+          updateData.memo = value;
+          break;
+      }
+
+      const response = await scheduleService.updateSchedule(parseInt(id), updateData);
+
+      if (response.success) {
+        // 수정된 데이터로 스케줄 상세 페이지로 이동
+        router.dismissAll();
+        router.push({
+          pathname: '/schedule-detail',
+          params: {
+            id: id,
+            data: JSON.stringify(response.data)
+          }
+        });
+      } else {
+        setError(response.error || '수정에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('일정 수정 실패:', error);
+      setError(handleApiError(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -118,19 +168,20 @@ const EditScheduleField: React.FC = () => {
     setShowTimePicker(Platform.OS === 'ios');
     if (selectedTime) {
       setTimeValue(selectedTime);
-      // 시간을 HH:MM 형식으로 변환하여 value에 저장
+      // 시간을 HH:MM 형식으로 변환하여 value에 저장 (초 제외)
       const formattedTime = selectedTime.toLocaleTimeString('ko-KR', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: false,
+        second: undefined
       });
       setValue(formattedTime);
     }
   };
 
-  const isDateField = field === 'date';
-  const isTimeField = field === 'time';
-  const isSelectField = field === 'type' || field === 'status';
+  const isDateField = field === 'event_date';
+  const isTimeField = field === 'event_time';
+  const isSelectField = field === 'event_type' || field === 'status';
   const isMemoField = field === 'memo';
 
   const eventTypes = Object.values(EventType);
@@ -148,6 +199,7 @@ const EditScheduleField: React.FC = () => {
             >
               <Ionicons name="chevron-back" size={24} color="#1a1a1a" />
             </TouchableOpacity>
+            <Text style={styles.title}>{fieldInfo.label} 수정</Text>
             <View style={styles.placeholder} />
           </View>
         </View>
@@ -216,7 +268,8 @@ const EditScheduleField: React.FC = () => {
                     {timeValue.toLocaleTimeString('ko-KR', {
                       hour: '2-digit',
                       minute: '2-digit',
-                      hour12: false
+                      hour12: false,
+                      second: undefined
                     })}
                   </Text>
                 </TouchableOpacity>
@@ -322,10 +375,15 @@ const EditScheduleField: React.FC = () => {
         {/* 확인 버튼 */}
         <View style={styles.bottomSection}>
           <TouchableOpacity
-            style={styles.confirmButton}
+            style={[styles.confirmButton, loading && styles.confirmButtonDisabled]}
             onPress={handleSave}
+            disabled={loading}
           >
-            <Text style={styles.confirmButtonText}>확인</Text>
+            {loading ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Text style={styles.confirmButtonText}>확인</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -498,35 +556,26 @@ const styles = StyleSheet.create({
   dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    gap: 12,
   },
   dateButtonText: {
     fontSize: 16,
-    color: '#2d3748',
-    flex: 1,
+    color: '#1a1a1a',
+    fontWeight: '500',
   },
   datePickerContainer: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
+    marginTop: 12,
     backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-    zIndex: 1000,
-    marginTop: 4,
+    borderColor: '#e9ecef',
+    overflow: 'hidden',
   },
   datePickerHeader: {
     flexDirection: 'row',
@@ -534,7 +583,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#f0f0f0',
   },
   datePickerHeaderText: {
     fontSize: 16,
@@ -543,9 +592,10 @@ const styles = StyleSheet.create({
   },
   datePickerWrapper: {
     padding: 16,
+    backgroundColor: 'white',
   },
   datePicker: {
-    width: '100%',
+    backgroundColor: 'white',
   },
 
   // 시간 선택 스타일
@@ -555,35 +605,26 @@ const styles = StyleSheet.create({
   timeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    gap: 12,
   },
   timeButtonText: {
     fontSize: 16,
-    color: '#2d3748',
-    flex: 1,
+    color: '#1a1a1a',
+    fontWeight: '500',
   },
   timePickerContainer: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
+    marginTop: 12,
     backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-    zIndex: 1000,
-    marginTop: 4,
+    borderColor: '#e9ecef',
+    overflow: 'hidden',
   },
   timePickerHeader: {
     flexDirection: 'row',
@@ -591,7 +632,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#f0f0f0',
   },
   timePickerHeaderText: {
     fontSize: 16,
@@ -600,9 +641,10 @@ const styles = StyleSheet.create({
   },
   timePickerWrapper: {
     padding: 16,
+    backgroundColor: 'white',
   },
   timePicker: {
-    width: '100%',
+    backgroundColor: 'white',
   },
 
   // 에러 메시지 스타일
@@ -628,6 +670,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  confirmButtonDisabled: {
+    backgroundColor: '#9ca3af',
   },
 });
 

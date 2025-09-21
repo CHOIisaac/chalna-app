@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
     Alert,
     ScrollView,
@@ -13,7 +13,49 @@ import MobileLayout from '../components/layout/MobileLayout';
 
 const ScheduleDetail: React.FC = () => {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, data } = useLocalSearchParams<{ id: string; data: string }>();
+
+  // 시간 포맷팅 함수 (초 제거)
+  const formatTime = (timeString: string) => {
+    if (!timeString) return '';
+    // HH:MM:SS 형식을 HH:MM으로 변환
+    return timeString.substring(0, 5);
+  };
+  
+  // 전달받은 데이터 파싱 및 상태 관리
+  const [scheduleDetail, setScheduleDetail] = useState(data ? JSON.parse(data) : null);
+
+  // 페이지가 포커스될 때 파라미터 확인하여 데이터 업데이트
+  useFocusEffect(
+    useCallback(() => {
+      // 파라미터가 변경되었는지 확인하고 데이터 업데이트
+      if (data) {
+        try {
+          const parsedData = JSON.parse(data);
+          setScheduleDetail(parsedData);
+        } catch (error) {
+          console.error('데이터 파싱 실패:', error);
+        }
+      }
+    }, [data])
+  );
+
+  // 데이터가 없으면 뒤로 가기
+  if (!scheduleDetail) {
+    return (
+      <MobileLayout currentPage="schedules">
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>데이터를 불러올 수 없습니다.</Text>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>뒤로 가기</Text>
+          </TouchableOpacity>
+        </View>
+      </MobileLayout>
+    );
+  }
 
   // 개별 항목 수정 핸들러
   const handleEditItem = (field: string, currentValue: string) => {
@@ -23,7 +65,7 @@ const ScheduleDetail: React.FC = () => {
         id: id,
         field: field,
         currentValue: currentValue,
-        title: eventDetail.title
+        title: scheduleDetail.title
       }
     });
   };
@@ -32,7 +74,7 @@ const ScheduleDetail: React.FC = () => {
   const handleDelete = () => {
     Alert.alert(
       "",
-      `'${eventDetail.title}' 일정을 삭제하시겠습니까?`,
+      `'${scheduleDetail.title}' 일정을 삭제하시겠습니까?`,
       [
         {
           text: "취소",
@@ -51,19 +93,6 @@ const ScheduleDetail: React.FC = () => {
     );
   };
 
-  // Mock data for event detail
-  const eventDetail = {
-    id: parseInt(id),
-    title: "김철수 ♥ 이영희 결혼식",
-    type: "결혼식",
-    date: "2024-08-25",
-    time: "12:00",
-    location: "롯데호텔 크리스탈볼룸",
-    amount: 100000,
-    status: "예정",
-    attendees: 150,
-    memo: "신랑 신부 모두 대학교 동기입니다. 신혼여행은 유럽으로 갑니다.",
-  };
 
   return (
     <MobileLayout currentPage="schedule-detail">
@@ -99,12 +128,12 @@ const ScheduleDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('title', eventDetail.title)}
+              onPress={() => handleEditItem('title', scheduleDetail.title)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>일정명</Text>
-                  <Text style={styles.editValue}>{eventDetail.title}</Text>
+                  <Text style={styles.editValue}>{scheduleDetail.title}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -113,12 +142,12 @@ const ScheduleDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('type', eventDetail.type)}
+              onPress={() => handleEditItem('event_type', scheduleDetail.event_type)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>경조사 타입</Text>
-                  <Text style={styles.editValue}>{eventDetail.type}</Text>
+                  <Text style={styles.editValue}>{scheduleDetail.event_type}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -127,12 +156,12 @@ const ScheduleDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('date', eventDetail.date)}
+              onPress={() => handleEditItem('event_date', scheduleDetail.event_date)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>날짜</Text>
-                  <Text style={styles.editValue}>{eventDetail.date}</Text>
+                  <Text style={styles.editValue}>{scheduleDetail.event_date}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -141,12 +170,12 @@ const ScheduleDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('time', eventDetail.time)}
+              onPress={() => handleEditItem('event_time', scheduleDetail.event_time)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>시간</Text>
-                  <Text style={styles.editValue}>{eventDetail.time}</Text>
+                  <Text style={styles.editValue}>{formatTime(scheduleDetail.event_time)}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -155,12 +184,12 @@ const ScheduleDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('location', eventDetail.location)}
+              onPress={() => handleEditItem('location', scheduleDetail.location)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>장소</Text>
-                  <Text style={styles.editValue}>{eventDetail.location}</Text>
+                  <Text style={styles.editValue}>{scheduleDetail.location}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -169,26 +198,12 @@ const ScheduleDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('amount', eventDetail.amount.toString())}
-            >
-              <View style={styles.editItemLeft}>
-                <View style={styles.editItemContent}>
-                  <Text style={styles.editLabel}>금액</Text>
-                  <Text style={styles.editValue}>{eventDetail.amount.toLocaleString()}원</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#ccc" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.editItem} 
-              activeOpacity={0.7}
-              onPress={() => handleEditItem('status', eventDetail.status)}
+              onPress={() => handleEditItem('status', scheduleDetail.status)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>상태</Text>
-                  <Text style={styles.editValue}>{eventDetail.status}</Text>
+                  <Text style={styles.editValue}>{scheduleDetail.status}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -198,7 +213,7 @@ const ScheduleDetail: React.FC = () => {
             <TouchableOpacity
               style={styles.memoItem}
               activeOpacity={0.7}
-              onPress={() => handleEditItem('memo', eventDetail.memo)}
+              onPress={() => handleEditItem('memo', scheduleDetail.memo)}
             >
               <View style={styles.memoHeader}>
                 <View style={styles.memoInfo}>
@@ -209,7 +224,7 @@ const ScheduleDetail: React.FC = () => {
               
               <View style={styles.memoContent}>
                 <Text style={styles.memoText} numberOfLines={3}>
-                  {eventDetail.memo || '메모가 없습니다'}
+                  {scheduleDetail.memo || '메모가 없습니다'}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -371,6 +386,23 @@ const styles = StyleSheet.create({
   },
   secondaryActionText: {
     color: '#4a5568',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  backButtonText: {
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
