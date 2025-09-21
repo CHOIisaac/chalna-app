@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Modal,
   ScrollView,
   StyleSheet,
@@ -15,6 +17,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
+import { handleApiError, LedgerItem, ledgerService } from '../services/api';
 
 const Ledgers: React.FC = () => {
   const router = useRouter();
@@ -24,19 +27,6 @@ const Ledgers: React.FC = () => {
   
   // 현재 열린 Swipeable 관리
   const openSwipeableRefs = useRef<{[key: number]: any}>({});
-
-  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동 및 스와이프 닫기
-  useFocusEffect(
-    useCallback(() => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-      // 탭 전환 시 열린 스와이프 모두 닫기
-      Object.values(openSwipeableRefs.current).forEach(ref => {
-        if (ref && ref.close) {
-          ref.close();
-        }
-      });
-    }, [])
-  );
   
   // 필터 상태
   const [filterType, setFilterType] = useState<'all' | 'given' | 'received'>('all');
@@ -46,98 +36,127 @@ const Ledgers: React.FC = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Mock data for ledgers - 경조사 내역 목록 (상태로 관리하여 삭제 가능하게)
-  const [ledgers, setLedgers] = useState([
-    {
-      id: 1,
-      name: "김철수",
-      relationship: "친구",
-      amount: 100000,
-      eventType: "결혼식",
-      date: "2024-03-15",
-      type: "given", // given: 준 금액, received: 받은 금액
-      memo: "대학 동기, 축가 부름"
-    },
-    {
-      id: 2,
-      name: "박영희",
-      relationship: "직장동료",
-      amount: 50000,
-      eventType: "돌잔치",
-      date: "2024-02-20",
-      type: "received",
-      memo: ""
-    },
-    {
-      id: 3,
-      name: "이민수",
-      relationship: "가족",
-      amount: 200000,
-      eventType: "장례식",
-      date: "2024-01-10",
-      type: "given",
-      memo: "외삼촌 장례식"
-    },
-    {
-      id: 4,
-      name: "정수정",
-      relationship: "지인",
-      amount: 30000,
-      eventType: "개업식",
-      date: "2023-12-25",
-      type: "received",
-      memo: ""
-    },
-    {
-      id: 5,
-      name: "최민호",
-      relationship: "친구",
-      amount: 150000,
-      eventType: "결혼식",
-      date: "2023-11-10",
-      type: "given",
-      memo: "신혼여행 선물로 추가"
-    },
-    {
-      id: 6,
-      name: "한지영",
-      relationship: "가족",
-      amount: 80000,
-      eventType: "돌잔치",
-      date: "2023-10-05",
-      type: "received"
-    }
-  ]);
+  // API 상태 관리
+  const [ledgers, setLedgers] = useState<LedgerItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 삭제된 항목과 되돌리기 상태
-  const [deletedLedger, setDeletedLedger] = useState<any>(null);
+  const [deletedLedger, setDeletedLedger] = useState<LedgerItem | null>(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
 
-  // 삭제 함수 (즉시 삭제)
-  const handleDeleteLedger = (ledgerId: number) => {
+  // API 함수들
+  const loadLedgers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await ledgerService.getLedgers();
+      
+      if (response.success) {
+        setLedgers(response.data);
+      } else {
+        setError(response.error || '장부 목록을 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('장부 목록 로드 실패:', err);
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadLedgers();
+  }, []);
+
+  // 탭이 포커스될 때 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      // 탭 전환 시 열린 스와이프 모두 닫기
+      Object.values(openSwipeableRefs.current).forEach(ref => {
+        if (ref && ref.close) {
+          ref.close();
+        }
+      });
+      // 데이터 새로고침
+      loadLedgers();
+    }, [])
+  );
+
+  // 삭제 함수 (API 연동)
+  const handleDeleteLedger = async (ledgerId: number) => {
     const ledgerToDelete = ledgers.find(ledger => ledger.id === ledgerId);
-    if (ledgerToDelete) {
-      // 바로 삭제
+    if (!ledgerToDelete) return;
+
+    try {
+      // UI에서 먼저 제거 (낙관적 업데이트)
       setLedgers(prevLedgers => prevLedgers.filter(ledger => ledger.id !== ledgerId));
       
       // 되돌리기를 위해 삭제된 항목 저장
       setDeletedLedger(ledgerToDelete);
       setShowUndoToast(true);
       
+      // API 호출로 실제 삭제
+      const response = await ledgerService.deleteLedger(ledgerId);
+      
+      if (!response.success) {
+        // API 삭제 실패 시 UI 복원
+        setLedgers(prevLedgers => [...prevLedgers, ledgerToDelete].sort((a, b) => a.id - b.id));
+        setDeletedLedger(null);
+        setShowUndoToast(false);
+        Alert.alert('삭제 실패', response.error || '장부 삭제에 실패했습니다.');
+        return;
+      }
+      
       // 5초 후에 되돌리기 토스트 자동 사라짐
       setTimeout(() => {
         setShowUndoToast(false);
         setDeletedLedger(null);
       }, 5000);
+      
+    } catch (error) {
+      console.error('장부 삭제 실패:', error);
+      // API 삭제 실패 시 UI 복원
+      setLedgers(prevLedgers => [...prevLedgers, ledgerToDelete].sort((a, b) => a.id - b.id));
+      setDeletedLedger(null);
+      setShowUndoToast(false);
+      Alert.alert('삭제 실패', handleApiError(error));
     }
   };
 
-  // 되돌리기 함수
-  const handleUndoDelete = () => {
-    if (deletedLedger) {
+  // 되돌리기 함수 (API 연동)
+  const handleUndoDelete = async () => {
+    if (!deletedLedger) return;
+
+    try {
+      // UI에서 먼저 복원
       setLedgers(prevLedgers => [...prevLedgers, deletedLedger].sort((a, b) => a.id - b.id));
       setDeletedLedger(null);
       setShowUndoToast(false);
+
+      // API 호출로 복원 (새로 생성)
+      const { id, ...ledgerData } = deletedLedger;
+      const response = await ledgerService.createLedger(ledgerData);
+      
+      if (!response.success) {
+        // API 복원 실패 시 다시 데이터 로드
+        await loadLedgers();
+        Alert.alert('복원 실패', response.error || '장부 복원에 실패했습니다.');
+      } else {
+        // 성공 시 새로운 ID로 업데이트
+        setLedgers(prevLedgers => 
+          prevLedgers.map(ledger => 
+            ledger.id === deletedLedger.id ? response.data : ledger
+          )
+        );
+      }
+    } catch (error) {
+      console.error('장부 복원 실패:', error);
+      // API 복원 실패 시 다시 데이터 로드
+      await loadLedgers();
+      Alert.alert('복원 실패', handleApiError(error));
     }
   };
 
@@ -173,24 +192,28 @@ const Ledgers: React.FC = () => {
   };
 
   // 필터링 및 정렬 로직
-  const filteredAndSortedLedgers = ledgers
+  const filteredAndSortedLedgers = (ledgers || [])
     .filter(ledger => {
-      // 검색어 필터
-      const matchesSearch = ledger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ledger.relationship.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ledger.eventType.toLowerCase().includes(searchTerm.toLowerCase());
+      // 검색어 필터 (안전한 필터링)
+      const name = ledger.counterparty_name || '';
+      const relationship = ledger.relationship_type || '';
+      const eventType = ledger.event_type || '';
+      
+      const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        relationship.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        eventType.toLowerCase().includes(searchTerm.toLowerCase());
       
       // 타입 필터
-      const matchesType = filterType === 'all' || ledger.type === filterType;
+      const matchesType = filterType === 'all' || ledger.entry_type === filterType;
       
       return matchesSearch && matchesType;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case 'date_desc':
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
+          return new Date(b.event_date).getTime() - new Date(a.event_date).getTime();
         case 'date_asc':
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
+          return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
         case 'amount_desc':
           return b.amount - a.amount;
         case 'amount_asc':
@@ -247,105 +270,134 @@ const Ledgers: React.FC = () => {
         showsVerticalScrollIndicator={false}
         onTouchStart={closeAllSwipeables}
       >
-
-        {/* 무신사 스타일 통계 카드 */}
-        <View style={styles.statsSection}>
-          <View style={styles.statsCard}>
-            <View style={styles.statsHeader}>
-              <Text style={styles.statsTitle}>이번 달</Text>
-              <View style={styles.statsBadge}>
-                <Text style={styles.statsBadgeText}>{ledgers.length}명</Text>
-              </View>
-            </View>
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{totalGiven.toLocaleString()}</Text>
-                <Text style={styles.statLabel}>나눈 마음</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{totalReceived.toLocaleString()}</Text>
-                <Text style={styles.statLabel}>받은 마음</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* 경조사 내역 목록 */}
-        <View style={styles.ledgersSection}>
-          <View style={styles.ledgersList}>
-            {filteredAndSortedLedgers.map((ledger) => {
-              return (
-                <Swipeable 
-                  key={ledger.id}
-                  ref={ref => registerSwipeableRef(ledger.id, ref)}
-                  renderRightActions={() => renderRightActions(ledger.id)}
-                  rightThreshold={40}
-                  onSwipeableWillOpen={() => {
-                    // 다른 Swipeable들 닫기
-                    Object.entries(openSwipeableRefs.current).forEach(([id, ref]) => {
-                      if (parseInt(id) !== ledger.id && ref && ref.close) {
-                        ref.close();
-                      }
-                    });
-                  }}
-                >
-                  <TouchableOpacity 
-                    style={styles.ledgerCard}
-                    activeOpacity={0.8}
-                    onPress={() => {
-                      closeAllSwipeables();
-                      router.push(`/ledger-detail?id=${ledger.id}`);
-                    }}
-                  >
-                    {/* 메모 표시 - 카드 모서리 */}
-                    {ledger.memo && ledger.memo.trim() !== '' && (
-                      <View style={styles.memoCorner} />
-                    )}
-
-                    {/* 정보 영역 */}
-                    <View style={styles.ledgerInfo}>
-                      <View style={styles.ledgerHeader}>
-                        <Text style={styles.ledgerName}>{ledger.name}</Text>
-                      </View>
-                      
-                      <View style={styles.ledgerDetails}>
-                        <Text style={styles.relationshipText}>{ledger.relationship}</Text>
-                        <Text style={styles.separator}>•</Text>
-                        <Text style={styles.eventTypeText}>{ledger.eventType}</Text>
-                      </View>
-                      
-                      <View style={styles.ledgerMeta}>
-                        <Text style={styles.dateText}>{ledger.date}</Text>
-                      </View>
-                    </View>
-
-                    {/* 금액 영역 */}
-                    <View style={styles.amountSection}>
-                      <Text style={[styles.amountText, { color: '#4a5568' }]}>
-                        {ledger.amount.toLocaleString()}원
-                      </Text>
-                      <Text style={[styles.typeLabel, { color: ledger.type === 'given' ? '#4a5568' : '#718096' }]}>
-                        {ledger.type === 'given' ? '나눔' : '받음'}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </Swipeable>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* 빈 상태 */}
-        {filteredAndSortedLedgers.length === 0 && (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIcon}>
-              <Ionicons name="people-outline" size={48} color="#ddd" />
-            </View>
-            <Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>
-            <Text style={styles.emptyDescription}>다른 검색어를 시도해보세요</Text>
+        {/* 로딩 상태 */}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#4a5568" />
+            <Text style={styles.loadingText}>장부 목록을 불러오는 중...</Text>
           </View>
         )}
+
+        {/* 에러 상태 */}
+        {error && !loading && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="warning-outline" size={48} color="#FF3B30" />
+            <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
+            <Text style={styles.errorMessage}>{error}</Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={loadLedgers}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.retryButtonText}>다시 시도</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 정상 데이터가 있을 때만 표시 */}
+        {!loading && !error && (
+          <>
+            {/* 무신사 스타일 통계 카드 */}
+            <View style={styles.statsSection}>
+              <View style={styles.statsCard}>
+                <View style={styles.statsHeader}>
+                  <Text style={styles.statsTitle}>이번 달</Text>
+                  <View style={styles.statsBadge}>
+                    <Text style={styles.statsBadgeText}>{ledgers.length}명</Text>
+                  </View>
+                </View>
+                <View style={styles.statsGrid}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{totalGiven.toLocaleString()}</Text>
+                    <Text style={styles.statLabel}>나눈 마음</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{totalReceived.toLocaleString()}</Text>
+                    <Text style={styles.statLabel}>받은 마음</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* 경조사 내역 목록 */}
+            <View style={styles.ledgersSection}>
+              <View style={styles.ledgersList}>
+                {filteredAndSortedLedgers.map((ledger) => {
+                  return (
+                    <Swipeable 
+                      key={ledger.id}
+                      ref={ref => registerSwipeableRef(ledger.id, ref)}
+                      renderRightActions={() => renderRightActions(ledger.id)}
+                      rightThreshold={40}
+                      onSwipeableWillOpen={() => {
+                        // 다른 Swipeable들 닫기
+                        Object.entries(openSwipeableRefs.current).forEach(([id, ref]) => {
+                          if (parseInt(id) !== ledger.id && ref && ref.close) {
+                            ref.close();
+                          }
+                        });
+                      }}
+                    >
+                      <TouchableOpacity 
+                        style={styles.ledgerCard}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          closeAllSwipeables();
+                          router.push(`/ledger-detail?id=${ledger.id}`);
+                        }}
+                      >
+                        {/* 메모 표시 - 카드 모서리 */}
+                        {ledger.memo && ledger.memo.trim() !== '' && (
+                          <View style={styles.memoCorner} />
+                        )}
+
+                        {/* 정보 영역 */}
+                        <View style={styles.ledgerInfo}>
+                          <View style={styles.ledgerHeader}>
+                            <Text style={styles.ledgerName}>{ledger.counterparty_name}</Text>
+                          </View>
+                          
+                          <View style={styles.ledgerDetails}>
+                            <Text style={styles.relationshipText}>{ledger.relationship_type}</Text>
+                            <Text style={styles.separator}>•</Text>
+                            <Text style={styles.eventTypeText}>{ledger.event_type}</Text>
+                          </View>
+                          
+                          <View style={styles.ledgerMeta}>
+                            <Text style={styles.dateText}>{ledger.event_date}</Text>
+                          </View>
+                        </View>
+
+                        {/* 금액 영역 */}
+                        <View style={styles.amountSection}>
+                          <Text style={[styles.amountText, { color: '#4a5568' }]}>
+                            {ledger.amount.toLocaleString()}원
+                          </Text>
+                          <Text style={[styles.typeLabel, { color: ledger.type === 'given' ? '#4a5568' : '#718096' }]}>
+                            {ledger.type === 'given' ? '나눔' : '받음'}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    </Swipeable>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* 빈 상태 */}
+            {filteredAndSortedLedgers.length === 0 && (
+              <View style={styles.emptyState}>
+                <View style={styles.emptyIcon}>
+                  <Ionicons name="people-outline" size={48} color="#ddd" />
+                </View>
+                <Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>
+                <Text style={styles.emptyDescription}>다른 검색어를 시도해보세요</Text>
+              </View>
+            )}
+          </>
+        )}
+
       </ScrollView>
 
       {/* 플로팅 액션 버튼 */}
@@ -1018,6 +1070,51 @@ const styles = StyleSheet.create({
   undoButtonText: {
     color: 'white',
     fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // 로딩 상태 스타일
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 16,
+    fontWeight: '500',
+  },
+
+  // 에러 상태 스타일
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: '#4a5568',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
