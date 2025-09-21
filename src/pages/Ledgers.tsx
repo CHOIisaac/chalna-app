@@ -204,7 +204,9 @@ const Ledgers: React.FC = () => {
         eventType.toLowerCase().includes(searchTerm.toLowerCase());
       
       // 타입 필터
-      const matchesType = filterType === 'all' || ledger.entry_type === filterType;
+      const matchesType = filterType === 'all' || 
+        (filterType === 'given' && ledger.entry_type === 'given') ||
+        (filterType === 'received' && ledger.entry_type === 'received');
       
       return matchesSearch && matchesType;
     })
@@ -223,8 +225,8 @@ const Ledgers: React.FC = () => {
       }
     });
 
-  const totalGiven = ledgers.filter(ledger => ledger.type === 'given').reduce((sum, ledger) => sum + ledger.amount, 0);
-  const totalReceived = ledgers.filter(ledger => ledger.type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
+  const totalGiven = ledgers.filter(ledger => ledger.entry_type === 'given').reduce((sum, ledger) => sum + ledger.amount, 0);
+  const totalReceived = ledgers.filter(ledger => ledger.entry_type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
 
   return (
     <MobileLayout currentPage="ledgers">
@@ -344,7 +346,13 @@ const Ledgers: React.FC = () => {
                         activeOpacity={0.8}
                         onPress={() => {
                           closeAllSwipeables();
-                          router.push(`/ledger-detail?id=${ledger.id}`);
+                          router.push({
+                            pathname: '/ledger-detail',
+                            params: {
+                              id: ledger.id.toString(),
+                              data: JSON.stringify(ledger)
+                            }
+                          });
                         }}
                       >
                         {/* 메모 표시 - 카드 모서리 */}
@@ -374,8 +382,8 @@ const Ledgers: React.FC = () => {
                           <Text style={[styles.amountText, { color: '#4a5568' }]}>
                             {ledger.amount.toLocaleString()}원
                           </Text>
-                          <Text style={[styles.typeLabel, { color: ledger.type === 'given' ? '#4a5568' : '#718096' }]}>
-                            {ledger.type === 'given' ? '나눔' : '받음'}
+                          <Text style={[styles.typeLabel, { color: ledger.entry_type === 'given' ? '#4a5568' : '#718096' }]}>
+                            {ledger.entry_type === 'given' ? '나눔' : '받음'}
                           </Text>
                         </View>
                       </TouchableOpacity>
@@ -408,7 +416,7 @@ const Ledgers: React.FC = () => {
         <View style={styles.undoToast}>
           <View style={styles.undoToastContent}>
             <Text style={styles.undoToastText}>
-              {deletedLedger?.name} 기록이 삭제되었습니다
+              {deletedLedger?.counterparty_name} 기록이 삭제되었습니다
             </Text>
             <TouchableOpacity 
               style={styles.undoButton}
