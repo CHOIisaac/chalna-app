@@ -69,17 +69,6 @@ const Ledgers: React.FC = () => {
     }
   }, []);
 
-  // 필터 적용 함수 (메모이제이션)
-  const applyFilter = useCallback(async () => {
-    const filterParams = buildFilterParams();
-    
-    // API 호출
-    await loadLedgers(filterParams);
-    
-    // 모달 닫기
-    setShowFilterModal(false);
-  }, [buildFilterParams, loadLedgers]);
-
   // 필터 파라미터 빌드 함수 (메모이제이션)
   const buildFilterParams = useCallback(() => {
     const filterParams: {
@@ -104,6 +93,17 @@ const Ledgers: React.FC = () => {
     return filterParams;
   }, [searchTerm, filterType, sortBy]);
 
+  // 필터 적용 함수 (메모이제이션)
+  const applyFilter = useCallback(async () => {
+    const filterParams = buildFilterParams();
+    
+    // API 호출
+    await loadLedgers(filterParams);
+    
+    // 모달 닫기
+    setShowFilterModal(false);
+  }, [buildFilterParams, loadLedgers]);
+
   // 검색어 변경 시 실시간 필터링 (디바운싱 적용, 메모이제이션)
   const handleSearchChange = useCallback((text: string) => {
     setSearchTerm(text);
@@ -112,7 +112,7 @@ const Ledgers: React.FC = () => {
   // 컴포넌트 마운트 시 데이터 로드 (한 번만)
   useEffect(() => {
     loadLedgers();
-  }, []);
+  }, [loadLedgers]);
 
   // 검색어 변경 시 디바운싱된 API 호출
   useEffect(() => {
@@ -122,7 +122,7 @@ const Ledgers: React.FC = () => {
     }, 200); // 200ms로 최적화 (반응성 향상)
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, filterType, sortBy]); // 의존성 배열에 모든 필터 상태 추가
+  }, [searchTerm, filterType, sortBy, buildFilterParams, loadLedgers]); // 의존성 배열에 모든 필터 상태 추가
 
   // 탭이 포커스될 때 데이터 새로고침
   useFocusEffect(
@@ -136,7 +136,7 @@ const Ledgers: React.FC = () => {
       });
       // 데이터 새로고침
       loadLedgers();
-    }, [])
+    }, [loadLedgers])
   );
 
   // 삭제 함수 (API 연동)
@@ -311,7 +311,7 @@ const Ledgers: React.FC = () => {
             <Text style={styles.errorMessage}>{error}</Text>
             <TouchableOpacity 
               style={styles.retryButton}
-              onPress={loadLedgers}
+              onPress={() => loadLedgers()}
               activeOpacity={0.8}
             >
               <Text style={styles.retryButtonText}>다시 시도</Text>
