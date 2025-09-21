@@ -3,7 +3,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Modal,
     ScrollView,
     StyleSheet,
@@ -42,7 +41,6 @@ const Schedules: React.FC = () => {
 
   // API 상태 관리
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 삭제된 항목과 되돌리기 상태
@@ -56,7 +54,6 @@ const Schedules: React.FC = () => {
     sort_by?: 'date_asc' | 'date_desc';
   }) => {
     try {
-      setLoading(true);
       setError(null);
       const response = await scheduleService.getSchedules(filterParams);
       
@@ -68,8 +65,6 @@ const Schedules: React.FC = () => {
     } catch (err) {
       console.error('일정 목록 로드 실패:', err);
       setError(handleApiError(err));
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -455,16 +450,8 @@ const Schedules: React.FC = () => {
           </View>
         </View>
 
-        {/* 로딩 상태 */}
-        {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#000000" />
-            <Text style={styles.loadingText}>일정을 불러오는 중...</Text>
-          </View>
-        )}
-
         {/* 에러 상태 */}
-        {error && !loading && (
+        {error && (
           <View style={styles.errorContainer}>
             <Ionicons name="warning-outline" size={48} color="#FF3B30" />
             <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
@@ -480,7 +467,7 @@ const Schedules: React.FC = () => {
         )}
 
         {/* 뷰 모드에 따른 콘텐츠 */}
-        {!loading && !error && viewMode === 'list' ? (
+        {!error && viewMode === 'list' ? (
           /* 무신사 스타일 일정 목록 */
           <View style={styles.eventsSection}>
             <View style={styles.eventsGrid}>
@@ -1010,13 +997,10 @@ const Schedules: React.FC = () => {
             {/* 적용 버튼 */}
             <View style={styles.modalActions}>
               <TouchableOpacity 
-                style={[styles.applyButton, loading && styles.applyButtonDisabled]}
+                style={styles.applyButton}
                 onPress={applyFilter}
-                disabled={loading}
               >
-                <Text style={styles.applyButtonText}>
-                  {loading ? '적용 중...' : '적용'}
-                </Text>
+                <Text style={styles.applyButtonText}>적용</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1737,18 +1721,6 @@ const styles = StyleSheet.create({
   applyButtonDisabled: {
     backgroundColor: '#ccc',
     opacity: 0.6,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
   },
   errorContainer: {
     flex: 1,
