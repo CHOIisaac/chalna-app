@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     Platform,
     ScrollView,
     StyleSheet,
@@ -11,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { handleApiError, scheduleService } from '../services/api';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -28,6 +30,7 @@ const AddSchedule: React.FC = () => {
   
   // 에러 상태
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [loading, setLoading] = useState(false);
   
   // 피커 상태
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -68,20 +71,57 @@ const AddSchedule: React.FC = () => {
   };
   
   // 저장 처리
-  const handleSave = () => {
-    if (validateForm()) {
-      // TODO: 실제 저장 로직 구현
-      console.log('일정 저장:', {
-        title,
-        eventType,
-        status,
-        date,
-        time,
-        location,
-        memo,
+  const handleSave = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setErrors({});
+
+      // 로컬 시간대를 기준으로 날짜 포맷팅
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+
+      // 시간 포맷팅 (초 제거)
+      const formattedTime = time.toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        second: undefined
       });
-      
-      router.back();
+
+      // API 형식에 맞게 데이터 변환
+      const scheduleData = {
+        title: title,
+        event_type: eventType,
+        event_date: formattedDate,
+        event_time: formattedTime,
+        location: location,
+        memo: memo,
+        status: status as '예정' | '완료',
+        user_id: 1, // 임시로 1 사용 (실제로는 로그인한 사용자 ID)
+        created_at: new Date().toISOString(),
+        updated_at: null
+      };
+
+      const response = await scheduleService.createSchedule(scheduleData);
+
+      if (response.success) {
+        // 성공 시 일정 목록으로 돌아가기
+        router.back();
+      } else {
+        // 에러 처리
+        setErrors({ general: response.error || '일정 추가에 실패했습니다.' });
+      }
+    } catch (error) {
+      console.error('일정 추가 실패:', error);
+      setErrors({ general: handleApiError(error) });
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -381,11 +421,19 @@ const AddSchedule: React.FC = () => {
 
       {/* 저장 버튼 */}
       <View style={styles.bottomSection}>
+        {errors.general && (
+          <Text style={styles.errorText}>{errors.general}</Text>
+        )}
         <TouchableOpacity
-          style={styles.saveButton}
+          style={[styles.saveButton, loading && styles.saveButtonDisabled]}
           onPress={handleSave}
+          disabled={loading}
         >
-          <Text style={styles.saveButtonText}>저장</Text>
+          {loading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text style={styles.saveButtonText}>저장</Text>
+          )}
         </TouchableOpacity>
       </View>
     </MobileLayout>
@@ -704,7 +752,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: '#ff6b6b',
+    color: '#e53e3e',
     marginTop: 6,
   },
   typeScrollView: {
@@ -750,6 +798,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#9ca3af',
   },
 });
 
