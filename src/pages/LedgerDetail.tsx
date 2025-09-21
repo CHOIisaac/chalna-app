@@ -13,7 +13,27 @@ import MobileLayout from '../components/layout/MobileLayout';
 
 const LedgerDetail: React.FC = () => {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, data } = useLocalSearchParams<{ id: string; data: string }>();
+  
+  // 전달받은 데이터 파싱
+  const ledgerDetail = data ? JSON.parse(data) : null;
+
+  // 데이터가 없으면 뒤로 가기
+  if (!ledgerDetail) {
+    return (
+      <MobileLayout currentPage="ledgers">
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>데이터를 불러올 수 없습니다.</Text>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>뒤로 가기</Text>
+          </TouchableOpacity>
+        </View>
+      </MobileLayout>
+    );
+  }
 
   // 개별 항목 수정 핸들러
   const handleEditItem = (field: string, currentValue: string) => {
@@ -23,7 +43,7 @@ const LedgerDetail: React.FC = () => {
         id: id,
         field: field,
         currentValue: currentValue,
-        name: ledgerDetail.name
+        name: ledgerDetail.counterparty_name
       }
     });
   };
@@ -32,7 +52,7 @@ const LedgerDetail: React.FC = () => {
   const handleDelete = () => {
     Alert.alert(
       "",
-      `${ledgerDetail.name}님과의 장부 내역을 삭제하시겠습니까?`,
+      `${ledgerDetail.counterparty_name}님과의 장부 내역을 삭제하시겠습니까?`,
       [
         {
           text: "취소",
@@ -51,72 +71,6 @@ const LedgerDetail: React.FC = () => {
     );
   };
 
-  // Mock data for ledger detail
-  const ledgerDetail = {
-    id: parseInt(id),
-    name: "김철수",
-    relationship: "친구",
-    phone: "010-1234-5678",
-    email: "kimcs@email.com",
-    totalGiven: 250000,
-    totalReceived: 180000,
-    balance: 70000,
-    lastEvent: "2024-03-15",
-    eventCount: 5,
-    memo: "대학 동기 친구로 10년 넘게 알고 지낸 사이입니다.",
-    events: [
-      {
-        id: 1,
-        eventType: "결혼식",
-        title: "김철수 결혼식",
-        date: "2024-03-15",
-        amount: 100000,
-        type: "given",
-        location: "롯데호텔 크리스탈볼룸",
-        time: "12:00"
-      },
-      {
-        id: 2,
-        eventType: "돌잔치",
-        title: "김철수 아들 돌잔치",
-        date: "2023-08-20",
-        amount: 50000,
-        type: "given",
-        location: "강남구청 웨딩홀",
-        time: "11:30"
-      },
-      {
-        id: 3,
-        eventType: "장례식",
-        title: "김철수 어머님 장례식",
-        date: "2023-05-10",
-        amount: 100000,
-        type: "given",
-        location: "서울추모공원",
-        time: "14:00"
-      },
-      {
-        id: 4,
-        eventType: "개업식",
-        title: "김철수 사무실 개업",
-        date: "2023-02-15",
-        amount: 30000,
-        type: "received",
-        location: "강남구 테헤란로",
-        time: "18:00"
-      },
-      {
-        id: 5,
-        eventType: "결혼식",
-        title: "김철수 동생 결혼식",
-        date: "2022-11-20",
-        amount: 50000,
-        type: "received",
-        location: "신라호텔",
-        time: "12:30"
-      }
-    ],
-  };
 
 
   return (
@@ -153,12 +107,12 @@ const LedgerDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('name', ledgerDetail.name)}
+              onPress={() => handleEditItem('counterparty_name', ledgerDetail.counterparty_name)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>이름</Text>
-                  <Text style={styles.editValue}>{ledgerDetail.name}</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.counterparty_name}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -167,12 +121,12 @@ const LedgerDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('relationship', ledgerDetail.relationship)}
+              onPress={() => handleEditItem('relationship_type', ledgerDetail.relationship_type)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>관계</Text>
-                  <Text style={styles.editValue}>{ledgerDetail.relationship}</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.relationship_type}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -181,12 +135,12 @@ const LedgerDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('eventType', ledgerDetail.events[0]?.eventType || '결혼식')}
+              onPress={() => handleEditItem('event_type', ledgerDetail.event_type)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>경조사</Text>
-                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.eventType || '결혼식'}</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.event_type}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -195,12 +149,12 @@ const LedgerDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('date', ledgerDetail.events[0]?.date || ledgerDetail.lastEvent)}
+              onPress={() => handleEditItem('event_date', ledgerDetail.event_date)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>날짜</Text>
-                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.date || ledgerDetail.lastEvent}</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.event_date}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -209,12 +163,12 @@ const LedgerDetail: React.FC = () => {
             <TouchableOpacity 
               style={styles.editItem} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('type', ledgerDetail.events[0]?.type || 'given')}
+              onPress={() => handleEditItem('entry_type', ledgerDetail.entry_type)}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>구분</Text>
-                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.type === 'given' ? '나눔' : '받음'}</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.entry_type === 'given' ? '나눔' : '받음'}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -223,12 +177,12 @@ const LedgerDetail: React.FC = () => {
             <TouchableOpacity 
               style={[styles.editItem, styles.lastEditItem]} 
               activeOpacity={0.7}
-              onPress={() => handleEditItem('amount', (ledgerDetail.events[0]?.amount || 0).toString())}
+              onPress={() => handleEditItem('amount', ledgerDetail.amount.toString())}
             >
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>금액</Text>
-                  <Text style={styles.editValue}>{ledgerDetail.events[0]?.amount.toLocaleString() || '0'}원</Text>
+                  <Text style={styles.editValue}>{ledgerDetail.amount.toLocaleString()}원</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -305,8 +259,10 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#f8f9fa',
   },
   title: {
     fontSize: 20,
@@ -488,6 +444,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#4a5568',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  backButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
