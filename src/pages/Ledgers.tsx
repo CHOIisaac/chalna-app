@@ -3,15 +3,15 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
@@ -69,7 +69,31 @@ const Ledgers: React.FC = () => {
     }
   }, []);
 
-  // 필터 파라미터 빌드 함수 (메모이제이션)
+  // 검색어 전용 파라미터 빌드 함수 (검색어만 의존성으로 가짐)
+  const buildSearchParams = useCallback(() => {
+    const searchParams: {
+      search?: string;
+      entry_type?: 'given' | 'received';
+      sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
+    } = {};
+
+    // 검색어만 추가 (현재 적용된 필터 상태 유지)
+    if (searchTerm.trim()) {
+      searchParams.search = searchTerm.trim();
+    }
+
+    // 현재 적용된 타입 필터 유지
+    if (filterType !== 'all') {
+      searchParams.entry_type = filterType;
+    }
+
+    // 현재 적용된 정렬 유지
+    searchParams.sort_by = sortBy;
+
+    return searchParams;
+  }, [searchTerm]); // 검색어만 의존성으로 가짐
+
+  // 전체 필터 파라미터 빌드 함수 (적용 버튼용)
   const buildFilterParams = useCallback(() => {
     const filterParams: {
       search?: string;
@@ -114,15 +138,15 @@ const Ledgers: React.FC = () => {
     loadLedgers();
   }, [loadLedgers]);
 
-  // 검색어 변경 시 디바운싱된 API 호출
+  // 검색어 변경 시 디바운싱된 API 호출 (검색어만 실시간 적용)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      const filterParams = buildFilterParams();
-      loadLedgers(filterParams);
+      const searchParams = buildSearchParams();
+      loadLedgers(searchParams);
     }, 200); // 200ms로 최적화 (반응성 향상)
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, filterType, sortBy, buildFilterParams, loadLedgers]); // 의존성 배열에 모든 필터 상태 추가
+  }, [searchTerm, buildSearchParams, loadLedgers]); // 검색어만 의존성 배열에 포함
 
   // 탭이 포커스될 때 데이터 새로고침
   useFocusEffect(
