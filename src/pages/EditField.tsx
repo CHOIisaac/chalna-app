@@ -30,7 +30,7 @@ const EditField: React.FC = () => {
   
   // 날짜 필드인 경우 Date 객체로 변환
   const getInitialDate = () => {
-    if (field === 'date') {
+    if (field === 'event_date') {
       try {
         // YYYY-MM-DD 형식의 문자열을 Date 객체로 변환
         const dateParts = currentValue.split('-');

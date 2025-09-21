@@ -3,14 +3,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { handleApiError, scheduleService } from '../services/api';
@@ -32,7 +32,7 @@ const EditScheduleField: React.FC = () => {
   
   // 날짜 필드인 경우 Date 객체로 변환
   const getInitialDate = () => {
-    if (field === 'date') {
+    if (field === 'event_date') {
       try {
         // YYYY-MM-DD 형식의 문자열을 Date 객체로 변환
         const dateParts = currentValue.split('-');
@@ -49,7 +49,7 @@ const EditScheduleField: React.FC = () => {
 
   // 시간 필드인 경우 Date 객체로 변환
   const getInitialTime = () => {
-    if (field === 'time') {
+    if (field === 'event_time') {
       try {
         // HH:MM 형식의 문자열을 Date 객체로 변환
         const timeParts = currentValue.split(':');
