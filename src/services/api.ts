@@ -141,7 +141,7 @@ export interface LedgerItem {
   counterparty_name: string;
   counterparty_phone: string;
   amount: number;
-  entry_type: string;
+  entry_type: 'given' | 'received' | string;
   event_type: string;
   event_date: string;
   relationship_type: string;
