@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
     Alert,
     ScrollView,
@@ -15,8 +15,23 @@ const LedgerDetail: React.FC = () => {
   const router = useRouter();
   const { id, data } = useLocalSearchParams<{ id: string; data: string }>();
   
-  // 전달받은 데이터 파싱
-  const ledgerDetail = data ? JSON.parse(data) : null;
+  // 전달받은 데이터 파싱 및 상태 관리
+  const [ledgerDetail, setLedgerDetail] = useState(data ? JSON.parse(data) : null);
+
+  // 페이지가 포커스될 때 파라미터 확인하여 데이터 업데이트
+  useFocusEffect(
+    useCallback(() => {
+      // 파라미터가 변경되었는지 확인하고 데이터 업데이트
+      if (data) {
+        try {
+          const parsedData = JSON.parse(data);
+          setLedgerDetail(parsedData);
+        } catch (error) {
+          console.error('데이터 파싱 실패:', error);
+        }
+      }
+    }, [data])
+  );
 
   // 데이터가 없으면 뒤로 가기
   if (!ledgerDetail) {

@@ -9,14 +9,16 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { handleApiError, ledgerService } from '../services/api';
 import { EventType, RelationshipType } from '../types';
 
 const EditField: React.FC = () => {
   const router = useRouter();
-  const { field, currentValue } = useLocalSearchParams<{
+  const { id, field, currentValue } = useLocalSearchParams<{
+    id: string;
     field: string;
     currentValue: string;
   }>();
@@ -24,6 +26,7 @@ const EditField: React.FC = () => {
   const [value, setValue] = useState(currentValue);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // 날짜 필드인 경우 Date 객체로 변환
   const getInitialDate = () => {
@@ -46,6 +49,21 @@ const EditField: React.FC = () => {
 
   const getFieldInfo = () => {
     switch (field) {
+      case 'counterparty_name':
+        return { label: '이름' };
+      case 'relationship_type':
+        return { label: '관계' };
+      case 'event_type':
+        return { label: '경조사' };
+      case 'event_date':
+        return { label: '날짜' };
+      case 'entry_type':
+        return { label: '구분' };
+      case 'amount':
+        return { label: '금액' };
+      case 'memo':
+        return { label: '메모' };
+      // 이전 필드명 지원 (하위 호환성)
       case 'name':
         return { label: '이름' };
       case 'relationship':
@@ -56,10 +74,6 @@ const EditField: React.FC = () => {
         return { label: '날짜' };
       case 'type':
         return { label: '구분' };
-      case 'amount':
-        return { label: '금액' };
-      case 'memo':
-        return { label: '메모' };
       default:
         return { label: '정보' };
     }
@@ -83,12 +97,63 @@ const EditField: React.FC = () => {
     handleSave();
   };
 
-  const handleSave = () => {
-    // 여기서 실제 저장 로직을 구현철
-    console.log(`Saving ${field}: ${value}`);
-    
-    // 바로 이전 페이지로 돌아가기
-    router.back();
+  const handleSave = async () => {
+    if (!id) {
+      setError('ID가 없습니다.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      // API 필드명 매핑
+      const apiFieldMap: Record<string, string> = {
+        'counterparty_name': 'counterparty_name',
+        'relationship_type': 'relationship_type',
+        'event_type': 'event_type',
+        'event_date': 'event_date',
+        'entry_type': 'entry_type',
+        'amount': 'amount',
+        'memo': 'memo'
+      };
+
+      const apiField = apiFieldMap[field] || field;
+      const updateData = { [apiField]: value };
+
+      const response = await ledgerService.updateLedger(parseInt(id), updateData);
+
+      if (response.success) {
+        // 성공 시 수정된 데이터를 가져와서 상세 페이지로 전달
+        try {
+          const updatedLedgerResponse = await ledgerService.getLedger(parseInt(id));
+          if (updatedLedgerResponse.success && updatedLedgerResponse.data) {
+            // 수정된 데이터와 함께 상세 페이지로 이동 (이전 화면들 모두 제거)
+            router.dismissAll();
+            router.push({
+              pathname: '/ledger-detail',
+              params: {
+                id: id,
+                data: JSON.stringify(updatedLedgerResponse.data)
+              }
+            });
+          } else {
+            // 데이터 가져오기 실패 시 이전 페이지로 돌아가기
+            router.back();
+          }
+        } catch (error) {
+          console.error('수정된 데이터 가져오기 실패:', error);
+          router.back();
+        }
+      } else {
+        setError(response.error || '수정에 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('장부 수정 실패:', err);
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -149,7 +214,7 @@ const EditField: React.FC = () => {
               </View>
             </View>
 
-            {field === 'eventType' ? (
+            {(field === 'eventType' || field === 'event_type') ? (
               <ScrollView 
                 style={styles.optionsScrollContainer}
                 showsVerticalScrollIndicator={true}
@@ -179,7 +244,7 @@ const EditField: React.FC = () => {
                   ))}
                 </View>
               </ScrollView>
-            ) : field === 'relationship' ? (
+            ) : (field === 'relationship' || field === 'relationship_type') ? (
               <ScrollView 
                 style={styles.optionsScrollContainer}
                 showsVerticalScrollIndicator={true}
@@ -209,7 +274,7 @@ const EditField: React.FC = () => {
                   ))}
                 </View>
               </ScrollView>
-            ) : field === 'type' ? (
+            ) : (field === 'type' || field === 'entry_type') ? (
               <ScrollView 
                 style={styles.optionsScrollContainer}
                 showsVerticalScrollIndicator={true}
@@ -255,7 +320,7 @@ const EditField: React.FC = () => {
                   </TouchableOpacity>
                 </View>
               </ScrollView>
-            ) : field === 'date' ? (
+            ) : (field === 'date' || field === 'event_date') ? (
               <View>
                 <TouchableOpacity
                   style={styles.dateButton}
@@ -310,8 +375,8 @@ const EditField: React.FC = () => {
                     setError(''); // 입력 시 에러 제거
                   }}
                   keyboardType={field === 'amount' ? 'numeric' : 'default'}
-                  multiline={field === 'relationship' || field === 'memo'}
-                  numberOfLines={field === 'relationship' ? 2 : field === 'memo' ? 3 : 1}
+                  multiline={(field === 'relationship' || field === 'relationship_type') || field === 'memo'}
+                  numberOfLines={(field === 'relationship' || field === 'relationship_type') ? 2 : field === 'memo' ? 3 : 1}
                   textAlignVertical={field === 'memo' ? 'top' : 'center'}
                 />
                 {error && (
@@ -325,11 +390,14 @@ const EditField: React.FC = () => {
         {/* 액션 버튼들 */}
         <View style={styles.actionButtons}>
           <TouchableOpacity 
-            style={styles.confirmButton}
+            style={[styles.confirmButton, loading && styles.confirmButtonDisabled]}
             onPress={validateAndSave}
             activeOpacity={0.8}
+            disabled={loading}
           >
-            <Text style={styles.confirmButtonText}>확인</Text>
+            <Text style={styles.confirmButtonText}>
+              {loading ? '저장 중...' : '확인'}
+            </Text>
           </TouchableOpacity>
         </View>
         </ScrollView>
@@ -373,6 +441,13 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    flex: 1,
+    textAlign: 'center',
   },
   title: {
     fontSize: 28,
@@ -560,6 +635,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+  confirmButtonDisabled: {
+    backgroundColor: '#cbd5e0',
+    opacity: 0.6,
   },
 
   // 필수 표시 및 에러 스타일

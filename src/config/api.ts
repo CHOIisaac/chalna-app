@@ -33,7 +33,7 @@ export const API_VERSION = 'v1';
 export const API_ENDPOINTS = {
   // 장부 관련
   LEDGERS: '/api/v1/ledgers/',
-  LEDGER_DETAIL: (id: number) => `/api/v1/ledgers/${id}/`,
+  LEDGER_DETAIL: (id: number) => `/api/v1/ledgers/${id}`,
   LEDGER_STATS: '/api/v1/ledgers/stats/',
   
   // 일정 관련
