@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
+    Alert,
     ScrollView,
     StyleSheet,
     Switch,
@@ -10,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { authService } from '../services/api';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
@@ -20,6 +22,33 @@ export default function SettingsScreen() {
 
   const handleSettingToggle = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      '로그아웃',
+      '정말 로그아웃하시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '로그아웃',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authService.logout();
+              // 로그아웃 성공 시 로그인 화면으로 이동
+              // Expo Router에서는 자동으로 라우팅이 처리됩니다
+            } catch (error) {
+              console.error('로그아웃 오류:', error);
+              Alert.alert('오류', '로그아웃 중 오류가 발생했습니다.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -146,7 +175,7 @@ export default function SettingsScreen() {
           <View style={styles.settingsList}>
             <TouchableOpacity 
               style={styles.settingItem}
-              onPress={() => navigation.navigate('Login' as never)}
+              onPress={handleLogout}
               activeOpacity={0.7}
             >
               <View style={styles.settingLeft}>
