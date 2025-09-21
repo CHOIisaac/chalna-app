@@ -207,20 +207,36 @@ export const ledgerService = {
 export interface ScheduleItem {
   id: number;
   title: string;
-  type: string;
-  date: string;
-  time: string;
+  event_type: string;
+  event_date: string;
+  event_time: string;
   location: string;
   amount?: number;
   memo?: string;
   status: 'upcoming' | 'completed' | 'cancelled';
+  user_id: number;
+  created_at: string;
+  updated_at: string | null;
 }
 
 // 일정 API 서비스
 export const scheduleService = {
   // 일정 목록 조회
-  async getSchedules(): Promise<ApiResponse<ScheduleItem[]>> {
-    return apiClient.get<ApiResponse<ScheduleItem[]>>(API_ENDPOINTS.SCHEDULES);
+  async getSchedules(params?: {
+    search?: string;
+    status?: 'upcoming' | 'completed';
+    sort_by?: 'date_asc' | 'date_desc';
+  }): Promise<ApiResponse<ScheduleItem[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
+    
+    const url = queryParams.toString() 
+      ? `${API_ENDPOINTS.SCHEDULES}?${queryParams.toString()}`
+      : API_ENDPOINTS.SCHEDULES;
+      
+    return apiClient.get<ApiResponse<ScheduleItem[]>>(url);
   },
 
   // 일정 생성

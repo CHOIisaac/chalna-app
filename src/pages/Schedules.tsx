@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+    ActivityIndicator,
     Modal,
     ScrollView,
     StyleSheet,
@@ -14,27 +15,16 @@ import {
 import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
+import { handleApiError, ScheduleItem, scheduleService } from '../services/api';
 
-const Events: React.FC = () => {
+const Schedules: React.FC = () => {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   
   // 현재 열린 Swipeable 관리
-  const openSwipeableRefs = useRef<{[key: string]: any}>({});
+  const openSwipeableRefs = useRef<{[key: number]: any}>({});
 
-  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동 및 스와이프 닫기
-  useFocusEffect(
-    useCallback(() => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-      // 탭 전환 시 열린 스와이프 모두 닫기
-      Object.values(openSwipeableRefs.current).forEach(ref => {
-        if (ref && ref.close) {
-          ref.close();
-        }
-      });
-    }, [])
-  );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   
@@ -50,91 +40,172 @@ const Events: React.FC = () => {
   const [showEventTypeDropdown, setShowEventTypeDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Mock data for events (상태로 관리하여 삭제 가능하게)
-  const [events, setEvents] = useState([
-    {
-      id: "1",
-      title: "김철수 결혼식",
-      type: "결혼식",
-      date: new Date(),
-      location: "롯데호텔 크리스탈볼룸",
-      time: "12:00",
-      status: "completed", // completed, upcoming
-      memo: "신랑과 대학 동기입니다. 축가 부를 예정입니다.",
-    },
-    {
-      id: "2",
-      title: "박영희 어머님 장례식",
-      type: "장례식",
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      location: "서울추모공원",
-      time: "14:00",
-      status: "upcoming",
-      memo: "",
-    },
-    {
-      id: "3",
-      title: "이민수 아들 돌잔치",
-      type: "돌잔치",
-      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      location: "강남구청 웨딩홀",
-      time: "11:30",
-      status: "upcoming",
-      memo: "아이 돌선물 준비하기",
-    },
-    {
-      id: "4",
-      title: "최민호 개업식",
-      type: "개업식",
-      date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-      location: "강남구 상가",
-      time: "10:00",
-      status: "upcoming",
-      memo: "",
-    },
-    {
-      id: "5",
-      title: "한지영 결혼식",
-      type: "결혼식",
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      location: "웨딩홀",
-      time: "15:00",
-      status: "completed",
-      memo: "헌금 10만원 전달 완료",
-    }
-  ]);
+  // API 상태 관리
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 삭제된 항목과 되돌리기 상태
-  const [deletedEvent, setDeletedEvent] = useState<any>(null);
+  const [deletedSchedule, setDeletedSchedule] = useState<ScheduleItem | null>(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
 
-  // 삭제 함수 (즉시 삭제)
-  const handleDeleteEvent = (eventId: string) => {
-    const eventToDelete = events.find(event => event.id === eventId);
-    if (eventToDelete) {
-      // 바로 삭제
-      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+  // API 함수들 (메모이제이션)
+  const loadSchedules = useCallback(async (filterParams?: {
+    search?: string;
+    status?: 'upcoming' | 'completed';
+    sort_by?: 'date_asc' | 'date_desc';
+  }) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await scheduleService.getSchedules(filterParams);
       
-      // 되돌리기를 위해 삭제된 항목 저장
-      setDeletedEvent(eventToDelete);
-      setShowUndoToast(true);
-      
-      // 5초 후에 되돌리기 토스트 자동 사라짐
-      setTimeout(() => {
-        setShowUndoToast(false);
-        setDeletedEvent(null);
-      }, 5000);
+      if (response.success) {
+        setSchedules(response.data);
+      } else {
+        setError(response.error || '일정 목록을 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('일정 목록 로드 실패:', err);
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 필터 파라미터 빌드 함수 (메모이제이션)
+  const buildFilterParams = useCallback(() => {
+    const filterParams: {
+      search?: string;
+      status?: 'upcoming' | 'completed';
+      sort_by?: 'date_asc' | 'date_desc';
+    } = {};
+
+    // 검색어 추가
+    if (searchTerm.trim()) {
+      filterParams.search = searchTerm.trim();
+    }
+
+    // 상태 필터 추가
+    if (statusFilter !== 'all') {
+      filterParams.status = statusFilter;
+    }
+
+    // 정렬 추가
+    filterParams.sort_by = sortBy;
+
+    return filterParams;
+  }, [searchTerm, statusFilter, sortBy]);
+
+  // 필터 적용 함수 (메모이제이션)
+  const applyFilter = useCallback(async () => {
+    const filterParams = buildFilterParams();
+    
+    // API 호출
+    await loadSchedules(filterParams);
+    
+    // 모달 닫기
+    setShowFilterModal(false);
+  }, [buildFilterParams, loadSchedules]);
+
+  // 검색어 변경 시 실시간 필터링 (디바운싱 적용, 메모이제이션)
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchTerm(text);
+  }, []);
+
+  // 삭제 함수 (API 연동)
+  const handleDeleteEvent = async (scheduleId: number) => {
+    const scheduleToDelete = schedules.find(schedule => schedule.id === scheduleId);
+    if (scheduleToDelete) {
+      try {
+        // API 호출로 삭제
+        const response = await scheduleService.deleteSchedule(scheduleId);
+        
+        if (response.success) {
+          // UI에서 즉시 제거
+          setSchedules(prevSchedules => prevSchedules.filter(schedule => schedule.id !== scheduleId));
+          
+          // 되돌리기를 위해 삭제된 항목 저장
+          setDeletedSchedule(scheduleToDelete);
+          setShowUndoToast(true);
+          
+          // 5초 후에 되돌리기 토스트 자동 사라짐
+          setTimeout(() => {
+            setShowUndoToast(false);
+            setDeletedSchedule(null);
+          }, 5000);
+        } else {
+          console.error('일정 삭제 실패:', response.error);
+        }
+      } catch (error) {
+        console.error('일정 삭제 실패:', error);
+      }
     }
   };
 
-  // 되돌리기 함수
-  const handleUndoDelete = () => {
-    if (deletedEvent) {
-      setEvents(prevEvents => [...prevEvents, deletedEvent].sort((a, b) => a.id.localeCompare(b.id)));
-      setDeletedEvent(null);
-      setShowUndoToast(false);
+  // 되돌리기 함수 (API 연동)
+  const handleUndoDelete = async () => {
+    if (deletedSchedule) {
+      try {
+        // API 호출로 복원
+        const response = await scheduleService.createSchedule({
+          title: deletedSchedule.title,
+          event_type: deletedSchedule.event_type,
+          event_date: deletedSchedule.event_date,
+          event_time: deletedSchedule.event_time,
+          location: deletedSchedule.location,
+          memo: deletedSchedule.memo,
+          status: deletedSchedule.status,
+          user_id: deletedSchedule.user_id,
+          created_at: deletedSchedule.created_at,
+          updated_at: deletedSchedule.updated_at
+        });
+
+        if (response.success) {
+          // UI에 복원된 항목 추가
+          setSchedules(prevSchedules => [...prevSchedules, response.data].sort((a, b) => a.id - b.id));
+          setDeletedSchedule(null);
+          setShowUndoToast(false);
+        } else {
+          console.error('일정 복원 실패:', response.error);
+        }
+      } catch (error) {
+        console.error('일정 복원 실패:', error);
+        // API 복원 실패 시 다시 데이터 로드
+        await loadSchedules();
+      }
     }
   };
+
+  // 컴포넌트 마운트 시 데이터 로드 (한 번만)
+  useEffect(() => {
+    loadSchedules();
+  }, [loadSchedules]);
+
+  // 검색어 변경 시 디바운싱된 API 호출
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const filterParams = buildFilterParams();
+      loadSchedules(filterParams);
+    }, 200); // 200ms로 최적화 (반응성 향상)
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, statusFilter, sortBy, buildFilterParams, loadSchedules]);
+
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동 및 스와이프 닫기
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      // 탭 전환 시 열린 스와이프 모두 닫기
+      Object.values(openSwipeableRefs.current).forEach(ref => {
+        if (ref && ref.close) {
+          ref.close();
+        }
+      });
+      // 데이터 새로고침
+      loadSchedules();
+    }, [loadSchedules])
+  );
 
   // 모든 열린 Swipeable 닫기
   const closeAllSwipeables = () => {
@@ -146,7 +217,7 @@ const Events: React.FC = () => {
   };
 
   // Swipeable ref 등록
-  const registerSwipeableRef = useCallback((id: string, ref: any) => {
+  const registerSwipeableRef = useCallback((id: number, ref: any) => {
     if (ref) {
       openSwipeableRefs.current[id] = ref;
     } else {
@@ -155,7 +226,7 @@ const Events: React.FC = () => {
   }, []);
 
   // 스와이프 삭제 버튼 렌더링 (현업 표준)
-  const renderRightActions = (eventId: string) => {
+  const renderRightActions = (eventId: number) => {
     return (
       <TouchableOpacity
         style={styles.deleteAction}
@@ -167,29 +238,8 @@ const Events: React.FC = () => {
     );
   };
 
-  // 필터링 및 정렬 로직
-  const filteredAndSortedEvents = events
-    .filter(event => {
-      // 검색어 필터
-      const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.type.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      // 상태 필터
-      const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
-      
-      // 경조사 타입 필터
-      const matchesEventType = eventTypeFilter === 'all' || event.type === eventTypeFilter;
-      
-      return matchesSearch && matchesStatus && matchesEventType;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'date_asc') {
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      } else {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      }
-    });
+  // 서버에서 이미 필터링 및 정렬된 데이터 사용
+  const filteredAndSortedEvents = schedules || [];
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
@@ -230,11 +280,12 @@ const Events: React.FC = () => {
 
   // 선택된 날짜의 이벤트 필터링
   const getEventsForDate = (date: Date) => {
-    return events.filter(event =>
-      event.date.getDate() === date.getDate() &&
-      event.date.getMonth() === date.getMonth() &&
-      event.date.getFullYear() === date.getFullYear()
-    );
+    return schedules.filter(event => {
+      const eventDate = new Date(event.event_date);
+      return eventDate.getDate() === date.getDate() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getFullYear() === date.getFullYear();
+    });
   };
 
   // 달력 렌더링 함수
@@ -266,11 +317,12 @@ const Events: React.FC = () => {
     // 이번 달 날짜들
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      const hasEvent = events.some(event =>
-        event.date.getDate() === day &&
-        event.date.getMonth() === month &&
-        event.date.getFullYear() === year
-      );
+      const hasEvent = schedules.some(event => {
+        const eventDate = new Date(event.event_date);
+        return eventDate.getDate() === day &&
+          eventDate.getMonth() === month &&
+          eventDate.getFullYear() === year;
+      });
       const isToday = date.toDateString() === new Date().toDateString();
 
       days.push(
@@ -360,7 +412,7 @@ const Events: React.FC = () => {
             placeholder="일정명, 장소, 경조사 타입으로 검색..."
             placeholderTextColor="#999"
             value={searchTerm}
-            onChangeText={setSearchTerm}
+            onChangeText={handleSearchChange}
             onFocus={closeAllSwipeables}
           />
           {searchTerm.length > 0 && (
@@ -386,7 +438,7 @@ const Events: React.FC = () => {
                 {new Date().getFullYear()}년 {new Date().getMonth() + 1}월
               </Text>
               <View style={styles.statsBadge}>
-                <Text style={styles.statsBadgeText}>{events.length}개</Text>
+                <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
               </View>
             </View>
             <View style={styles.statsGrid}>
@@ -403,16 +455,40 @@ const Events: React.FC = () => {
           </View>
         </View>
 
+        {/* 로딩 상태 */}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000000" />
+            <Text style={styles.loadingText}>일정을 불러오는 중...</Text>
+          </View>
+        )}
+
+        {/* 에러 상태 */}
+        {error && !loading && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="warning-outline" size={48} color="#FF3B30" />
+            <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
+            <Text style={styles.errorMessage}>{error}</Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={() => loadSchedules()}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.retryButtonText}>다시 시도</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* 뷰 모드에 따른 콘텐츠 */}
-        {viewMode === 'list' ? (
+        {!loading && !error && viewMode === 'list' ? (
           /* 무신사 스타일 일정 목록 */
           <View style={styles.eventsSection}>
             <View style={styles.eventsGrid}>
               {filteredAndSortedEvents.map((event) => {
-                const typeStyle = getEventTypeColor(event.type);
-                const isToday = event.date.toDateString() === new Date().toDateString();
-                const isTomorrow = event.date.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
+                const typeStyle = getEventTypeColor(event.event_type);
+                const eventDate = new Date(event.event_date);
+                const isToday = eventDate.toDateString() === new Date().toDateString();
+                const isTomorrow = eventDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
 
                 return (
                   <Swipeable 
@@ -423,7 +499,7 @@ const Events: React.FC = () => {
                     onSwipeableWillOpen={() => {
                       // 다른 Swipeable들 닫기
                       Object.entries(openSwipeableRefs.current).forEach(([id, ref]) => {
-                        if (id !== event.id && ref && ref.close) {
+                        if (parseInt(id) !== event.id && ref && ref.close) {
                           ref.close();
                         }
                       });
@@ -445,8 +521,8 @@ const Events: React.FC = () => {
                     {/* 날짜 표시 */}
                     <View style={styles.dateSection}>
                       <View style={styles.dateContainer}>
-                        <Text style={styles.dateNumber}>{event.date.getDate()}</Text>
-                        <Text style={styles.dateMonth}>{event.date.getMonth() + 1}월</Text>
+                        <Text style={styles.dateNumber}>{eventDate.getDate()}</Text>
+                        <Text style={styles.dateMonth}>{eventDate.getMonth() + 1}월</Text>
                       </View>
                       {(isToday || isTomorrow) && (
                         <View style={styles.urgentBadge}>
@@ -466,7 +542,7 @@ const Events: React.FC = () => {
                       <View style={styles.eventDetails}>
                         <View style={styles.detailRow}>
                           <Ionicons name="time-outline" size={14} color="#666" />
-                          <Text style={styles.detailText}>{event.time}</Text>
+                          <Text style={styles.detailText}>{event.event_time}</Text>
                         </View>
                         <View style={styles.detailRow}>
                           <Ionicons name="location-outline" size={14} color="#666" />
@@ -479,7 +555,7 @@ const Events: React.FC = () => {
                     <View style={styles.statusSection}>
                         <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
                         <Text style={[styles.typeText, { color: typeStyle.text }]}>
-                          {event.type}
+                          {event.event_type}
                         </Text>
                       </View>
                       <View style={[styles.statusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
@@ -596,7 +672,7 @@ const Events: React.FC = () => {
             {selectedDate && getEventsForDate(selectedDate).length > 0 ? (
               <View style={styles.modalEventsList}>
                 {getEventsForDate(selectedDate).map((event) => {
-                  const typeStyle = getEventTypeColor(event.type);
+                  const typeStyle = getEventTypeColor(event.event_type);
 
                   return (
                     <TouchableOpacity
@@ -616,8 +692,8 @@ const Events: React.FC = () => {
                       {/* 날짜 표시 */}
                       <View style={styles.modalDateSection}>
                         <View style={styles.modalDateContainer}>
-                          <Text style={styles.modalDateNumber}>{event.date.getDate()}</Text>
-                          <Text style={styles.modalDateMonth}>{event.date.getMonth() + 1}월</Text>
+                          <Text style={styles.modalDateNumber}>{new Date(event.event_date).getDate()}</Text>
+                          <Text style={styles.modalDateMonth}>{new Date(event.event_date).getMonth() + 1}월</Text>
                         </View>
                       </View>
 
@@ -630,7 +706,7 @@ const Events: React.FC = () => {
                         <View style={styles.modalEventDetails}>
                           <View style={styles.modalDetailRow}>
                             <Ionicons name="time-outline" size={14} color="#666" />
-                            <Text style={styles.modalDetailText}>{event.time}</Text>
+                            <Text style={styles.modalDetailText}>{event.event_time}</Text>
                           </View>
                           <View style={styles.modalDetailRow}>
                             <Ionicons name="location-outline" size={14} color="#666" />
@@ -643,7 +719,7 @@ const Events: React.FC = () => {
                       <View style={styles.modalStatusSection}>
                         <View style={[styles.modalTypeBadge, { backgroundColor: typeStyle.bg }]}>
                           <Text style={[styles.modalTypeText, { color: typeStyle.text }]}>
-                            {event.type}
+                            {event.event_type}
                           </Text>
                         </View>
                         <View style={[styles.modalStatusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
@@ -677,7 +753,7 @@ const Events: React.FC = () => {
         <View style={styles.undoToast}>
           <View style={styles.undoToastContent}>
             <Text style={styles.undoToastText}>
-              {deletedEvent?.title} 일정이 삭제되었습니다
+              {deletedSchedule?.title} 일정이 삭제되었습니다
             </Text>
             <TouchableOpacity 
               style={styles.undoButton}
@@ -934,10 +1010,13 @@ const Events: React.FC = () => {
             {/* 적용 버튼 */}
             <View style={styles.modalActions}>
               <TouchableOpacity 
-                style={styles.applyButton}
-                onPress={() => setShowFilterModal(false)}
+                style={[styles.applyButton, loading && styles.applyButtonDisabled]}
+                onPress={applyFilter}
+                disabled={loading}
               >
-                <Text style={styles.applyButtonText}>적용</Text>
+                <Text style={styles.applyButtonText}>
+                  {loading ? '적용 중...' : '적용'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1655,6 +1734,54 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
   },
+  applyButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.6,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '500',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: '#4a5568',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'white',
+  },
 
   // 스와이프 삭제 스타일 (현업 표준)
   deleteAction: {
@@ -1713,4 +1840,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Events;
+export default Schedules;

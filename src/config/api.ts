@@ -38,7 +38,7 @@ export const API_ENDPOINTS = {
   
   // 일정 관련
   SCHEDULES: '/api/v1/schedules/',
-  SCHEDULE_DETAIL: (id: number) => `/api/v1/schedules/${id}/`,
+  SCHEDULE_DETAIL: (id: number) => `/api/v1/schedules/${id}`,
   SCHEDULE_CALENDAR: '/api/v1/schedules/calendar',
   SCHEDULE_BY_DATE: (date: string) => `/api/v1/schedules/date/${date}/`,
   
