@@ -213,7 +213,7 @@ export interface ScheduleItem {
   location: string;
   amount?: number;
   memo?: string;
-  status: string;
+  status: 'upcoming' | 'completed' | 'cancelled';
   user_id: number;
   created_at: string;
   updated_at: string | null;

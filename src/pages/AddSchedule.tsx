@@ -102,7 +102,7 @@ const AddSchedule: React.FC = () => {
         event_time: formattedTime,
         location: location,
         memo: memo,
-        status: status as '예정' | '완료',
+        status: status === '예정' ? 'upcoming' : 'completed' as 'upcoming' | 'completed' | 'cancelled',
         user_id: 1, // 임시로 1 사용 (실제로는 로그인한 사용자 ID)
         created_at: new Date().toISOString(),
         updated_at: null

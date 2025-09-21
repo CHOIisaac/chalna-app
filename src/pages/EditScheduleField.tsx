@@ -187,7 +187,10 @@ const EditScheduleField: React.FC = () => {
   const isMemoField = field === 'memo';
 
   const eventTypes = Object.values(EventType);
-  const statusOptions = ['예정', '완료'];
+  const statusOptions = [
+    { value: 'upcoming', label: '예정' },
+    { value: 'completed', label: '완료' }
+  ];
 
   return (
     <MobileLayout currentPage="edit-event-field">
@@ -308,16 +311,16 @@ const EditScheduleField: React.FC = () => {
                       key={index}
                       style={[
                         styles.typeOptionButton,
-                        value === option && styles.selectedTypeOption
+                        value === option.value && styles.selectedTypeOption
                       ]}
-                      onPress={() => setValue(option)}
+                      onPress={() => setValue(option.value)}
                       activeOpacity={0.7}
                     >
                       <Text style={[
                         styles.typeOptionText,
-                        value === option && styles.selectedTypeOptionText
+                        value === option.value && styles.selectedTypeOptionText
                       ]}>
-                        {option}
+                        {option.label}
                       </Text>
                     </TouchableOpacity>
                   ))}

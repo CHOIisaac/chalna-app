@@ -21,6 +21,16 @@ const ScheduleDetail: React.FC = () => {
     // HH:MM:SS 형식을 HH:MM으로 변환
     return timeString.substring(0, 5);
   };
+
+  // 상태 텍스트 변환 함수
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'completed': return '완료';
+      case 'upcoming': return '예정';
+      case 'cancelled': return '취소';
+      default: return status;
+    }
+  };
   
   // 전달받은 데이터 파싱 및 상태 관리
   const [scheduleDetail, setScheduleDetail] = useState(data ? JSON.parse(data) : null);
@@ -203,7 +213,7 @@ const ScheduleDetail: React.FC = () => {
               <View style={styles.editItemLeft}>
                 <View style={styles.editItemContent}>
                   <Text style={styles.editLabel}>상태</Text>
-                  <Text style={styles.editValue}>{scheduleDetail.status}</Text>
+                  <Text style={styles.editValue}>{getStatusText(scheduleDetail.status)}</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
