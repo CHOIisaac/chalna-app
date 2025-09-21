@@ -3,6 +3,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     Platform,
     ScrollView,
     StyleSheet,
@@ -12,6 +13,7 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { handleApiError, ledgerService } from '../services/api';
 import { EventType, RelationshipType } from '../types';
 
 const AddLedger: React.FC = () => {
@@ -35,6 +37,8 @@ const AddLedger: React.FC = () => {
   });
   
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const eventTypes = Object.values(EventType);
   const relationshipTypes = Object.values(RelationshipType);
@@ -100,16 +104,42 @@ const AddLedger: React.FC = () => {
     return !hasError;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) {
       return;
     }
 
-    // 여기서 실제 저장 로직을 구현
-    console.log('Saving ledger:', formData);
-    
-    // 장부 페이지로 돌아가기
-    router.back();
+    try {
+      setLoading(true);
+      setError('');
+
+      // API 형식에 맞게 데이터 변환
+      const ledgerData = {
+        counterparty_name: formData.name,
+        counterparty_phone: '', // 기본값 (나중에 필드 추가 가능)
+        relationship_type: formData.relationship,
+        event_type: formData.eventType,
+        event_date: formData.date.toISOString().split('T')[0], // YYYY-MM-DD 형식
+        entry_type: formData.type,
+        amount: parseInt(formData.amount),
+        memo: formData.memo
+      };
+
+      const response = await ledgerService.createLedger(ledgerData);
+
+      if (response.success) {
+        // 성공 시 장부 목록으로 돌아가기
+        router.back();
+      } else {
+        // 에러 처리
+        setError(response.error || '장부 추가에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('장부 추가 실패:', error);
+      setError(handleApiError(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -352,13 +382,25 @@ const AddLedger: React.FC = () => {
               />
             </View>
           </View>
+          {/* 에러 메시지 */}
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
           {/* 저장 버튼 */}
           <View style={styles.bottomSection}>
             <TouchableOpacity 
-              style={styles.saveButton}
+              style={[styles.saveButton, loading && styles.saveButtonDisabled]}
               onPress={handleSave}
+              disabled={loading}
             >
-              <Text style={styles.saveButtonText}>저장</Text>
+              {loading ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text style={styles.saveButtonText}>저장</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -617,6 +659,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.6,
+  },
+  errorContainer: {
+    marginHorizontal: 26,
+    marginBottom: 10,
+    padding: 12,
+    backgroundColor: '#fee',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fcc',
+  },
+  errorText: {
+    color: '#c53030',
+    fontSize: 14,
+    textAlign: 'center',
   },
 
   // 필수 표시 및 에러 스타일

@@ -45,12 +45,16 @@ const Ledgers: React.FC = () => {
   const [deletedLedger, setDeletedLedger] = useState<LedgerItem | null>(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
 
-  // API 함수들
-  const loadLedgers = async () => {
+  // API 함수들 (메모이제이션)
+  const loadLedgers = useCallback(async (filterParams?: {
+    search?: string;
+    entry_type?: 'given' | 'received';
+    sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
+  }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await ledgerService.getLedgers();
+      const response = await ledgerService.getLedgers(filterParams);
       
       if (response.success) {
         setLedgers(response.data);
@@ -63,12 +67,62 @@ const Ledgers: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // 컴포넌트 마운트 시 데이터 로드
+  // 필터 적용 함수 (메모이제이션)
+  const applyFilter = useCallback(async () => {
+    const filterParams = buildFilterParams();
+    
+    // API 호출
+    await loadLedgers(filterParams);
+    
+    // 모달 닫기
+    setShowFilterModal(false);
+  }, [buildFilterParams, loadLedgers]);
+
+  // 필터 파라미터 빌드 함수 (메모이제이션)
+  const buildFilterParams = useCallback(() => {
+    const filterParams: {
+      search?: string;
+      entry_type?: 'given' | 'received';
+      sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
+    } = {};
+
+    // 검색어 추가
+    if (searchTerm.trim()) {
+      filterParams.search = searchTerm.trim();
+    }
+
+    // 타입 필터 추가
+    if (filterType !== 'all') {
+      filterParams.entry_type = filterType;
+    }
+
+    // 정렬 추가
+    filterParams.sort_by = sortBy;
+
+    return filterParams;
+  }, [searchTerm, filterType, sortBy]);
+
+  // 검색어 변경 시 실시간 필터링 (디바운싱 적용, 메모이제이션)
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchTerm(text);
+  }, []);
+
+  // 컴포넌트 마운트 시 데이터 로드 (한 번만)
   useEffect(() => {
     loadLedgers();
   }, []);
+
+  // 검색어 변경 시 디바운싱된 API 호출
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const filterParams = buildFilterParams();
+      loadLedgers(filterParams);
+    }, 200); // 200ms로 최적화 (반응성 향상)
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, filterType, sortBy]); // 의존성 배열에 모든 필터 상태 추가
 
   // 탭이 포커스될 때 데이터 새로고침
   useFocusEffect(
@@ -191,39 +245,8 @@ const Ledgers: React.FC = () => {
     );
   };
 
-  // 필터링 및 정렬 로직
-  const filteredAndSortedLedgers = (ledgers || [])
-    .filter(ledger => {
-      // 검색어 필터 (안전한 필터링)
-      const name = ledger.counterparty_name || '';
-      const relationship = ledger.relationship_type || '';
-      const eventType = ledger.event_type || '';
-      
-      const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        relationship.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        eventType.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      // 타입 필터
-      const matchesType = filterType === 'all' || 
-        (filterType === 'given' && ledger.entry_type === 'given') ||
-        (filterType === 'received' && ledger.entry_type === 'received');
-      
-      return matchesSearch && matchesType;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'date_desc':
-          return new Date(b.event_date).getTime() - new Date(a.event_date).getTime();
-        case 'date_asc':
-          return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
-        case 'amount_desc':
-          return b.amount - a.amount;
-        case 'amount_asc':
-          return a.amount - b.amount;
-        default:
-          return 0;
-      }
-    });
+  // 서버에서 이미 필터링 및 정렬된 데이터 사용
+  const filteredAndSortedLedgers = ledgers || [];
 
   const totalGiven = ledgers.filter(ledger => ledger.entry_type === 'given').reduce((sum, ledger) => sum + ledger.amount, 0);
   const totalReceived = ledgers.filter(ledger => ledger.entry_type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
@@ -255,7 +278,7 @@ const Ledgers: React.FC = () => {
             placeholder="이름이나 관계로 검색..."
             placeholderTextColor="#999"
             value={searchTerm}
-            onChangeText={setSearchTerm}
+            onChangeText={handleSearchChange}
             onFocus={closeAllSwipeables}
           />
           {searchTerm.length > 0 && (
@@ -643,10 +666,13 @@ const Ledgers: React.FC = () => {
             {/* 적용 버튼 */}
             <View style={styles.modalActions}>
               <TouchableOpacity 
-                style={styles.applyButton}
-                onPress={() => setShowFilterModal(false)}
+                style={[styles.applyButton, loading && styles.applyButtonDisabled]}
+                onPress={applyFilter}
+                disabled={loading}
               >
-                <Text style={styles.applyButtonText}>적용</Text>
+                <Text style={styles.applyButtonText}>
+                  {loading ? '적용 중...' : '적용'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1023,6 +1049,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+  applyButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.6,
   },
 
   // 스와이프 삭제 스타일 (현업 표준)

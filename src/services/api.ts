@@ -160,8 +160,21 @@ export interface LedgerStats {
 // 장부 API 서비스
 export const ledgerService = {
   // 장부 목록 조회
-  async getLedgers(): Promise<ApiResponse<LedgerItem[]>> {
-    return apiClient.get<ApiResponse<LedgerItem[]>>(API_ENDPOINTS.LEDGERS);
+  async getLedgers(params?: {
+    search?: string;
+    entry_type?: 'given' | 'received';
+    sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
+  }): Promise<ApiResponse<LedgerItem[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.entry_type) queryParams.append('entry_type', params.entry_type);
+    if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
+    
+    const url = queryParams.toString() 
+      ? `${API_ENDPOINTS.LEDGERS}?${queryParams.toString()}`
+      : API_ENDPOINTS.LEDGERS;
+      
+    return apiClient.get<ApiResponse<LedgerItem[]>>(url);
   },
 
   // 장부 생성
