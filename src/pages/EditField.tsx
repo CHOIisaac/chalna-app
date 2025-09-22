@@ -3,13 +3,13 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { handleApiError, ledgerService } from '../services/api';
