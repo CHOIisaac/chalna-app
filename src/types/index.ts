@@ -7,6 +7,7 @@ export enum EventType {
   BIRTHDAY = "생일",
   FIRST_BIRTHDAY = "돌잔치",
   GRADUATION = "졸업식",
+  RETIREMENT = "정년퇴임",
   OPENING = "개업식",
   ANNIVERSARY = "기념일",
   OTHER = "기타"
@@ -23,6 +24,7 @@ export enum RelationshipType {
   TEACHER = "선생님",
   OTHER = "기타"
 }
+
 
 export interface Event {
   id: string;

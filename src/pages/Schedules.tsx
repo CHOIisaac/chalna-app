@@ -27,6 +27,8 @@ const Schedules: React.FC = () => {
     // HH:MM:SS 형식을 HH:MM으로 변환
     return timeString.substring(0, 5);
   };
+
+
   
   // 현재 열린 Swipeable 관리
   const openSwipeableRefs = useRef<{[key: number]: any}>({});
@@ -157,10 +159,7 @@ const Schedules: React.FC = () => {
           event_time: deletedSchedule.event_time,
           location: deletedSchedule.location,
           memo: deletedSchedule.memo,
-          status: deletedSchedule.status,
-          user_id: deletedSchedule.user_id,
-          created_at: deletedSchedule.created_at,
-          updated_at: deletedSchedule.updated_at
+          status: deletedSchedule.status
         });
 
         if (response.success) {
