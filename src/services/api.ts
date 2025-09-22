@@ -225,11 +225,13 @@ export const scheduleService = {
   async getSchedules(params?: {
     search?: string;
     status?: 'upcoming' | 'completed';
+    event_type?: string;
     sort_by?: 'date_asc' | 'date_desc';
   }): Promise<ApiResponse<ScheduleItem[]>> {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append('search', params.search);
     if (params?.status) queryParams.append('status', params.status);
+    if (params?.event_type) queryParams.append('event_type', params.event_type);
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
     
     const url = queryParams.toString() 

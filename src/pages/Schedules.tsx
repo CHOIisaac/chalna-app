@@ -61,6 +61,7 @@ const Schedules: React.FC = () => {
   const loadSchedules = useCallback(async (filterParams?: {
     search?: string;
     status?: 'upcoming' | 'completed';
+    event_type?: string;
     sort_by?: 'date_asc' | 'date_desc';
   }) => {
     try {
@@ -83,6 +84,7 @@ const Schedules: React.FC = () => {
     const filterParams: {
       search?: string;
       status?: 'upcoming' | 'completed';
+      event_type?: string;
       sort_by?: 'date_asc' | 'date_desc';
     } = {};
 
@@ -96,11 +98,16 @@ const Schedules: React.FC = () => {
       filterParams.status = statusFilter;
     }
 
+    // 경조사 타입 필터 추가
+    if (eventTypeFilter !== 'all') {
+      filterParams.event_type = eventTypeFilter;
+    }
+
     // 정렬 추가
     filterParams.sort_by = sortBy;
 
     return filterParams;
-  }, [searchTerm, statusFilter, sortBy]);
+  }, [searchTerm, statusFilter, eventTypeFilter, sortBy]);
 
   // 필터 적용 함수 (메모이제이션)
   const applyFilter = useCallback(async () => {
