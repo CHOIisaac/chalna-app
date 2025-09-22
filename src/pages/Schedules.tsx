@@ -15,6 +15,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
 import { handleApiError, ScheduleItem, scheduleService } from '../services/api';
+import { EventType } from '../types';
 
 const Schedules: React.FC = () => {
   const router = useRouter();
@@ -877,7 +878,7 @@ const Schedules: React.FC = () => {
 
             {/* 경조사 타입별 필터 드롭다운 */}
             <View style={styles.dropdownSection}>
-              <Text style={styles.dropdownSectionTitle}>경조사 타입</Text>
+              <Text style={styles.dropdownSectionTitle}>경조사</Text>
               <TouchableOpacity
                 style={styles.dropdownButton}
                 onPress={() => {
@@ -918,7 +919,7 @@ const Schedules: React.FC = () => {
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
-                  {['결혼식', '장례식', '돌잔치', '개업식'].map((type) => (
+                  {Object.values(EventType).map((type) => (
                     <TouchableOpacity
                       key={type}
                       style={[
