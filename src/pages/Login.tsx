@@ -97,7 +97,7 @@ const Login: React.FC = () => {
                   label="이메일"
                   placeholder="이메일을 입력하세요"
                   value={formData.username}
-                  onChangeText={(value) => handleInputChange('email', value)}
+                  onChangeText={(value) => handleInputChange('username', value)}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
