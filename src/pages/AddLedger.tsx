@@ -673,12 +673,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fcc',
   },
-  errorText: {
-    color: '#c53030',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-
   // 필수 표시 및 에러 스타일
   required: {
     color: '#e53e3e',

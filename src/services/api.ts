@@ -178,7 +178,7 @@ export const ledgerService = {
   },
 
   // 장부 생성
-  async createLedger(ledger: Omit<LedgerItem, 'id'>): Promise<ApiResponse<LedgerItem>> {
+  async createLedger(ledger: Omit<LedgerItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<LedgerItem>> {
     return apiClient.post<ApiResponse<LedgerItem>>(API_ENDPOINTS.LEDGERS, ledger);
   },
 
@@ -240,7 +240,7 @@ export const scheduleService = {
   },
 
   // 일정 생성
-  async createSchedule(schedule: Omit<ScheduleItem, 'id'>): Promise<ApiResponse<ScheduleItem>> {
+  async createSchedule(schedule: Omit<ScheduleItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<ScheduleItem>> {
     return apiClient.post<ApiResponse<ScheduleItem>>(API_ENDPOINTS.SCHEDULES, schedule);
   },
 

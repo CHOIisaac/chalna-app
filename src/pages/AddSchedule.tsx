@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { handleApiError, scheduleService } from '../services/api';
+import { EventType } from '../types';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -37,7 +38,7 @@ const AddSchedule: React.FC = () => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   
   // 경조사 타입 옵션
-  const eventTypes = ['결혼식', '장례식', '돌잔치', '개업식', '생일', '졸업식', '기념일', '기타'];
+  const eventTypes = Object.values(EventType);
   
   // 상태 옵션
   const statusOptions = ['예정', '완료'];
@@ -102,10 +103,7 @@ const AddSchedule: React.FC = () => {
         event_time: formattedTime,
         location: location,
         memo: memo,
-        status: status === '예정' ? 'upcoming' : 'completed' as 'upcoming' | 'completed' | 'cancelled',
-        user_id: 1, // 임시로 1 사용 (실제로는 로그인한 사용자 ID)
-        created_at: new Date().toISOString(),
-        updated_at: null
+        status: status === '예정' ? 'upcoming' : 'completed' as 'upcoming' | 'completed' | 'cancelled'
       };
 
       const response = await scheduleService.createSchedule(scheduleData);
