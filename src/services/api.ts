@@ -2,6 +2,7 @@
  * API 클라이언트 설정 및 서비스 함수들
  */
 
+import { router } from 'expo-router';
 import { API_ENDPOINTS, API_TIMEOUT, getApiBaseUrl } from '../config/api';
 import { MonthlyStats, QuickStats, RecentLedger } from '../types';
 import { AuthService, LoginResponse, UserData } from './auth';
@@ -22,6 +23,16 @@ class ApiClient {
     
     // JWT 토큰 자동 추가
     const accessToken = await AuthService.getAccessToken();
+    
+    // 로그인 API는 토큰 체크 건너뛰기
+    const isLoginEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/register');
+    
+    // 토큰이 없으면 로그인 페이지로 리다이렉트 (로그인 API 제외)
+    if (!accessToken && !isLoginEndpoint) {
+      console.log('🚪 토큰이 없습니다. 로그인 페이지로 이동합니다.');
+      router.replace('/login');
+      throw new Error('로그인이 필요합니다.');
+    }
     
     const defaultHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -53,11 +64,22 @@ class ApiClient {
             // 토큰 갱신 성공 시 재시도
             return this.request<T>(endpoint, options);
           } else {
-            // 토큰 갱신 실패 시 로그아웃 처리
+            // 토큰 갱신 실패 시 로그아웃 처리 및 로그인 페이지로 이동
+            console.log('🔄 토큰 갱신 실패. 로그인 페이지로 이동합니다.');
             await AuthService.logout();
+            router.replace('/login');
             throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
           }
         }
+        
+        // 403 권한 거부 시에도 로그인 페이지로 이동
+        if (response.status === 403) {
+          console.log('🚫 권한이 없습니다. 로그인 페이지로 이동합니다.');
+          await AuthService.logout();
+          router.replace('/login');
+          throw new Error('권한이 없습니다. 다시 로그인해주세요.');
+        }
+        
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -293,46 +315,60 @@ export const homeService = {
 
 // 인증 API 서비스
 export const authService = {
-  // 일반 로그인
+  // 일반 로그인 (토큰 체크 없이 직접 호출)
   async login(username: string, password: string): Promise<ApiResponse<LoginResponse>> {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>(
-      API_ENDPOINTS.AUTH_LOGIN,
-      { username, password }
-    );
-    
-    // 로그인 성공 시 토큰과 사용자 정보 저장
-    if (response.access_token) {
-      await AuthService.setTokens(
-        response.access_token,
-        response.access_token // refresh_token이 없으므로 access_token 사용
-      );
+    try {
+      const url = `${getApiBaseUrl()}${API_ENDPOINTS.AUTH_LOGIN}`;
       
-      // 사용자 데이터 생성
-      const userData = {
-        id: response.user_id,
-        email: response.email,
-        name: response.username
-      };
-      await AuthService.setUserData(userData);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
       
-      // 표준 응답 형식으로 변환
-      return {
-        success: true,
-        data: {
-          access_token: response.access_token,
-          refresh_token: response.access_token,
-          user: userData,
-          expires_in: 3600
-        }
-      };
+      if (response.ok && data.access_token) {
+        // 로그인 성공 시 토큰과 사용자 정보 저장
+        await AuthService.setTokens(
+          data.access_token,
+          data.access_token // refresh_token이 없으므로 access_token 사용
+        );
+        
+        // 사용자 데이터 생성
+        const userData = {
+          id: data.user_id,
+          email: data.email,
+          name: data.username
+        };
+        await AuthService.setUserData(userData);
+        
+        // 표준 응답 형식으로 변환
+        return {
+          success: true,
+          data: {
+            access_token: data.access_token,
+            refresh_token: data.access_token,
+            user: userData,
+            expires_in: 3600
+          }
+        };
+      } else {
+        // 로그인 실패
+        const errorMessage = data.detail || '로그인에 실패했습니다.';
+        return { success: false, error: errorMessage, data: null as any };
+      }
+    } catch (error) {
+      console.error('로그인 API 호출 실패:', error);
+      return { success: false, error: '네트워크 오류가 발생했습니다.', data: null as any };
     }
-    
-    return { success: false, error: '로그인에 실패했습니다.' };
   },
 
   // 카카오 로그인
   async kakaoLogin(kakaoToken: string): Promise<ApiResponse<LoginResponse>> {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>(
+    const response = await apiClient.post<any>(
       '/api/v1/auth/kakao-login/',
       { kakao_token: kakaoToken }
     );
@@ -391,7 +427,7 @@ export const authService = {
       };
     }
     
-    return { success: false, error: '토큰 갱신에 실패했습니다.' };
+    return { success: false, error: '토큰 갱신에 실패했습니다.', data: null as any };
   },
 };
 

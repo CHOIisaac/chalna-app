@@ -15,7 +15,7 @@
 // 개발/운영 환경별 API URL 설정
 export const API_CONFIG = {
   // 로컬 개발 서버 (폰에서 접근 가능한 IP로 변경 필요)
-  local: 'http://192.168.0.100:8000', // ✅ 실제 개발 머신의 IP 주소
+  local: 'http://192.168.0.95:8000', // ✅ 실제 개발 머신의 IP 주소
   
   // 개발 서버 (예시)
   development: 'https://dev-api.chalna.com',

@@ -43,15 +43,9 @@ export default function LoginScreen() {
       const response = await authService.login(formData.username, formData.password);
       
       if (response.success) {
-        Alert.alert('로그인 성공', '환영합니다!', [
-          {
-            text: '확인',
-            onPress: () => {
-              // 로그인 성공 시 메인 화면으로 이동
-              router.replace('/(tabs)');
-            },
-          },
-        ]);
+        // 로그인 성공 시 바로 메인 화면으로 이동
+        console.log('✅ 로그인 성공! 메인 화면으로 이동합니다.');
+        router.replace('/(tabs)');
       } else {
         Alert.alert('로그인 실패', response.error || '로그인에 실패했습니다.');
       }
