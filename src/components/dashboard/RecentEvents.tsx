@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
     ActivityIndicator,
@@ -7,26 +6,23 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { RecentSchedule } from '../../types';
+import { RecentLedger } from '../../types';
 
 interface RecentEventsProps {
-  recentSchedules: RecentSchedule[];
+  recentLedgers: RecentLedger[];
   loading: boolean;
 }
 
-const RecentEvents: React.FC<RecentEventsProps> = ({ recentSchedules, loading }) => {
+const RecentEvents: React.FC<RecentEventsProps> = ({ recentLedgers, loading }) => {
   // 시간 포맷팅 함수 (HH:MM:SS -> HH:MM)
   const formatTime = (timeString: string) => {
     if (!timeString) return '';
     return timeString.substring(0, 5); // HH:MM만 추출
   };
 
-  // 날짜 포맷팅 함수
+  // 날짜 포맷팅 함수 (장부 화면과 동일하게 년월일 형태)
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}월 ${day}일`;
+    return dateString; // API에서 받은 날짜 그대로 사용 (YYYY-MM-DD)
   };
 
   return (
@@ -55,58 +51,54 @@ const RecentEvents: React.FC<RecentEventsProps> = ({ recentSchedules, loading })
                 </View>
               </View>
             ))
-          ) : recentSchedules.length > 0 ? (
-            recentSchedules.map((schedule, index) => (
+          ) : recentLedgers.length > 0 ? (
+            recentLedgers.map((ledger, index) => (
               <TouchableOpacity 
-                key={schedule.id} 
+                key={ledger.id} 
                 style={styles.eventCard}
                 activeOpacity={0.8}
                 onPress={() => {}}
               >
+                {/* 메모 표시 - 카드 모서리 */}
+                {ledger.memo && ledger.memo.trim() !== '' && (
+                  <View style={styles.memoCorner} />
+                )}
+
                 {/* 정보 영역 */}
-                <View style={styles.infoSection}>
-                  <View style={styles.titleRow}>
-                    <Text style={styles.eventTitle}>{schedule.title}</Text>
+                <View style={styles.ledgerInfo}>
+                  <View style={styles.ledgerHeader}>
+                    <Text style={styles.ledgerName}>{ledger.name}</Text>
                   </View>
                   
-                  <View style={styles.metaRow}>
-                    <Ionicons name="time-outline" size={14} color="#666" />
-                    <Text style={styles.metaText}>
-                      {formatDate(schedule.event_date)}
-                      {schedule.event_time && ` ${formatTime(schedule.event_time)}`}
-                    </Text>
+                  <View style={styles.ledgerDetails}>
+                    <Text style={styles.relationshipText}>{ledger.relationship_type}</Text>
+                    <Text style={styles.separator}>•</Text>
+                    <Text style={styles.eventTypeText}>{ledger.event_type}</Text>
                   </View>
                   
-                  {schedule.location && (
-                    <View style={[styles.metaRow, { marginTop: 5 }]}>
-                      <Ionicons name="location-outline" size={14} color="#666" />
-                      <Text style={styles.metaText}>{schedule.location}</Text>
-                    </View>
-                  )}
+                  <View style={styles.ledgerMeta}>
+                    <Text style={styles.dateText}>{formatDate(ledger.event_date)}</Text>
+                  </View>
                 </View>
 
-                {/* 이벤트 타입 영역 */}
+                {/* 금액 영역 */}
                 <View style={styles.amountSection}>
-                  <View style={[styles.typeTag, { backgroundColor: '#f0f0f0' }]}>
-                    <Text style={[styles.typeText, { color: '#666666' }]}>
-                      {schedule.event_type}
-                    </Text>
-                  </View>
-                  {schedule.memo && (
-                    <Text style={[styles.metaText, { marginTop: 4, textAlign: 'right' }]}>
-                      {schedule.memo}
-                    </Text>
-                  )}
+                  <Text style={[styles.amountText, { color: '#4a5568' }]}>
+                    {ledger.amount.toLocaleString()}원
+                  </Text>
+                  <Text style={[styles.typeLabel, { color: ledger.entry_type === 'given' ? '#4a5568' : '#718096' }]}>
+                    {ledger.entry_type === 'given' ? '나눔' : '받음'}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))
           ) : (
             // 데이터가 없을 때
             <View style={styles.eventCard}>
-              <View style={styles.infoSection}>
-                <Text style={styles.eventTitle}>등록된 일정이 없습니다</Text>
-                <Text style={[styles.metaText, { marginTop: 8 }]}>
-                  새로운 경조사 일정을 추가해보세요
+              <View style={styles.ledgerInfo}>
+                <Text style={styles.ledgerName}>등록된 장부 기록이 없습니다</Text>
+                <Text style={[styles.dateText, { marginTop: 8 }]}>
+                  새로운 경조사 장부를 추가해보세요
                 </Text>
               </View>
             </View>
@@ -194,68 +186,80 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    position: 'relative',
   },
 
-  // 정보 섹션
-  infoSection: {
+  // 장부 정보 섹션
+  ledgerInfo: {
     flex: 1,
   },
-  titleRow: {
+  ledgerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
-  eventTitle: {
+  ledgerName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
+    flex: 1,
+    marginRight: 8,
   },
-  typeTag: {
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+  ledgerDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
-  typeText: {
-    fontSize: 11,
+  relationshipText: {
+    fontSize: 13,
     color: '#666',
     fontWeight: '500',
   },
-  statusRow: {
-    marginBottom: 6,
+  eventTypeText: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '500',
   },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
+  separator: {
+    fontSize: 13,
+    color: '#999',
+    marginHorizontal: 6,
   },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  metaRow: {
+  ledgerMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
   },
-  metaText: {
+  dateText: {
     fontSize: 12,
     color: '#999',
-    marginRight: 6,
+  },
+  memoCorner: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    borderTopWidth: 20,
+    borderTopColor: '#E5E5E5',
+    borderLeftWidth: 20,
+    borderLeftColor: 'transparent',
+    borderTopRightRadius: 16,
   },
 
   // 금액 섹션
   amountSection: {
-    marginLeft: 12,
     alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    marginLeft: 12,
   },
   amountText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginTop: 6,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  typeLabel: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 
