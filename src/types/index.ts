@@ -116,13 +116,14 @@ export interface QuickStats {
   avg_wedding_change: number;
 }
 
-export interface RecentSchedule {
+export interface RecentLedger {
   id: number;
-  title: string;
+  name: string;
+  relationship_type: string;
+  amount: number;
   event_type: string;
   event_date: string;
-  event_time: string;
-  location: string;
+  entry_type: string;
   memo: string;
 }
 
