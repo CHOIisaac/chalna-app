@@ -55,7 +55,7 @@ export const API_ENDPOINTS = {
   // 홈 화면 관련
   HOME_MONTHLY_STATS: '/api/v1/home/monthly-stats',
   HOME_QUICK_STATS: '/api/v1/home/quick-stats',
-  HOME_RECENT_SCHEDULES: '/api/v1/home/recent-schedules',
+  HOME_RECENT_LEDGERS: '/api/v1/home/recent-ledgers',
   
   // 인증 관련
   AUTH_LOGIN: '/api/v1/auth/auth/login',
