@@ -1,63 +1,33 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
+    ActivityIndicator,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
-import { Event, EventType } from '../../types';
+import { RecentSchedule } from '../../types';
 
-const RecentEvents: React.FC = () => {
+interface RecentEventsProps {
+  recentSchedules: RecentSchedule[];
+  loading: boolean;
+}
 
-  // Mock data for recent events
-  const recentEvents: Event[] = [
-    {
-      id: '1',
-      type: EventType.WEDDING,
-      title: '김철수 ♥ 이영희 결혼식',
-      date: '2024-08-25',
-      location: '강남구 웨딩홀',
-      amount: 100000,
-      status: '예정',
-    },
-    {
-      id: '2',
-      type: EventType.FUNERAL,
-      title: '박할머니 빈소',
-      date: '2024-08-20',
-      location: '서울병원 장례식장',
-      amount: 50000,
-      status: '완료',
-    },
-    {
-      id: '3',
-      type: EventType.FIRST_BIRTHDAY,
-      title: '최준호 돌잔치',
-      date: '2024-08-30',
-      location: '용산구 컨벤션센터',
-      amount: 30000,
-      status: '예정',
-    },
-  ];
+const RecentEvents: React.FC<RecentEventsProps> = ({ recentSchedules, loading }) => {
+  // 시간 포맷팅 함수 (HH:MM:SS -> HH:MM)
+  const formatTime = (timeString: string) => {
+    if (!timeString) return '';
+    return timeString.substring(0, 5); // HH:MM만 추출
+  };
 
-  // 날짜 순으로 정렬하고 3개까지만 표시
-  const sortedEvents = recentEvents
-    .sort((a, b) => {
-      // 완료된 것과 예정된 것 분리
-      if (a.status === '완료' && b.status === '예정') return -1;
-      if (a.status === '예정' && b.status === '완료') return 1;
-
-      // 같은 상태 내에서는 날짜 순으로 정렬
-      if (a.status === '완료' && b.status === '완료') {
-        // 완료된 것들은 최신 날짜 순 (내림차순)
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      } else {
-        // 예정된 것들은 가까운 날짜 순 (오름차순)
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      }
-    })
-    .slice(0, 3); // 3개까지만 표시
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}월 ${day}일`;
+  };
 
   return (
     <View style={styles.container}>
@@ -70,10 +40,25 @@ const RecentEvents: React.FC = () => {
         </View>
 
         <View style={styles.eventsList}>
-          {sortedEvents.map((event, index) => {
-            return (
+          {loading ? (
+            // 로딩 중일 때는 로딩 카드 표시
+            Array.from({ length: 3 }).map((_, index) => (
+              <View key={index} style={styles.eventCard}>
+                <View style={styles.infoSection}>
+                  <View style={styles.titleRow}>
+                    <ActivityIndicator size="small" color="#666" />
+                    <Text style={[styles.eventTitle, { marginLeft: 8 }]}>로딩 중...</Text>
+                  </View>
+                </View>
+                <View style={styles.amountSection}>
+                  <Text style={styles.amountText}>-</Text>
+                </View>
+              </View>
+            ))
+          ) : recentSchedules.length > 0 ? (
+            recentSchedules.map((schedule, index) => (
               <TouchableOpacity 
-                key={event.id} 
+                key={schedule.id} 
                 style={styles.eventCard}
                 activeOpacity={0.8}
                 onPress={() => {}}
@@ -81,33 +66,51 @@ const RecentEvents: React.FC = () => {
                 {/* 정보 영역 */}
                 <View style={styles.infoSection}>
                   <View style={styles.titleRow}>
-                    <Text style={styles.eventTitle}>{event.title}</Text>
+                    <Text style={styles.eventTitle}>{schedule.title}</Text>
                   </View>
                   
                   <View style={styles.metaRow}>
                     <Ionicons name="time-outline" size={14} color="#666" />
-                    <Text style={styles.metaText}>{event.date}</Text>
+                    <Text style={styles.metaText}>
+                      {formatDate(schedule.event_date)}
+                      {schedule.event_time && ` ${formatTime(schedule.event_time)}`}
+                    </Text>
                   </View>
                   
-                  <View style={[styles.metaRow, { marginTop: 5 }]}>
-                    <Ionicons name="location-outline" size={14} color="#666" />
-                    <Text style={styles.metaText}>{event.location}</Text>
-                  </View>
+                  {schedule.location && (
+                    <View style={[styles.metaRow, { marginTop: 5 }]}>
+                      <Ionicons name="location-outline" size={14} color="#666" />
+                      <Text style={styles.metaText}>{schedule.location}</Text>
+                    </View>
+                  )}
                 </View>
 
-                {/* 금액 영역 (이벤트 타입 + 금액) */}
+                {/* 이벤트 타입 영역 */}
                 <View style={styles.amountSection}>
                   <View style={[styles.typeTag, { backgroundColor: '#f0f0f0' }]}>
                     <Text style={[styles.typeText, { color: '#666666' }]}>
-                      {event.type}
+                      {schedule.event_type}
                     </Text>
                   </View>
-                  <Text></Text>
-                  <Text style={styles.amountText}>{event.amount.toLocaleString()}원</Text>
+                  {schedule.memo && (
+                    <Text style={[styles.metaText, { marginTop: 4, textAlign: 'right' }]}>
+                      {schedule.memo}
+                    </Text>
+                  )}
                 </View>
               </TouchableOpacity>
-            );
-          })}
+            ))
+          ) : (
+            // 데이터가 없을 때
+            <View style={styles.eventCard}>
+              <View style={styles.infoSection}>
+                <Text style={styles.eventTitle}>등록된 일정이 없습니다</Text>
+                <Text style={[styles.metaText, { marginTop: 8 }]}>
+                  새로운 경조사 일정을 추가해보세요
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
       </View>
     </View>

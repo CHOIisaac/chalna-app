@@ -3,6 +3,7 @@
  */
 
 import { API_ENDPOINTS, API_TIMEOUT, getApiBaseUrl } from '../config/api';
+import { MonthlyStats, QuickStats, RecentSchedule } from '../types';
 import { AuthService, LoginResponse, UserData } from './auth';
 
 // API 클라이언트 설정
@@ -270,6 +271,24 @@ export const scheduleService = {
   async getSchedulesByDate(date: string): Promise<ApiResponse<ScheduleItem[]>> {
     return apiClient.get<ApiResponse<ScheduleItem[]>>(API_ENDPOINTS.SCHEDULE_BY_DATE(date));
   },
+};
+
+// 홈 화면 API 서비스
+export const homeService = {
+  // 이번 달 현황
+  async getMonthlyStats(): Promise<ApiResponse<MonthlyStats>> {
+    return apiClient.get<ApiResponse<MonthlyStats>>(API_ENDPOINTS.HOME_MONTHLY_STATS);
+  },
+
+  // 퀵 스탯
+  async getQuickStats(): Promise<ApiResponse<QuickStats>> {
+    return apiClient.get<ApiResponse<QuickStats>>(API_ENDPOINTS.HOME_QUICK_STATS);
+  },
+
+  // 최근 일정
+  async getRecentSchedules(): Promise<ApiResponse<RecentSchedule[]>> {
+    return apiClient.get<ApiResponse<RecentSchedule[]>>(API_ENDPOINTS.HOME_RECENT_SCHEDULES);
+  }
 };
 
 // 인증 API 서비스

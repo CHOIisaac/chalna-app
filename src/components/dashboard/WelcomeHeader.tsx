@@ -3,15 +3,33 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
+    ActivityIndicator,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
 import { colors } from '../../lib/utils';
+import { MonthlyStats } from '../../types';
 
-const WelcomeHeader: React.FC = () => {
+interface WelcomeHeaderProps {
+  monthlyStats: MonthlyStats | null;
+  loading: boolean;
+}
+
+const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) => {
   const router = useRouter();
+
+  // 금액 포맷팅 함수
+  const formatAmount = (amount: number) => {
+    return amount.toLocaleString();
+  };
+
+  // 증감률 표시 함수
+  const formatChange = (change: number) => {
+    const sign = change >= 0 ? '+' : '';
+    return `전월 대비 ${sign}${change}%`;
+  };
 
   return (
     <View style={styles.container}>
@@ -52,13 +70,33 @@ const WelcomeHeader: React.FC = () => {
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>나눈 마음</Text>
-              <Text style={styles.statValue}>1,170,000,000</Text>
-              <Text style={styles.statChange}>전월 대비 +12%</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <>
+                  <Text style={styles.statValue}>
+                    {monthlyStats ? formatAmount(monthlyStats.total_amount) : '0'}원
+                  </Text>
+                  <Text style={styles.statChange}>
+                    {monthlyStats ? formatChange(monthlyStats.total_amount_change) : '전월 대비 0%'}
+                  </Text>
+                </>
+              )}
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>함께할 순간</Text>
-              <Text style={styles.statValue}>3건</Text>
-              <Text style={styles.statChange}>이번 주 2건</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <>
+                  <Text style={styles.statValue}>
+                    {monthlyStats ? `${monthlyStats.event_count}건` : '0건'}
+                  </Text>
+                  <Text style={styles.statChange}>
+                    {monthlyStats ? `이번 주 ${monthlyStats.this_week_event_count}건` : '이번 주 0건'}
+                  </Text>
+                </>
+              )}
             </View>
           </View>
           
@@ -66,10 +104,21 @@ const WelcomeHeader: React.FC = () => {
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressLabel}>일정 완료율</Text>
-              <Text style={styles.progressValue}>85%</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Text style={styles.progressValue}>
+                  {monthlyStats ? `${monthlyStats.completion_rate}%` : '0%'}
+                </Text>
+              )}
             </View>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: '85%' }]} />
+              <View style={[
+                styles.progressFill, 
+                { 
+                  width: monthlyStats ? `${monthlyStats.completion_rate}%` : '0%' 
+                }
+              ]} />
             </View>
           </View>
         </LinearGradient>

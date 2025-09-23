@@ -52,6 +52,11 @@ export const API_ENDPOINTS = {
   SCHEDULE_CALENDAR: '/api/v1/schedules/calendar',
   SCHEDULE_BY_DATE: (date: string) => `/api/v1/schedules/date/${date}/`,
   
+  // 홈 화면 관련
+  HOME_MONTHLY_STATS: '/api/v1/home/monthly-stats',
+  HOME_QUICK_STATS: '/api/v1/home/quick-stats',
+  HOME_RECENT_SCHEDULES: '/api/v1/home/recent-schedules',
+  
   // 인증 관련
   AUTH_LOGIN: '/api/v1/auth/auth/login',
   AUTH_LOGOUT: '/api/v1/auth/logout/',

@@ -2,61 +2,85 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
+    ActivityIndicator,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
 import { colors } from '../../lib/utils';
-import { StatItem } from '../../types';
+import { QuickStats as QuickStatsType, StatItem } from '../../types';
 
-const QuickStats: React.FC = () => {
-  const stats: StatItem[] = [
-    {
-      title: '축의금',
-      amount: '805,000,000원',
-      change: '+12%',
-      changeLabel: '전월 대비',
-      trend: 'up',
-      icon: 'trending-up',
-      bgColor: '#FFFFFF',
-      iconColor: '#666666',
-      border: '#e0e0e0',
-    },
-    {
-      title: '조의금',
-      amount: '32,000,000원',
-      change: '-5%',
-      changeLabel: '전월 대비',
-      trend: 'down',
-      icon: 'trending-down',
-      bgColor: '#FFFFFF',
-      iconColor: '#666666',
-      border: '#e0e0e0',
-    },
-    {
-      title: '함께한 순간',
-      amount: '3건',
-      change: '+3건',
-      changeLabel: '전월 대비',
-      trend: 'up',
-      icon: 'calendar-outline',
-      bgColor: '#FFFFFF',
-      iconColor: '#666666',
-      border: '#e0e0e0',
-    },
-    {
-      title: '평균 축의금',
-      amount: '85,000원',
-      change: '+5%',
-      changeLabel: '전월 대비',
-      trend: 'up',
-      icon: 'analytics',
-      bgColor: '#FFFFFF',
-      iconColor: '#666666',
-      border: '#e0e0e0',
-    },
-  ];
+interface QuickStatsProps {
+  quickStats: QuickStatsType | null;
+  loading: boolean;
+}
+
+const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
+  // 금액 포맷팅 함수
+  const formatAmount = (amount: number) => {
+    return amount.toLocaleString();
+  };
+
+  // 증감률 표시 함수
+  const formatChange = (change: number) => {
+    const sign = change >= 0 ? '+' : '';
+    return `${sign}${change}%`;
+  };
+
+  // API 데이터를 StatItem 형태로 변환
+  const getStatsFromApi = (): StatItem[] => {
+    if (!quickStats) return [];
+    
+    return [
+      {
+        title: '축의금',
+        amount: `${formatAmount(quickStats.wedding_amount)}원`,
+        change: formatChange(quickStats.wedding_change),
+        changeLabel: '전월 대비',
+        trend: quickStats.wedding_change >= 0 ? 'up' : 'down',
+        icon: 'trending-up',
+        bgColor: '#FFFFFF',
+        iconColor: '#666666',
+        border: '#e0e0e0',
+      },
+      {
+        title: '조의금',
+        amount: `${formatAmount(quickStats.funeral_amount)}원`,
+        change: formatChange(quickStats.funeral_change),
+        changeLabel: '전월 대비',
+        trend: quickStats.funeral_change >= 0 ? 'up' : 'down',
+        icon: 'trending-down',
+        bgColor: '#FFFFFF',
+        iconColor: '#666666',
+        border: '#e0e0e0',
+      },
+      {
+        title: '모든 순간',
+        amount: `${quickStats.total_events}건`,
+        change: `+${quickStats.total_events_change}건`,
+        changeLabel: '전월 대비',
+        trend: 'up',
+        icon: 'calendar-outline',
+        bgColor: '#FFFFFF',
+        iconColor: '#666666',
+        border: '#e0e0e0',
+      },
+      {
+        title: '평균 축의금',
+        amount: `${formatAmount(quickStats.avg_wedding_amount)}원`,
+        change: formatChange(quickStats.avg_wedding_change),
+        changeLabel: '전월 대비',
+        trend: quickStats.avg_wedding_change >= 0 ? 'up' : 'down',
+        icon: 'analytics',
+        bgColor: '#FFFFFF',
+        iconColor: '#666666',
+        border: '#e0e0e0',
+      },
+    ];
+  };
+
+  const stats = getStatsFromApi();
 
   const getIconName = (icon: string): keyof typeof Ionicons.glyphMap => {
     switch (icon) {
@@ -82,65 +106,84 @@ const QuickStats: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
-        {stats.map((stat, index) => {
-          const IconName = getIconName(stat.icon);
-          
-          return (
-            <TouchableOpacity
-              key={index}
-              style={styles.statCard}
-              activeOpacity={0.8}
-            >
+        {loading ? (
+          // 로딩 중일 때는 4개의 로딩 카드 표시
+          Array.from({ length: 4 }).map((_, index) => (
+            <View key={index} style={styles.statCard}>
               <LinearGradient
                 colors={['#FFFFFF', '#F8F9FA']}
                 style={styles.cardGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.statHeader}>
-                  <View style={styles.iconContainer}>
-                    <Ionicons name={IconName} size={16} color={stat.iconColor} />
-                  </View>
-                  {stat.trend !== 'neutral' && (
-                    <View
-                      style={[
-                        styles.trendBadge,
-                        {
-                          backgroundColor: stat.trend === 'up' 
-                            ? colors.success + '20' 
-                            : colors.warning + '20',
-                        },
-                      ]}
-                    >
-                      <Text
+                <View style={styles.statContent}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text style={styles.statTitle}>로딩 중...</Text>
+                </View>
+              </LinearGradient>
+            </View>
+          ))
+        ) : (
+          stats.map((stat, index) => {
+            const IconName = getIconName(stat.icon);
+            
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.statCard}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#FFFFFF', '#F8F9FA']}
+                  style={styles.cardGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.statHeader}>
+                    <View style={styles.iconContainer}>
+                      <Ionicons name={IconName} size={16} color={stat.iconColor} />
+                    </View>
+                    {stat.trend !== 'neutral' && (
+                      <View
                         style={[
-                          styles.trendText,
+                          styles.trendBadge,
                           {
-                            color: stat.trend === 'up' ? colors.success : colors.warning,
+                            backgroundColor: stat.trend === 'up' 
+                              ? colors.success + '20' 
+                              : colors.warning + '20',
                           },
                         ]}
                       >
-                        {stat.change}
+                        <Text
+                          style={[
+                            styles.trendText,
+                            {
+                              color: stat.trend === 'up' ? colors.success : colors.warning,
+                            },
+                          ]}
+                        >
+                          {stat.change}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  
+                  <View style={styles.statContent}>
+                    <Text style={styles.statAmount}>{stat.amount}</Text>
+                    <Text style={styles.statTitle}>{stat.title}</Text>
+                    {stat.trend === 'neutral' ? (
+                      <Text style={styles.statDescription}>
+                        {stat.change} {stat.changeLabel}
                       </Text>
-                    </View>
-                  )}
-                </View>
-                
-                <View style={styles.statContent}>
-                  <Text style={styles.statAmount}>{stat.amount}</Text>
-                  <Text style={styles.statTitle}>{stat.title}</Text>
-                  {stat.trend === 'neutral' ? (
-                    <Text style={styles.statDescription}>
-                      {stat.change} {stat.changeLabel}
-                    </Text>
-                  ) : (
-                    <Text style={styles.statDescription}>{stat.changeLabel}</Text>
-                  )}
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
-          );
-        })}
+                    ) : (
+                      <Text style={styles.statDescription}>{stat.changeLabel}</Text>
+                    )}
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            );
+          })
+        )}
       </View>
     </View>
   );

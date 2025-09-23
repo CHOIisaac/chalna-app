@@ -96,6 +96,36 @@ export interface RelationshipStat {
   color: string;
 }
 
+// 홈 화면 API 타입들
+export interface MonthlyStats {
+  total_amount: number;
+  total_amount_change: number;
+  event_count: number;
+  this_week_event_count: number;
+  completion_rate: number;
+}
+
+export interface QuickStats {
+  wedding_amount: number;
+  wedding_change: number;
+  funeral_amount: number;
+  funeral_change: number;
+  total_events: number;
+  total_events_change: number;
+  avg_wedding_amount: number;
+  avg_wedding_change: number;
+}
+
+export interface RecentSchedule {
+  id: number;
+  title: string;
+  event_type: string;
+  event_date: string;
+  event_time: string;
+  location: string;
+  memo: string;
+}
+
 // 네비게이션 타입들
 export type RootStackParamList = {
   Home: undefined;
