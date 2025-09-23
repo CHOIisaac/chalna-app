@@ -1,17 +1,66 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-    Animated,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
 
-const Stats: React.FC = () => {
+// 타입 정의
+interface MonthlyData {
+  month: string;
+  amount: number;
+}
+
+interface TopItem {
+  name: string;
+  amount: number;
+  type: string;
+}
+
+interface NetworkData {
+  name: string;
+  total: number;
+  count: number;
+  avg: number;
+  relationship: string;
+}
+
+interface RelationshipStat {
+  relationship: string;
+  count: number;
+  totalAmount: number;
+  avgAmount: number;
+  color: string;
+}
+
+interface EventData {
+  type: string;
+  count: number;
+  avgAmount: number;
+}
+
+interface AmountDistribution {
+  range: string;
+  count: number;
+  percentage: number;
+}
+
+// 유틸리티 함수들
+const formatAmount = (amount: number): string => {
+  return amount.toLocaleString();
+};
+
+const getPercentage = (value: number, max: number): number => {
+  return max > 0 ? (value / max) * 100 : 0;
+};
+
+const Stats: React.FC = (): React.ReactElement => {
   const [selectedType, setSelectedType] = useState<'given' | 'received'>('given');
   const [selectedTab, setSelectedTab] = useState<'total' | 'items' | 'network' | 'events'>('total');
   
@@ -33,188 +82,210 @@ const Stats: React.FC = () => {
     }).start();
   }, [fadeAnim]);
 
-  // Mock data for charts
-  const weddingMonthlyData = [
-    { month: '1월', amount: 1200000 },
-    { month: '2월', amount: 1500000 },
-    { month: '3월', amount: 1800000 },
-    { month: '4월', amount: 2200000 },
-    { month: '5월', amount: 1900000 },
-    { month: '6월', amount: 2500000 },
-  ];
+  // Mock 데이터 - useMemo로 최적화
+  const mockData = useMemo(() => {
+    const weddingMonthlyData: MonthlyData[] = [
+      { month: '1월', amount: 1200000 },
+      { month: '2월', amount: 1500000 },
+      { month: '3월', amount: 1800000 },
+      { month: '4월', amount: 2200000 },
+      { month: '5월', amount: 1900000 },
+      { month: '6월', amount: 2500000 },
+    ];
 
-  const condolenceMonthlyData = [
-    { month: '1월', amount: 80000 },
-    { month: '2월', amount: 120000 },
-    { month: '3월', amount: 90000 },
-    { month: '4월', amount: 150000 },
-    { month: '5월', amount: 110000 },
-    { month: '6월', amount: 180000 },
-  ];
+    const condolenceMonthlyData: MonthlyData[] = [
+      { month: '1월', amount: 80000 },
+      { month: '2월', amount: 120000 },
+      { month: '3월', amount: 90000 },
+      { month: '4월', amount: 150000 },
+      { month: '5월', amount: 110000 },
+      { month: '6월', amount: 180000 },
+    ];
 
-  const topItems = [
-    { name: '김민수 결혼식', amount: 500000, type: '축의금' },
-    { name: '박지영 출산', amount: 300000, type: '축의금' },
-    { name: '이철수 장례식', amount: 200000, type: '조의금' },
-    { name: '최영희 결혼식', amount: 400000, type: '축의금' },
-    { name: '정민호 출산', amount: 250000, type: '축의금' },
-  ];
+    const topItems: TopItem[] = [
+      { name: '김민수 결혼식', amount: 500000, type: '축의금' },
+      { name: '박지영 출산', amount: 300000, type: '축의금' },
+      { name: '이철수 장례식', amount: 200000, type: '조의금' },
+      { name: '최영희 결혼식', amount: 400000, type: '축의금' },
+      { name: '정민호 출산', amount: 250000, type: '축의금' },
+    ];
 
-  const networkData = [
-    { name: '김민수', total: 300000, count: 2, avg: 150000, relationship: '친구' },
-    { name: '박지영', total: 250000, count: 1, avg: 250000, relationship: '직장동료' },
-    { name: '이철수', total: 200000, count: 1, avg: 200000, relationship: '지인' },
-    { name: '최영희', total: 400000, count: 2, avg: 200000, relationship: '가족' },
-    { name: '정민호', total: 180000, count: 1, avg: 180000, relationship: '친구' },
-  ];
+    const networkData: NetworkData[] = [
+      { name: '김민수', total: 300000, count: 2, avg: 150000, relationship: '친구' },
+      { name: '박지영', total: 250000, count: 1, avg: 250000, relationship: '직장동료' },
+      { name: '이철수', total: 200000, count: 1, avg: 200000, relationship: '지인' },
+      { name: '최영희', total: 400000, count: 2, avg: 200000, relationship: '가족' },
+      { name: '정민호', total: 180000, count: 1, avg: 180000, relationship: '친구' },
+    ];
 
-  // 관계별 통계 데이터 (상위 4개만)
-  const relationshipStats = [
-    { relationship: '가족', count: 3, totalAmount: 1200000, avgAmount: 400000, color: '#1F2937' },
-    { relationship: '친구', count: 8, totalAmount: 1400000, avgAmount: 175000, color: '#9CA3AF' },
-    { relationship: '직장동료', count: 5, totalAmount: 750000, avgAmount: 150000, color: '#1E40AF' },
-    { relationship: '친척', count: 4, totalAmount: 600000, avgAmount: 150000, color: '#6B7280' },
-  ];
+    const relationshipStats: RelationshipStat[] = [
+      { relationship: '가족', count: 3, totalAmount: 1200000, avgAmount: 400000, color: '#1F2937' },
+      { relationship: '친구', count: 8, totalAmount: 1400000, avgAmount: 175000, color: '#9CA3AF' },
+      { relationship: '직장동료', count: 5, totalAmount: 750000, avgAmount: 150000, color: '#1E40AF' },
+      { relationship: '친척', count: 4, totalAmount: 600000, avgAmount: 150000, color: '#6B7280' },
+    ];
 
-  const eventData = [
-    { type: '결혼식', count: 8, avgAmount: 350000 },
-    { type: '출산', count: 3, avgAmount: 200000 },
-    { type: '장례식', count: 2, avgAmount: 150000 },
-    { type: '기타', count: 1, avgAmount: 100000 },
-  ];
+    const eventData: EventData[] = [
+      { type: '결혼식', count: 8, avgAmount: 350000 },
+      { type: '출산', count: 3, avgAmount: 200000 },
+      { type: '장례식', count: 2, avgAmount: 150000 },
+      { type: '기타', count: 1, avgAmount: 100000 },
+    ];
 
-  const amountDistribution = [
-    { range: '5만원 미만', count: 2, percentage: 14.3 },
-    { range: '5-10만원', count: 4, percentage: 28.6 },
-    { range: '10-20만원', count: 5, percentage: 35.7 },
-    { range: '20만원 이상', count: 3, percentage: 21.4 },
-  ];
+    const amountDistribution: AmountDistribution[] = [
+      { range: '5만원 미만', count: 2, percentage: 14.3 },
+      { range: '5-10만원', count: 4, percentage: 28.6 },
+      { range: '10-20만원', count: 5, percentage: 35.7 },
+      { range: '20만원 이상', count: 3, percentage: 21.4 },
+    ];
 
-  const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
+    const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
 
-  const renderTotalAnalysis = () => (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>총액 및 추세 분석</Text>
-        </View>
-        <View style={styles.periodToggle}>
-          <TouchableOpacity
-            style={[styles.periodToggleButton, selectedType === 'given' && styles.periodToggleButtonActive]}
-            onPress={() => setSelectedType('given')}
-          >
-            <Text style={[styles.periodToggleText, selectedType === 'given' && styles.periodToggleTextActive]}>
-              나눔
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.periodToggleButton, selectedType === 'received' && styles.periodToggleButtonActive]}
-            onPress={() => setSelectedType('received')}
-          >
-            <Text style={[styles.periodToggleText, selectedType === 'received' && styles.periodToggleTextActive]}>
-              받음
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+    return {
+      weddingMonthlyData,
+      condolenceMonthlyData,
+      topItems,
+      networkData,
+      relationshipStats,
+      eventData,
+      amountDistribution,
+      chartColors,
+    };
+  }, []);
 
-      <View style={styles.summaryCards}>
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryCardContent}>
-            <Text style={styles.summaryLabel}>
-              {selectedType === 'given' ? '나눈 축의금' : '받은 축의금'}
-            </Text>
-            <Text style={styles.summaryAmount}>
-              {selectedType === 'given' ? '8,050,000원' : '2,300,000원'}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryCardContent}>
-            <Text style={styles.summaryLabel}>
-              {selectedType === 'given' ? '나눈 조의금' : '받은 조의금'}
-            </Text>
-            <Text style={styles.summaryAmount}>
-              {selectedType === 'given' ? '320,000원' : '150,000원'}
-            </Text>
-          </View>
-        </View>
-      </View>
+  // 계산된 데이터들
+  const { weddingMonthlyData, condolenceMonthlyData, topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
 
-      {/* 월별 축의금 추세 */}
+  // 월별 차트 렌더링 함수 (중복 제거)
+  const renderMonthlyChart = (data: MonthlyData[], title: string) => {
+    const maxAmount = Math.max(...data.map(item => item.amount));
+    
+    return (
       <View style={styles.chartContainer}>
         <View style={styles.chartHeader}>
-          <Text style={styles.chartTitle}>
-            {selectedType === 'given' ? '월별 축의금 추세' : '월별 축의금 추세'}
-          </Text>
+          <Text style={styles.chartTitle}>{title}</Text>
         </View>
         <View style={styles.lineChartContainer}>
-          {(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3}))).map((item, index) => {
-            const currentData = selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3}));
-            return (
-              <View key={index} style={styles.monthBar}>
-                <View style={styles.monthInfo}>
-                  <View style={styles.monthInfoLeft}>
-                    <View style={[styles.monthDot, { backgroundColor: chartColors[index % chartColors.length] }]} />
-                    <Text style={styles.monthLabel}>{item.month}</Text>
-                  </View>
-                  <Text style={styles.monthAmount}>{item.amount.toLocaleString()}원</Text>
+          {data.map((item, index) => (
+            <View key={index} style={styles.monthBar}>
+              <View style={styles.monthInfo}>
+                <View style={styles.monthInfoLeft}>
+                  <View style={[styles.monthDot, { backgroundColor: chartColors[index % chartColors.length] }]} />
+                  <Text style={styles.monthLabel}>{item.month}</Text>
                 </View>
-                <View style={styles.monthBarContainer}>
-                  <View 
-                    style={[
-                      styles.monthBarFill, 
-                      { 
-                        backgroundColor: chartColors[index % chartColors.length],
-                        width: `${(item.amount / Math.max(...currentData.map(m => m.amount))) * 100}%` 
-                      }
-                    ]} 
-                  />
-                </View>
+                <Text style={styles.monthAmount}>{formatAmount(item.amount)}원</Text>
               </View>
-            );
-          })}
+              <View style={styles.monthBarContainer}>
+                <View 
+                  style={[
+                    styles.monthBarFill, 
+                    { 
+                      backgroundColor: chartColors[index % chartColors.length],
+                      width: `${getPercentage(item.amount, maxAmount)}%` 
+                    }
+                  ]} 
+                />
+              </View>
+            </View>
+          ))}
         </View>
       </View>
+    );
+  };
 
-      {/* 월별 조의금 추세 */}
-      <View style={[styles.chartContainer, { marginTop: 20 }]}>
-        <View style={styles.chartHeader}>
-          <Text style={styles.chartTitle}>
-            {selectedType === 'given' ? '월별 조의금 추세' : '월별 조의금 추세'}
-          </Text>
+  // 계산된 통계 데이터
+  const calculatedStats = useMemo(() => {
+    const weddingTotal = weddingMonthlyData.reduce((sum, item) => sum + item.amount, 0);
+    const condolenceTotal = condolenceMonthlyData.reduce((sum, item) => sum + item.amount, 0);
+    
+    return {
+      given: {
+        wedding: weddingTotal,
+        condolence: condolenceTotal,
+        total: weddingTotal + condolenceTotal,
+      },
+      received: {
+        wedding: Math.round(weddingTotal * 0.3), // 받은 금액은 나눈 금액의 30%로 가정
+        condolence: Math.round(condolenceTotal * 0.5), // 받은 조의금은 나눈 조의금의 50%로 가정
+        total: Math.round(weddingTotal * 0.3) + Math.round(condolenceTotal * 0.5),
+      }
+    };
+  }, [weddingMonthlyData, condolenceMonthlyData]);
+
+  const renderTotalAnalysis = () => {
+    const currentStats = selectedType === 'given' ? calculatedStats.given : calculatedStats.received;
+    
+    return (
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>총액 및 추세 분석</Text>
+          </View>
+          <View style={styles.periodToggle}>
+            <TouchableOpacity
+              style={[styles.periodToggleButton, selectedType === 'given' && styles.periodToggleButtonActive]}
+              onPress={() => setSelectedType('given')}
+              accessibilityRole="button"
+              accessibilityLabel={`나눔 통계 보기, ${selectedType === 'given' ? '현재 선택됨' : '선택되지 않음'}`}
+            >
+              <Text style={[styles.periodToggleText, selectedType === 'given' && styles.periodToggleTextActive]}>
+                나눔
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.periodToggleButton, selectedType === 'received' && styles.periodToggleButtonActive]}
+              onPress={() => setSelectedType('received')}
+              accessibilityRole="button"
+              accessibilityLabel={`받음 통계 보기, ${selectedType === 'received' ? '현재 선택됨' : '선택되지 않음'}`}
+            >
+              <Text style={[styles.periodToggleText, selectedType === 'received' && styles.periodToggleTextActive]}>
+                받음
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.lineChartContainer}>
-          {(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5}))).map((item, index) => {
-            const currentData = selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5}));
-            return (
-              <View key={index} style={styles.monthBar}>
-                <View style={styles.monthInfo}>
-                  <View style={styles.monthInfoLeft}>
-                    <View style={[styles.monthDot, { backgroundColor: chartColors[index % chartColors.length] }]} />
-                    <Text style={styles.monthLabel}>{item.month}</Text>
-                  </View>
-                  <Text style={styles.monthAmount}>{item.amount.toLocaleString()}원</Text>
-                </View>
-                <View style={styles.monthBarContainer}>
-                  <View 
-                    style={[
-                      styles.monthBarFill, 
-                      { 
-                        backgroundColor: chartColors[index % chartColors.length],
-                        width: `${(item.amount / Math.max(...currentData.map(m => m.amount))) * 100}%` 
-                      }
-                    ]} 
-                  />
-                </View>
-              </View>
-            );
-          })}
+
+        <View style={styles.summaryCards}>
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryCardContent}>
+              <Text style={styles.summaryLabel}>
+                {selectedType === 'given' ? '나눈 축의금' : '받은 축의금'}
+              </Text>
+              <Text style={styles.summaryAmount}>
+                {formatAmount(currentStats.wedding)}원
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryCardContent}>
+              <Text style={styles.summaryLabel}>
+                {selectedType === 'given' ? '나눈 조의금' : '받은 조의금'}
+              </Text>
+              <Text style={styles.summaryAmount}>
+                {formatAmount(currentStats.condolence)}원
+              </Text>
+            </View>
+          </View>
         </View>
+
+        {/* 월별 차트들 */}
+        {renderMonthlyChart(
+          selectedType === 'given' 
+            ? weddingMonthlyData 
+            : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3})),
+          selectedType === 'given' ? '월별 축의금 추세' : '월별 축의금 추세'
+        )}
+        
+        {renderMonthlyChart(
+          selectedType === 'given' 
+            ? condolenceMonthlyData 
+            : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5})),
+          selectedType === 'given' ? '월별 조의금 추세' : '월별 조의금 추세'
+        )}
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderItemsAnalysis = () => (
     <View style={styles.section}>
@@ -431,6 +502,9 @@ const Stats: React.FC = () => {
             key={tab.key}
             style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
             onPress={() => setSelectedTab(tab.key as any)}
+            accessibilityRole="tab"
+            accessibilityLabel={`${tab.label} 탭, ${selectedTab === tab.key ? '현재 선택됨' : '선택되지 않음'}`}
+            accessibilityState={{ selected: selectedTab === tab.key }}
           >
             <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
               {tab.label}
