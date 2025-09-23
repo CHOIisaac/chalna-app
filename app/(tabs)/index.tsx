@@ -9,7 +9,7 @@ import RecentEvents from '../../src/components/dashboard/RecentEvents';
 import WelcomeHeader from '../../src/components/dashboard/WelcomeHeader';
 import MobileLayout from '../../src/components/layout/MobileLayout';
 import { homeService } from '../../src/services/api';
-import { MonthlyStats, QuickStats as QuickStatsType, RecentSchedule } from '../../src/types';
+import { MonthlyStats, QuickStats as QuickStatsType, RecentLedger } from '../../src/types';
 
 export default function HomeScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -17,7 +17,7 @@ export default function HomeScreen() {
   // API 데이터 상태
   const [monthlyStats, setMonthlyStats] = useState<MonthlyStats | null>(null);
   const [quickStats, setQuickStats] = useState<QuickStatsType | null>(null);
-  const [recentSchedules, setRecentSchedules] = useState<RecentSchedule[]>([]);
+  const [recentLedgers, setRecentLedgers] = useState<RecentLedger[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 홈 화면 데이터 로드
@@ -29,7 +29,7 @@ export default function HomeScreen() {
       const [monthlyResponse, quickResponse, recentResponse] = await Promise.all([
         homeService.getMonthlyStats(),
         homeService.getQuickStats(),
-        homeService.getRecentSchedules()
+        homeService.getRecentLedgers()
       ]);
 
       if (monthlyResponse.success) {
@@ -41,7 +41,7 @@ export default function HomeScreen() {
       }
       
       if (recentResponse.success) {
-        setRecentSchedules(recentResponse.data);
+        setRecentLedgers(recentResponse.data);
       }
     } catch (error) {
       console.error('홈 화면 데이터 로드 실패:', error);
@@ -85,7 +85,7 @@ export default function HomeScreen() {
 
         {/* 최근 경조사 */}
         <RecentEvents 
-          recentSchedules={recentSchedules}
+          recentLedgers={recentLedgers}
           loading={loading}
         />
 
