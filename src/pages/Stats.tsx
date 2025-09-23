@@ -1,18 +1,18 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useRef, useState } from 'react';
 import {
-  Animated,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
 
 const Stats: React.FC = () => {
-  const [selectedType, setSelectedType] = useState<'wedding' | 'condolence'>('wedding');
+  const [selectedType, setSelectedType] = useState<'given' | 'received'>('given');
   const [selectedTab, setSelectedTab] = useState<'total' | 'items' | 'network' | 'events'>('total');
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -100,19 +100,19 @@ const Stats: React.FC = () => {
         </View>
         <View style={styles.periodToggle}>
           <TouchableOpacity
-            style={[styles.periodToggleButton, selectedType === 'wedding' && styles.periodToggleButtonActive]}
-            onPress={() => setSelectedType('wedding')}
+            style={[styles.periodToggleButton, selectedType === 'given' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('given')}
           >
-            <Text style={[styles.periodToggleText, selectedType === 'wedding' && styles.periodToggleTextActive]}>
-              축의
+            <Text style={[styles.periodToggleText, selectedType === 'given' && styles.periodToggleTextActive]}>
+              나눔
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.periodToggleButton, selectedType === 'condolence' && styles.periodToggleButtonActive]}
-            onPress={() => setSelectedType('condolence')}
+            style={[styles.periodToggleButton, selectedType === 'received' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('received')}
           >
-            <Text style={[styles.periodToggleText, selectedType === 'condolence' && styles.periodToggleTextActive]}>
-              조의
+            <Text style={[styles.periodToggleText, selectedType === 'received' && styles.periodToggleTextActive]}>
+              받음
             </Text>
           </TouchableOpacity>
         </View>
@@ -121,28 +121,73 @@ const Stats: React.FC = () => {
       <View style={styles.summaryCards}>
         <View style={styles.summaryCard}>
           <View style={styles.summaryCardContent}>
-            <Text style={styles.summaryLabel}>총 축의금</Text>
-            <Text style={styles.summaryAmount}>8,050,000원</Text>
+            <Text style={styles.summaryLabel}>
+              {selectedType === 'given' ? '나눈 축의금' : '받은 축의금'}
+            </Text>
+            <Text style={styles.summaryAmount}>
+              {selectedType === 'given' ? '8,050,000원' : '2,300,000원'}
+            </Text>
           </View>
         </View>
         
         <View style={styles.summaryCard}>
           <View style={styles.summaryCardContent}>
-            <Text style={styles.summaryLabel}>총 조의금</Text>
-            <Text style={styles.summaryAmount}>320,000원</Text>
+            <Text style={styles.summaryLabel}>
+              {selectedType === 'given' ? '나눈 조의금' : '받은 조의금'}
+            </Text>
+            <Text style={styles.summaryAmount}>
+              {selectedType === 'given' ? '320,000원' : '150,000원'}
+            </Text>
           </View>
         </View>
       </View>
 
+      {/* 월별 축의금 추세 */}
       <View style={styles.chartContainer}>
         <View style={styles.chartHeader}>
           <Text style={styles.chartTitle}>
-            {selectedType === 'wedding' ? '월별 축의금 추세' : '월별 조의금 추세'}
+            {selectedType === 'given' ? '월별 축의금 추세' : '월별 축의금 추세'}
           </Text>
         </View>
         <View style={styles.lineChartContainer}>
-          {(selectedType === 'wedding' ? weddingMonthlyData : condolenceMonthlyData).map((item, index) => {
-            const currentData = selectedType === 'wedding' ? weddingMonthlyData : condolenceMonthlyData;
+          {(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3}))).map((item, index) => {
+            const currentData = selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3}));
+            return (
+              <View key={index} style={styles.monthBar}>
+                <View style={styles.monthInfo}>
+                  <View style={styles.monthInfoLeft}>
+                    <View style={[styles.monthDot, { backgroundColor: chartColors[index % chartColors.length] }]} />
+                    <Text style={styles.monthLabel}>{item.month}</Text>
+                  </View>
+                  <Text style={styles.monthAmount}>{item.amount.toLocaleString()}원</Text>
+                </View>
+                <View style={styles.monthBarContainer}>
+                  <View 
+                    style={[
+                      styles.monthBarFill, 
+                      { 
+                        backgroundColor: chartColors[index % chartColors.length],
+                        width: `${(item.amount / Math.max(...currentData.map(m => m.amount))) * 100}%` 
+                      }
+                    ]} 
+                  />
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* 월별 조의금 추세 */}
+      <View style={[styles.chartContainer, { marginTop: 20 }]}>
+        <View style={styles.chartHeader}>
+          <Text style={styles.chartTitle}>
+            {selectedType === 'given' ? '월별 조의금 추세' : '월별 조의금 추세'}
+          </Text>
+        </View>
+        <View style={styles.lineChartContainer}>
+          {(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5}))).map((item, index) => {
+            const currentData = selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5}));
             return (
               <View key={index} style={styles.monthBar}>
                 <View style={styles.monthInfo}>
@@ -511,6 +556,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 12,
     marginBottom: 24,
+    alignItems: 'stretch',
   },
   summaryCard: {
     flex: 1,
@@ -524,6 +570,9 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: '#F0F0F0',
+    minHeight: 120,
+    height: 120,
+    width: '48%',
   },
   summaryCardContent: {
     height: 80,
