@@ -277,6 +277,8 @@ const Stats: React.FC = (): React.ReactElement => {
           selectedType === 'given' ? '월별 축의금 추세' : '월별 축의금 추세'
         )}
         
+        <View style={styles.chartSpacing} />
+        
         {renderMonthlyChart(
           selectedType === 'given' 
             ? condolenceMonthlyData 
@@ -1054,6 +1056,9 @@ const styles = StyleSheet.create({
   relationshipBarFill: {
     height: 4,
     borderRadius: 2,
+  },
+  chartSpacing: {
+    height: 10,
   },
 });
 
