@@ -18,35 +18,38 @@ export default function RootLayout() {
     // NanumPenScript: require('../assets/fonts/NanumPenScript-Regular.ttf'), // 임시로 주석 처리
   });
 
-  // 인증 상태 관리 (임시로 false로 설정하여 테스트)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(false);
+  // 인증 상태 관리
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  // 앱 시작 시 로그인 상태 확인
+  // 앱 시작 시 로그인 상태 확인 (한 번만 실행)
   useEffect(() => {
+    let isMounted = true; // 컴포넌트가 마운트된 상태인지 확인
+    
     const checkAuthStatus = async () => {
       try {
         console.log('🔍 인증 상태 확인 중...');
         const isLoggedIn = await AuthService.isLoggedIn();
+        console.log('🔑 저장된 토큰:', isLoggedIn ? '있음' : '없음');
         console.log('🔍 로그인 상태:', isLoggedIn);
-        setIsAuthenticated(isLoggedIn);
         
-        // 프로그래밍 방식으로 리디렉션
-        if (!isLoggedIn) {
-          console.log('🚀 로그인 페이지로 리디렉션');
-          router.replace('/login');
-        } else {
-          console.log('🚀 메인 앱으로 리디렉션');
-          router.replace('/(tabs)');
-        }
+        if (!isMounted) return; // 컴포넌트가 언마운트되었으면 실행하지 않음
+        
+        setIsAuthenticated(isLoggedIn);
+        console.log('✅ 인증 상태 설정 완료:', isLoggedIn);
       } catch (error) {
         console.error('인증 상태 확인 실패:', error);
-        setIsAuthenticated(false);
-        router.replace('/login');
+        if (isMounted) {
+          setIsAuthenticated(false);
+        }
       }
     };
 
     checkAuthStatus();
-  }, []);
+    
+    return () => {
+      isMounted = false; // 컴포넌트 언마운트 시 플래그 설정
+    };
+  }, []); // 의존성 배열을 빈 배열로 설정하여 한 번만 실행
 
   if (!loaded || isAuthenticated === null) {
     // 폰트 로딩 또는 인증 상태 확인 중
@@ -71,7 +74,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack
-          initialRouteName={!isAuthenticated ? "login" : "(tabs)"}
+          initialRouteName={isAuthenticated === null ? undefined : (isAuthenticated ? "(tabs)" : "login")}
           screenOptions={{ headerShown: false }}
         >
           <Stack.Screen name="login" />
