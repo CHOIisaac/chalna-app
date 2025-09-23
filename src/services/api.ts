@@ -3,7 +3,7 @@
  */
 
 import { API_ENDPOINTS, API_TIMEOUT, getApiBaseUrl } from '../config/api';
-import { MonthlyStats, QuickStats, RecentSchedule } from '../types';
+import { MonthlyStats, QuickStats, RecentLedger } from '../types';
 import { AuthService, LoginResponse, UserData } from './auth';
 
 // API 클라이언트 설정
@@ -285,9 +285,9 @@ export const homeService = {
     return apiClient.get<ApiResponse<QuickStats>>(API_ENDPOINTS.HOME_QUICK_STATS);
   },
 
-  // 최근 일정
-  async getRecentSchedules(): Promise<ApiResponse<RecentSchedule[]>> {
-    return apiClient.get<ApiResponse<RecentSchedule[]>>(API_ENDPOINTS.HOME_RECENT_SCHEDULES);
+  // 최근 장부 기록
+  async getRecentLedgers(): Promise<ApiResponse<RecentLedger[]>> {
+    return apiClient.get<ApiResponse<RecentLedger[]>>(API_ENDPOINTS.HOME_RECENT_LEDGERS);
   }
 };
 
