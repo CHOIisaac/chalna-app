@@ -3,19 +3,36 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
 import { handleApiError, ScheduleItem, scheduleService } from '../services/api';
 import { EventType } from '../types';
+
+// 한국어 locale 설정
+LocaleConfig.locales['ko'] = {
+  monthNames: [
+    '1월', '2월', '3월', '4월', '5월', '6월',
+    '7월', '8월', '9월', '10월', '11월', '12월'
+  ],
+  monthNamesShort: [
+    '1월', '2월', '3월', '4월', '5월', '6월',
+    '7월', '8월', '9월', '10월', '11월', '12월'
+  ],
+  dayNames: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+  dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+  today: '오늘'
+};
+LocaleConfig.defaultLocale = 'ko';
 
 const Schedules: React.FC = () => {
   const router = useRouter();
@@ -36,6 +53,10 @@ const Schedules: React.FC = () => {
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  // 달력 월 네비게이션 상태
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  
   
   // 검색 및 필터 상태
   const [searchTerm, setSearchTerm] = useState('');
@@ -276,16 +297,6 @@ const Schedules: React.FC = () => {
     }
   };
 
-  // 날짜 클릭 핸들러
-  const handleDatePress = (day: number) => {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const selectedDateObj = new Date(year, month, day);
-
-    setSelectedDate(selectedDateObj);
-    setIsModalVisible(true);
-  };
 
   // 선택된 날짜의 이벤트 필터링
   const getEventsForDate = (date: Date) => {
@@ -297,65 +308,44 @@ const Schedules: React.FC = () => {
     });
   };
 
-  // 달력 렌더링 함수
-  const renderCalendarDays = () => {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+  // 달력에서 이벤트가 있는 날짜들을 markedDates 형태로 변환
+  const getMarkedDates = () => {
+    const marked: any = {};
+    
+    schedules.forEach(event => {
+      const eventDate = event.event_date;
+      marked[eventDate] = {
+        marked: true,
+        dotColor: '#4a5568',
+        activeOpacity: 0.7
+      };
+    });
 
-    // 이번 달 첫째 날
-    const firstDay = new Date(year, month, 1);
-    // 이번 달 마지막 날
-    const lastDay = new Date(year, month + 1, 0);
-    // 첫째 날의 요일 (0=일요일)
-    const firstDayOfWeek = firstDay.getDay();
-    // 이번 달 총 일수
-    const daysInMonth = lastDay.getDate();
-
-    const days = [];
-
-    // 이전 달 빈 칸들
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(
-        <View key={`empty-${i}`} style={styles.calendarDay}>
-          <Text style={styles.emptyDayText}></Text>
-        </View>
-      );
+    // 오늘 날짜 표시 (기존 스타일과 동일하게)
+    const today = new Date().toISOString().split('T')[0];
+    if (!marked[today]) {
+      marked[today] = {
+        selected: true,
+        selectedColor: '#f0f0f0',
+        selectedTextColor: '#1a1a1a'
+      };
+    } else {
+      marked[today] = {
+        ...marked[today],
+        selected: true,
+        selectedColor: '#f0f0f0',
+        selectedTextColor: '#1a1a1a'
+      };
     }
 
-    // 이번 달 날짜들
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const hasEvent = schedules.some(event => {
-        const eventDate = new Date(event.event_date);
-        return eventDate.getDate() === day &&
-          eventDate.getMonth() === month &&
-          eventDate.getFullYear() === year;
-      });
-      const isToday = date.toDateString() === new Date().toDateString();
+    return marked;
+  };
 
-      days.push(
-        <TouchableOpacity
-          key={day}
-          style={[
-            styles.calendarDay,
-            isToday && styles.todayDay
-          ]}
-          activeOpacity={0.7}
-          onPress={() => handleDatePress(day)}
-        >
-          <Text style={[
-            styles.dayText,
-            isToday && styles.todayText
-          ]}>
-            {day}
-          </Text>
-          {hasEvent && <View style={styles.eventDot} />}
-        </TouchableOpacity>
-      );
-    }
-
-    return days;
+  // 달력에서 날짜 선택 시 호출
+  const onDayPress = (day: any) => {
+    const selectedDateObj = new Date(day.dateString);
+    setSelectedDate(selectedDateObj);
+    setIsModalVisible(true);
   };
 
   return (
@@ -444,7 +434,7 @@ const Schedules: React.FC = () => {
           <View style={styles.statsCard}>
             <View style={styles.statsHeader}>
               <Text style={styles.statsTitle}>
-                {new Date().getFullYear()}년 {new Date().getMonth() + 1}월
+                {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
               </Text>
               <View style={styles.statsBadge}>
                 <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
@@ -580,35 +570,41 @@ const Schedules: React.FC = () => {
         ) : (
           /* 달력 뷰 */
           <View style={styles.calendarSection}>
-
-            <View style={styles.calendarContainer}>
-              {/* 달력 헤더 */}
-              <View style={styles.calendarHeader}>
-                <Text style={styles.calendarTitle}>
-                  {new Date().getFullYear()}년 {new Date().getMonth() + 1}월
-                </Text>
-              </View>
-
-              {/* 요일 헤더 */}
-              <View style={styles.weekdayHeader}>
-                {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
-                  <View key={day} style={styles.weekday}>
-                    <Text style={[
-                      styles.weekdayText,
-                      index === 0 && styles.sundayText,
-                      index === 6 && styles.saturdayText
-                    ]}>
-                      {day}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* 달력 그리드 */}
-              <View style={styles.calendarGrid}>
-                {renderCalendarDays()}
-              </View>
-            </View>
+            <Calendar
+              current={currentMonth.toISOString().split('T')[0]}
+              onDayPress={onDayPress}
+              markedDates={getMarkedDates()}
+              monthFormat={'yyyy년 M월'}
+              hideExtraDays={true}
+              firstDay={0}
+              onMonthChange={(month) => {
+                setCurrentMonth(new Date(month.year, month.month - 1));
+              }}
+              enableSwipeMonths={true}
+              theme={{
+                backgroundColor: '#ffffff',
+                calendarBackground: '#ffffff',
+                textSectionTitleColor: '#666666',
+                selectedDayBackgroundColor: '#f0f0f0',
+                selectedDayTextColor: '#1a1a1a',
+                todayTextColor: '#1a1a1a',
+                dayTextColor: '#1a1a1a',
+                textDisabledColor: '#d9e1e8',
+                dotColor: '#4a5568',
+                selectedDotColor: '#4a5568',
+                arrowColor: '#666666',
+                disabledArrowColor: '#d9e1e8',
+                monthTextColor: '#1a1a1a',
+                indicatorColor: '#666666',
+                textDayFontWeight: '500',
+                textMonthFontWeight: '600',
+                textDayHeaderFontWeight: '600',
+                textDayFontSize: 16,
+                textMonthFontSize: 20,
+                textDayHeaderFontSize: 14,
+              }}
+              style={styles.calendar}
+            />
           </View>
         )}
 
@@ -1335,6 +1331,18 @@ const styles = StyleSheet.create({
   calendarSection: {
     paddingHorizontal: 20,
     paddingBottom: 20,
+    zIndex: 1,
+    elevation: 2,
+  },
+  calendar: {
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    height: 360, // 고정 높이 설정
+    zIndex: 1,
   },
   calendarContainer: {
     backgroundColor: 'white',
@@ -1347,8 +1355,22 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   calendarHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 20,
+  },
+  monthNavButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  monthTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
   calendarTitle: {
     fontSize: 20,
