@@ -845,7 +845,7 @@ const styles = StyleSheet.create({
   // 장부 섹션
   ledgersSection: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 30, // 하단 네비게이션과의 충분한 간격 확보
   },
   ledgersList: {
     gap: 12,
