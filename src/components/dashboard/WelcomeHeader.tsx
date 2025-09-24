@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { colors } from '../../lib/utils';
 import { MonthlyStats } from '../../types';
@@ -19,6 +20,15 @@ interface WelcomeHeaderProps {
 
 const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) => {
   const router = useRouter();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // 드롭다운 메뉴 데이터
+  const dropdownOptions = [
+    { id: 'ko', label: 'KOREA', sublabel: '한국' },
+    { id: 'en', label: 'ENGLISH', sublabel: '영어' },
+    { id: 'ja', label: 'JAPAN', sublabel: '일본' },
+    { id: 'zh', label: 'CHINA', sublabel: '중국' },
+  ];
 
   // 금액 포맷팅 함수
   const formatAmount = (amount: number) => {
@@ -37,6 +47,15 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
       <View style={styles.topBar}>
         <View style={styles.userInfo}>
           <Text style={styles.logoText}>CHALNA</Text>
+          <TouchableOpacity
+            style={styles.dropdownButton}
+            onPress={() => setIsDropdownOpen(!isDropdownOpen)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.dropdownIcon}>
+              <Ionicons name="chevron-down" size={12} color="#000000" />
+            </View>
+          </TouchableOpacity>
         </View>
         
         <TouchableOpacity
@@ -123,6 +142,52 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
           </View>
         </LinearGradient>
       </View>
+
+      {/* 드롭다운 모달 */}
+      <Modal
+        visible={isDropdownOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsDropdownOpen(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setIsDropdownOpen(false)}
+        >
+          <View style={styles.dropdownMenu}>
+            {dropdownOptions.map((option, index) => (
+              <TouchableOpacity
+                key={option.id}
+                style={[
+                  styles.dropdownItem,
+                  index === 0 && styles.dropdownItemSelected,
+                  index === dropdownOptions.length - 1 && styles.dropdownItemLast
+                ]}
+                onPress={() => {
+                  setIsDropdownOpen(false);
+                  // 여기에 언어 변경 로직 추가
+                  console.log(`Selected language: ${option.label}`);
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.dropdownItemContent}>
+                  <Text style={[
+                    styles.dropdownLabel,
+                    index === 0 && styles.dropdownLabelSelected
+                  ]}>
+                    {option.label}
+                  </Text>
+                  <Text style={styles.dropdownSublabel}>
+                    {option.sublabel}
+                  </Text>
+                </View>
+                <Text style={styles.dropdownArrow}>›</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -150,6 +215,82 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  dropdownButton: {
+  },
+  dropdownIcon: {
+    width: 15,
+    height: 15,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+  dropdownArrow: {
+    fontSize: 9,
+    color: '#000000',
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingTop: 0,
+    paddingHorizontal: 0,
+  },
+  dropdownMenu: {
+    backgroundColor: 'white',
+    borderRadius: 0,
+    paddingVertical: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    width: '100%',
+    paddingTop: 60,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderRadius: 0,
+    marginHorizontal: 0,
+    marginVertical: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  dropdownItemSelected: {
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
+  },
+  dropdownItemLast: {
+    borderBottomWidth: 0,
+  },
+  dropdownItemContent: {
+    flex: 1,
+  },
+  dropdownLabel: {
+    fontSize: 16,
+    color: '#000000',
+    fontWeight: '600',
+    marginBottom: 2,
+    letterSpacing: 0.5,
+  },
+  dropdownLabelSelected: {
+    fontWeight: '700',
+  },
+  dropdownSublabel: {
+    fontSize: 14,
+    color: '#666666',
+    fontWeight: '400',
   },
   notificationButton: {
     position: 'relative',
