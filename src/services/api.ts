@@ -295,6 +295,60 @@ export const scheduleService = {
   },
 };
 
+// 통계 관련 타입
+export interface MonthlyData {
+  month: string;
+  amount: number;
+}
+
+export interface TopItem {
+  name: string;
+  amount: number;
+  type: string;
+}
+
+export interface NetworkData {
+  name: string;
+  total: number;
+  count: number;
+  avg: number;
+  relationship: string;
+}
+
+export interface RelationshipStat {
+  relationship: string;
+  count: number;
+  totalAmount: number;
+  avgAmount: number;
+  color: string;
+}
+
+export interface EventData {
+  type: string;
+  count: number;
+  avgAmount: number;
+}
+
+export interface AmountDistribution {
+  range: string;
+  count: number;
+  percentage: number;
+}
+
+export interface MonthlyEventCount {
+  month: string;
+  count: number;
+  highest: string;
+  avgAmount: number;
+}
+
+export interface TotalAmountsData {
+  weddingTotal: number;
+  condolenceTotal: number;
+  weddingCount: number;
+  condolenceCount: number;
+}
+
 // 홈 화면 API 서비스
 export const homeService = {
   // 이번 달 현황
@@ -310,6 +364,114 @@ export const homeService = {
   // 최근 장부 기록
   async getRecentLedgers(): Promise<ApiResponse<RecentLedger[]>> {
     return apiClient.get<ApiResponse<RecentLedger[]>>(API_ENDPOINTS.HOME_RECENT_LEDGERS);
+  }
+};
+
+// 통계 API 서비스
+export const statsService = {
+  // 월별 축의금 추세
+  async getMonthlyWeddingTrend(params: {
+    entry_type: 'given' | 'received';
+    year: number;
+  }): Promise<ApiResponse<MonthlyData[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    queryParams.append('year', params.year.toString());
+    
+    const url = `${API_ENDPOINTS.STATS_MONTHLY_WEDDING}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<MonthlyData[]>>(url);
+  },
+
+  // 월별 조의금 추세
+  async getMonthlyCondolenceTrend(params: {
+    entry_type: 'given' | 'received';
+    year: number;
+  }): Promise<ApiResponse<MonthlyData[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    queryParams.append('year', params.year.toString());
+    
+    const url = `${API_ENDPOINTS.STATS_MONTHLY_CONDOLENCE}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<MonthlyData[]>>(url);
+  },
+
+  // 총액 조회
+  async getTotalAmounts(params: {
+    type: 'given' | 'received';
+  }): Promise<ApiResponse<TotalAmountsData>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('type', params.type);
+    
+    const url = `${API_ENDPOINTS.STATS_TOTAL_AMOUNTS}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<TotalAmountsData>>(url);
+  },
+
+  // TOP 5 항목
+  async getTopItems(params: {
+    entry_type: 'given' | 'received';
+    limit?: number;
+  }): Promise<ApiResponse<TopItem[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    
+    const url = `${API_ENDPOINTS.STATS_TOP_ITEMS}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<TopItem[]>>(url);
+  },
+
+  // 금액대별 분포
+  async getAmountDistribution(params: {
+    entry_type: 'given' | 'received';
+  }): Promise<ApiResponse<AmountDistribution[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    
+    const url = `${API_ENDPOINTS.STATS_AMOUNT_DISTRIBUTION}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<AmountDistribution[]>>(url);
+  },
+
+  // 관계별 분석
+  async getRelationshipBreakdown(params: {
+    entry_type: 'given' | 'received';
+  }): Promise<ApiResponse<RelationshipStat[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    
+    const url = `${API_ENDPOINTS.STATS_RELATIONSHIP_BREAKDOWN}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<RelationshipStat[]>>(url);
+  },
+
+  // 개인별 상세
+  async getPersonalDetails(params: {
+    entry_type: 'given' | 'received';
+  }): Promise<ApiResponse<NetworkData[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    
+    const url = `${API_ENDPOINTS.STATS_PERSONAL_DETAILS}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<NetworkData[]>>(url);
+  },
+
+  // 이벤트별 기록
+  async getEventBreakdown(params: {
+    entry_type: 'given' | 'received';
+  }): Promise<ApiResponse<EventData[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    
+    const url = `${API_ENDPOINTS.STATS_EVENT_BREAKDOWN}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<EventData[]>>(url);
+  },
+
+  // 월별 이벤트 건수
+  async getMonthlyEventCount(params: {
+    entry_type: 'given' | 'received';
+  }): Promise<ApiResponse<MonthlyEventCount[]>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('entry_type', params.entry_type);
+    
+    const url = `${API_ENDPOINTS.STATS_MONTHLY_EVENT_COUNT}?${queryParams.toString()}`;
+    return apiClient.get<ApiResponse<MonthlyEventCount[]>>(url);
   }
 };
 

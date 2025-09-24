@@ -1,55 +1,29 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  Animated,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Animated,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
+import {
+    AmountDistribution,
+    EventData,
+    handleApiError,
+    MonthlyData,
+    NetworkData,
+    RelationshipStat,
+    statsService,
+    TopItem,
+    TotalAmountsData
+} from '../services/api';
 
-// 타입 정의
-interface MonthlyData {
-  month: string;
-  amount: number;
-}
-
-interface TopItem {
-  name: string;
-  amount: number;
-  type: string;
-}
-
-interface NetworkData {
-  name: string;
-  total: number;
-  count: number;
-  avg: number;
-  relationship: string;
-}
-
-interface RelationshipStat {
-  relationship: string;
-  count: number;
-  totalAmount: number;
-  avgAmount: number;
-  color: string;
-}
-
-interface EventData {
-  type: string;
-  count: number;
-  avgAmount: number;
-}
-
-interface AmountDistribution {
-  range: string;
-  count: number;
-  percentage: number;
-}
+// 로컬 타입 정의 (API 타입과 중복되지 않는 것들)
 
 // 유틸리티 함수들
 const formatAmount = (amount: number): string => {
@@ -63,14 +37,124 @@ const Stats: React.FC = (): React.ReactElement => {
   const [weddingYear, setWeddingYear] = useState(new Date().getFullYear());
   const [condolenceYear, setCondolenceYear] = useState(new Date().getFullYear());
   
+  // API 상태 관리
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  // 나눈 월별 데이터
+  const [weddingMonthlyData2024, setWeddingMonthlyData2024] = useState<MonthlyData[]>([]);
+  const [weddingMonthlyData2025, setWeddingMonthlyData2025] = useState<MonthlyData[]>([]);
+  const [condolenceMonthlyData2024, setCondolenceMonthlyData2024] = useState<MonthlyData[]>([]);
+  const [condolenceMonthlyData2025, setCondolenceMonthlyData2025] = useState<MonthlyData[]>([]);
+  
+  // 받은 월별 데이터
+  const [receivedWeddingMonthlyData2024, setReceivedWeddingMonthlyData2024] = useState<MonthlyData[]>([]);
+  const [receivedWeddingMonthlyData2025, setReceivedWeddingMonthlyData2025] = useState<MonthlyData[]>([]);
+  const [receivedCondolenceMonthlyData2024, setReceivedCondolenceMonthlyData2024] = useState<MonthlyData[]>([]);
+  const [receivedCondolenceMonthlyData2025, setReceivedCondolenceMonthlyData2025] = useState<MonthlyData[]>([]);
+  const [givenTotalAmounts, setGivenTotalAmounts] = useState<TotalAmountsData | null>(null);
+  const [receivedTotalAmounts, setReceivedTotalAmounts] = useState<TotalAmountsData | null>(null);
+  
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
+  // API 호출 함수들
+  const loadMonthlyData = useCallback(async (year: number, type: 'wedding' | 'condolence') => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = type === 'wedding' 
+        ? await statsService.getMonthlyWeddingTrend({ entry_type: selectedType, year })
+        : await statsService.getMonthlyCondolenceTrend({ entry_type: selectedType, year });
+      
+      if (response.success) {
+        if (type === 'wedding') {
+          if (selectedType === 'given') {
+            if (year === 2024) {
+              setWeddingMonthlyData2024(response.data);
+            } else {
+              setWeddingMonthlyData2025(response.data);
+            }
+          } else {
+            if (year === 2024) {
+              setReceivedWeddingMonthlyData2024(response.data);
+            } else {
+              setReceivedWeddingMonthlyData2025(response.data);
+            }
+          }
+        } else {
+          if (selectedType === 'given') {
+            if (year === 2024) {
+              setCondolenceMonthlyData2024(response.data);
+            } else {
+              setCondolenceMonthlyData2025(response.data);
+            }
+          } else {
+            if (year === 2024) {
+              setReceivedCondolenceMonthlyData2024(response.data);
+            } else {
+              setReceivedCondolenceMonthlyData2025(response.data);
+            }
+          }
+        }
+      } else {
+        setError(response.error || `${type} 데이터를 불러오는데 실패했습니다.`);
+      }
+    } catch (err) {
+      console.error(`${type} 데이터 로드 실패:`, err);
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedType]);
+
+  // 총액 데이터 로드
+  const loadTotalAmounts = useCallback(async (type: 'given' | 'received') => {
+    try {
+      const response = await statsService.getTotalAmounts({ type });
+      
+      if (response.success) {
+        if (type === 'given') {
+          setGivenTotalAmounts(response.data);
+        } else {
+          setReceivedTotalAmounts(response.data);
+        }
+      } else {
+        setError(response.error || `${type} 총액 데이터를 불러오는데 실패했습니다.`);
+      }
+    } catch (err) {
+      console.error(`${type} 총액 데이터 로드 실패:`, err);
+      setError(handleApiError(err));
+    }
+  }, []);
+
+  // 년도 변경 시 데이터 로드
+  const handleYearChange = useCallback((year: number, type: 'wedding' | 'condolence') => {
+    if (type === 'wedding') {
+      setWeddingYear(year);
+      loadMonthlyData(year, 'wedding');
+    } else {
+      setCondolenceYear(year);
+      loadMonthlyData(year, 'condolence');
+    }
+  }, [loadMonthlyData]);
+
+  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동하고 데이터 로드
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-    }, [])
+      
+      // 초기 데이터 로드 (총액 탭의 월별 데이터와 총액 데이터)
+      if (selectedTab === 'total') {
+        // 현재 선택된 타입에 따라 월별 데이터 로드
+        loadMonthlyData(weddingYear, 'wedding');
+        loadMonthlyData(condolenceYear, 'condolence');
+        
+        // 총액 데이터 로드 (나눈/받은 모두)
+        loadTotalAmounts('given');
+        loadTotalAmounts('received');
+      }
+    }, [selectedTab, weddingYear, condolenceYear, loadMonthlyData, loadTotalAmounts])
   );
 
   React.useEffect(() => {
@@ -81,69 +165,16 @@ const Stats: React.FC = (): React.ReactElement => {
     }).start();
   }, [fadeAnim]);
 
-  // Mock 데이터 - useMemo로 최적화
+  // 타입 변경 시 월별 데이터 로드
+  React.useEffect(() => {
+    if (selectedTab === 'total') {
+      loadMonthlyData(weddingYear, 'wedding');
+      loadMonthlyData(condolenceYear, 'condolence');
+    }
+  }, [selectedType, selectedTab, weddingYear, condolenceYear, loadMonthlyData]);
+
+  // Mock 데이터 - useMemo로 최적화 (다른 탭용, 월별 데이터는 API에서 가져옴)
   const mockData = useMemo(() => {
-    // 2024년 데이터
-    const weddingMonthlyData2024: MonthlyData[] = [
-      { month: '1월', amount: 800000 },
-      { month: '2월', amount: 1200000 },
-      { month: '3월', amount: 1500000 },
-      { month: '4월', amount: 1800000 },
-      { month: '5월', amount: 2200000 },
-      { month: '6월', amount: 1900000 },
-      { month: '7월', amount: 1600000 },
-      { month: '8월', amount: 1400000 },
-      { month: '9월', amount: 1700000 },
-      { month: '10월', amount: 2100000 },
-      { month: '11월', amount: 1300000 },
-      { month: '12월', amount: 1000000 },
-    ];
-
-    const condolenceMonthlyData2024: MonthlyData[] = [
-      { month: '1월', amount: 60000 },
-      { month: '2월', amount: 80000 },
-      { month: '3월', amount: 70000 },
-      { month: '4월', amount: 120000 },
-      { month: '5월', amount: 90000 },
-      { month: '6월', amount: 110000 },
-      { month: '7월', amount: 85000 },
-      { month: '8월', amount: 95000 },
-      { month: '9월', amount: 100000 },
-      { month: '10월', amount: 75000 },
-      { month: '11월', amount: 80000 },
-      { month: '12월', amount: 65000 },
-    ];
-
-    // 2025년 데이터
-    const weddingMonthlyData2025: MonthlyData[] = [
-      { month: '1월', amount: 1200000 },
-      { month: '2월', amount: 1500000 },
-      { month: '3월', amount: 1800000 },
-      { month: '4월', amount: 2200000 },
-      { month: '5월', amount: 1900000 },
-      { month: '6월', amount: 2500000 },
-      { month: '7월', amount: 2100000 },
-      { month: '8월', amount: 1700000 },
-      { month: '9월', amount: 2000000 },
-      { month: '10월', amount: 2400000 },
-      { month: '11월', amount: 1600000 },
-      { month: '12월', amount: 1300000 },
-    ];
-
-    const condolenceMonthlyData2025: MonthlyData[] = [
-      { month: '1월', amount: 80000 },
-      { month: '2월', amount: 120000 },
-      { month: '3월', amount: 90000 },
-      { month: '4월', amount: 150000 },
-      { month: '5월', amount: 110000 },
-      { month: '6월', amount: 180000 },
-      { month: '7월', amount: 140000 },
-      { month: '8월', amount: 100000 },
-      { month: '9월', amount: 130000 },
-      { month: '10월', amount: 160000 },
-      { month: '11월', amount: 95000 },
-      { month: '12월', amount: 75000 },
-    ];
 
     const topItems: TopItem[] = [
       { name: '김민수 결혼식', amount: 500000, type: '축의금' },
@@ -185,10 +216,6 @@ const Stats: React.FC = (): React.ReactElement => {
     const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
 
     return {
-      weddingMonthlyData2024,
-      condolenceMonthlyData2024,
-      weddingMonthlyData2025,
-      condolenceMonthlyData2025,
       topItems,
       networkData,
       relationshipStats,
@@ -199,32 +226,42 @@ const Stats: React.FC = (): React.ReactElement => {
   }, []);
 
   // 계산된 데이터들
-  const { weddingMonthlyData2024, condolenceMonthlyData2024, weddingMonthlyData2025, condolenceMonthlyData2025, topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
+  const { topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
   
-  // 선택된 년도에 따른 데이터 선택
-  const weddingMonthlyData = weddingYear === 2024 ? weddingMonthlyData2024 : weddingMonthlyData2025;
-  const condolenceMonthlyData = condolenceYear === 2024 ? condolenceMonthlyData2024 : condolenceMonthlyData2025;
+  // 선택된 년도와 타입에 따른 데이터 선택
+  const weddingMonthlyData = selectedType === 'given' 
+    ? (weddingYear === 2024 ? weddingMonthlyData2024 : weddingMonthlyData2025)
+    : (weddingYear === 2024 ? receivedWeddingMonthlyData2024 : receivedWeddingMonthlyData2025);
+    
+  const condolenceMonthlyData = selectedType === 'given'
+    ? (condolenceYear === 2024 ? condolenceMonthlyData2024 : condolenceMonthlyData2025)
+    : (condolenceYear === 2024 ? receivedCondolenceMonthlyData2024 : receivedCondolenceMonthlyData2025);
 
   // 월별 차트 렌더링 함수 (중복 제거)
 
   // 계산된 통계 데이터
   const calculatedStats = useMemo(() => {
-    const weddingTotal = weddingMonthlyData.reduce((sum, item) => sum + item.amount, 0);
-    const condolenceTotal = condolenceMonthlyData.reduce((sum, item) => sum + item.amount, 0);
+    // 나눈 금액: API에서 받은 실제 데이터 사용
+    const givenWedding = givenTotalAmounts?.weddingTotal || 0;
+    const givenCondolence = givenTotalAmounts?.condolenceTotal || 0;
+    
+    // 받은 금액: API에서 받은 실제 데이터 사용
+    const receivedWedding = receivedTotalAmounts?.weddingTotal || 0;
+    const receivedCondolence = receivedTotalAmounts?.condolenceTotal || 0;
     
     return {
       given: {
-        wedding: weddingTotal,
-        condolence: condolenceTotal,
-        total: weddingTotal + condolenceTotal,
+        wedding: givenWedding,
+        condolence: givenCondolence,
+        total: givenWedding + givenCondolence,
       },
       received: {
-        wedding: Math.round(weddingTotal * 0.3), // 받은 금액은 나눈 금액의 30%로 가정
-        condolence: Math.round(condolenceTotal * 0.5), // 받은 조의금은 나눈 조의금의 50%로 가정
-        total: Math.round(weddingTotal * 0.3) + Math.round(condolenceTotal * 0.5),
+        wedding: receivedWedding,
+        condolence: receivedCondolence,
+        total: receivedWedding + receivedCondolence,
       }
     };
-  }, [weddingMonthlyData, condolenceMonthlyData]);
+  }, [givenTotalAmounts, receivedTotalAmounts]);
 
   const renderTotalAnalysis = () => {
     const currentStats = selectedType === 'given' ? calculatedStats.given : calculatedStats.received;
@@ -291,22 +328,47 @@ const Stats: React.FC = (): React.ReactElement => {
             <View style={styles.arrowYearSelector}>
               <TouchableOpacity
                 style={styles.arrowButton}
-                onPress={() => setWeddingYear(weddingYear === 2024 ? 2025 : 2024)}
+                onPress={() => handleYearChange(weddingYear === 2024 ? 2025 : 2024, 'wedding')}
+                disabled={loading}
               >
                 <Text style={styles.arrowText}>‹</Text>
               </TouchableOpacity>
               <Text style={styles.yearText}>{weddingYear}</Text>
               <TouchableOpacity
                 style={styles.arrowButton}
-                onPress={() => setWeddingYear(weddingYear === 2024 ? 2025 : 2024)}
+                onPress={() => handleYearChange(weddingYear === 2024 ? 2025 : 2024, 'wedding')}
+                disabled={loading}
               >
                 <Text style={styles.arrowText}>›</Text>
               </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.chartGrid}>
-            {(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3}))).map((item, index) => {
-              const maxAmount = Math.max(...(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(i => ({...i, amount: i.amount * 0.3}))).map(i => i.amount));
+          
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#1F2937" />
+              <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+            </View>
+          )}
+          
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={() => {
+                  loadMonthlyData(weddingYear, 'wedding');
+                }}
+              >
+                <Text style={styles.retryButtonText}>다시 시도</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
+          {!loading && !error && (
+            <View style={styles.chartGrid}>
+              {weddingMonthlyData.length > 0 ? weddingMonthlyData.map((item, index) => {
+              const maxAmount = Math.max(...weddingMonthlyData.map(i => i.amount));
               const percentage = (item.amount / maxAmount) * 100;
               const isHighest = item.amount === maxAmount;
               
@@ -334,8 +396,15 @@ const Stats: React.FC = (): React.ReactElement => {
                   </View>
                 </View>
               );
-            })}
-          </View>
+            }) : (
+              <View style={styles.noDataContainer}>
+                <Text style={styles.noDataText}>
+                  {selectedType === 'received' ? '받은 축의금 월별 데이터가 없습니다.' : '월별 데이터가 없습니다.'}
+                </Text>
+              </View>
+            )}
+            </View>
+          )}
         </View>
 
         {/* 차트 간격 */}
@@ -348,22 +417,47 @@ const Stats: React.FC = (): React.ReactElement => {
             <View style={styles.arrowYearSelector}>
               <TouchableOpacity
                 style={styles.arrowButton}
-                onPress={() => setCondolenceYear(condolenceYear === 2024 ? 2025 : 2024)}
+                onPress={() => handleYearChange(condolenceYear === 2024 ? 2025 : 2024, 'condolence')}
+                disabled={loading}
               >
                 <Text style={styles.arrowText}>‹</Text>
               </TouchableOpacity>
               <Text style={styles.yearText}>{condolenceYear}</Text>
               <TouchableOpacity
                 style={styles.arrowButton}
-                onPress={() => setCondolenceYear(condolenceYear === 2024 ? 2025 : 2024)}
+                onPress={() => handleYearChange(condolenceYear === 2024 ? 2025 : 2024, 'condolence')}
+                disabled={loading}
               >
                 <Text style={styles.arrowText}>›</Text>
               </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.chartGrid}>
-            {(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5}))).map((item, index) => {
-              const maxAmount = Math.max(...(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(i => ({...i, amount: i.amount * 0.5}))).map(i => i.amount));
+          
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#1F2937" />
+              <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+            </View>
+          )}
+          
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={() => {
+                  loadMonthlyData(condolenceYear, 'condolence');
+                }}
+              >
+                <Text style={styles.retryButtonText}>다시 시도</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
+          {!loading && !error && (
+            <View style={styles.chartGrid}>
+              {condolenceMonthlyData.length > 0 ? condolenceMonthlyData.map((item, index) => {
+              const maxAmount = Math.max(...condolenceMonthlyData.map(i => i.amount));
               const percentage = (item.amount / maxAmount) * 100;
               const isHighest = item.amount === maxAmount;
               
@@ -391,8 +485,15 @@ const Stats: React.FC = (): React.ReactElement => {
                   </View>
                 </View>
               );
-            })}
-          </View>
+            }) : (
+              <View style={styles.noDataContainer}>
+                <Text style={styles.noDataText}>
+                  {selectedType === 'received' ? '받은 조의금 월별 데이터가 없습니다.' : '월별 데이터가 없습니다.'}
+                </Text>
+              </View>
+            )}
+            </View>
+          )}
         </View>
       </View>
     );
@@ -1409,6 +1510,56 @@ const styles = StyleSheet.create({
   monthAmountHighlighted: {
     color: '#FF6B6B',
     fontWeight: '700',
+  },
+  
+  // 로딩 및 에러 상태 스타일
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    gap: 12,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#FF6B6B',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  retryButton: {
+    backgroundColor: '#1F2937',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  
+  // 데이터 없음 상태 스타일
+  noDataContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  noDataText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 
