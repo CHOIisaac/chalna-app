@@ -56,9 +56,6 @@ const formatAmount = (amount: number): string => {
   return amount.toLocaleString();
 };
 
-const getPercentage = (value: number, max: number): number => {
-  return max > 0 ? (value / max) * 100 : 0;
-};
 
 const Stats: React.FC = (): React.ReactElement => {
   const [selectedType, setSelectedType] = useState<'given' | 'received'>('given');
@@ -157,41 +154,6 @@ const Stats: React.FC = (): React.ReactElement => {
   const { weddingMonthlyData, condolenceMonthlyData, topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
 
   // 월별 차트 렌더링 함수 (중복 제거)
-  const renderMonthlyChart = (data: MonthlyData[], title: string) => {
-    const maxAmount = Math.max(...data.map(item => item.amount));
-    
-    return (
-      <View style={styles.chartContainer}>
-        <View style={styles.chartHeader}>
-          <Text style={styles.chartTitle}>{title}</Text>
-        </View>
-        <View style={styles.lineChartContainer}>
-          {data.map((item, index) => (
-            <View key={index} style={styles.monthBar}>
-              <View style={styles.monthInfo}>
-                <View style={styles.monthInfoLeft}>
-                  <View style={[styles.monthDot, { backgroundColor: chartColors[index % chartColors.length] }]} />
-                  <Text style={styles.monthLabel}>{item.month}</Text>
-                </View>
-                <Text style={styles.monthAmount}>{formatAmount(item.amount)}원</Text>
-              </View>
-              <View style={styles.monthBarContainer}>
-                <View 
-                  style={[
-                    styles.monthBarFill, 
-                    { 
-                      backgroundColor: chartColors[index % chartColors.length],
-                      width: `${getPercentage(item.amount, maxAmount)}%` 
-                    }
-                  ]} 
-                />
-              </View>
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  };
 
   // 계산된 통계 데이터
   const calculatedStats = useMemo(() => {
@@ -269,22 +231,86 @@ const Stats: React.FC = (): React.ReactElement => {
           </View>
         </View>
 
-        {/* 월별 차트들 */}
-        {renderMonthlyChart(
-          selectedType === 'given' 
-            ? weddingMonthlyData 
-            : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3})),
-          selectedType === 'given' ? '월별 축의금 추세' : '월별 축의금 추세'
-        )}
-        
+        {/* 월별 축의금 추세 - 차트 스타일 */}
+        <View style={styles.chartContainer}>
+          <View style={styles.chartHeader}>
+            <Text style={styles.chartTitle}>월별 축의금 추세</Text>
+          </View>
+          <View style={styles.chartBars}>
+            {(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3}))).map((item, index) => {
+              const maxAmount = Math.max(...(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(i => ({...i, amount: i.amount * 0.3}))).map(i => i.amount));
+              const percentage = (item.amount / maxAmount) * 100;
+              const isHighest = item.amount === maxAmount;
+              
+              return (
+                <View key={index} style={styles.monthBar}>
+                  <View style={styles.monthBarHeader}>
+                    <Text style={[styles.monthLabel, isHighest && styles.monthLabelHighlighted]}>{item.month}</Text>
+                    <View style={styles.monthBarValues}>
+                      <Text style={[styles.monthAmount, isHighest && styles.monthAmountHighlighted]}>
+                        {item.amount.toLocaleString()}원
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.monthBarContainer}>
+                    <View 
+                      style={[
+                        styles.monthBarFill, 
+                        { 
+                          backgroundColor: chartColors[index % chartColors.length],
+                          width: `${percentage}%`,
+                          opacity: isHighest ? 1 : 0.8
+                        }
+                      ]} 
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* 차트 간격 */}
         <View style={styles.chartSpacing} />
-        
-        {renderMonthlyChart(
-          selectedType === 'given' 
-            ? condolenceMonthlyData 
-            : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5})),
-          selectedType === 'given' ? '월별 조의금 추세' : '월별 조의금 추세'
-        )}
+
+        {/* 월별 조의금 추세 - 차트 스타일 */}
+        <View style={styles.chartContainer}>
+          <View style={styles.chartHeader}>
+            <Text style={styles.chartTitle}>월별 조의금 추세</Text>
+          </View>
+          <View style={styles.chartBars}>
+            {(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5}))).map((item, index) => {
+              const maxAmount = Math.max(...(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(i => ({...i, amount: i.amount * 0.5}))).map(i => i.amount));
+              const percentage = (item.amount / maxAmount) * 100;
+              const isHighest = item.amount === maxAmount;
+              
+              return (
+                <View key={index} style={styles.monthBar}>
+                  <View style={styles.monthBarHeader}>
+                    <Text style={[styles.monthLabel, isHighest && styles.monthLabelHighlighted]}>{item.month}</Text>
+                    <View style={styles.monthBarValues}>
+                      <Text style={[styles.monthAmount, isHighest && styles.monthAmountHighlighted]}>
+                        {item.amount.toLocaleString()}원
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.monthBarContainer}>
+                    <View 
+                      style={[
+                        styles.monthBarFill, 
+                        { 
+                          backgroundColor: chartColors[index % chartColors.length],
+                          width: `${percentage}%`,
+                          opacity: isHighest ? 1 : 0.8
+                        }
+                      ]} 
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </View>
       </View>
     );
   };
@@ -297,33 +323,40 @@ const Stats: React.FC = (): React.ReactElement => {
         </View>
       </View>
 
+      {/* TOP 5 항목 - 랭킹 스타일 */}
       <View style={styles.topItemsContainer}>
         <View style={styles.subsectionTitleContainer}>
           <Text style={styles.subsectionTitle}>TOP 5 항목</Text>
         </View>
         {topItems.map((item, index) => (
           <View key={index} style={styles.topItemCard}>
-            <View style={styles.rankBadge}>
-              <Text style={styles.rankNumber}>{index + 1}</Text>
+            <View style={styles.rankSection}>
+              <View style={[styles.rankBadge, { backgroundColor: chartColors[index % chartColors.length] }]}>
+                <Text style={styles.rankNumber}>{index + 1}</Text>
+              </View>
             </View>
             <View style={styles.topItemInfo}>
               <Text style={styles.topItemName}>{item.name}</Text>
               <Text style={styles.topItemType}>{item.type}</Text>
             </View>
-            <Text style={styles.topItemAmount}>{item.amount.toLocaleString()}원</Text>
+            <View style={styles.topItemAmount}>
+              <Text style={styles.topItemAmountText}>
+                {item.amount.toLocaleString()}원
+              </Text>
+            </View>
           </View>
         ))}
       </View>
 
+      {/* 금액대별 분포 - 분포 차트 스타일 */}
       <View style={styles.distributionContainer}>
         <View style={styles.subsectionTitleContainer}>
-          <Text style={styles.subsectionTitle}>금액 구간별 분포</Text>
+          <Text style={styles.subsectionTitle}>금액대별 분포</Text>
         </View>
-        <View style={styles.distributionLegend}>
+        <View style={styles.distributionGrid}>
           {amountDistribution.map((item, index) => (
             <View key={index} style={styles.distributionItem}>
               <View style={styles.distributionHeader}>
-                <View style={[styles.distributionColor, { backgroundColor: chartColors[index % chartColors.length] }]} />
                 <Text style={styles.distributionRange}>{item.range}</Text>
                 <Text style={styles.distributionPercentage}>{item.percentage}%</Text>
               </View>
@@ -426,43 +459,69 @@ const Stats: React.FC = (): React.ReactElement => {
         </View>
       </View>
 
+      {/* 이벤트별 기록 - 통계 카드 스타일 */}
       <View style={styles.eventStatsContainer}>
         <View style={styles.subsectionTitleContainer}>
           <Text style={styles.subsectionTitle}>이벤트별 기록</Text>
         </View>
-        {eventData.map((event, index) => (
-          <View key={index} style={styles.eventCard}>
-            <View style={styles.eventInfo}>
-              <Text style={styles.eventType}>{event.type}</Text>
-              <Text style={styles.eventCount}>{event.count}회</Text>
+        <View style={styles.eventStatsGrid}>
+          {eventData.map((event, index) => (
+            <View key={index} style={styles.eventStatCard}>
+              <View style={styles.eventStatInfo}>
+                <Text style={styles.eventStatType}>{event.type}</Text>
+                <Text style={styles.eventStatCount}>{event.count}회</Text>
+              </View>
+              <View style={styles.eventStatAmount}>
+                <Text style={styles.eventStatAvgAmount}>평균</Text>
+                <Text style={styles.eventStatAmountText}>{event.avgAmount.toLocaleString()}원</Text>
+              </View>
             </View>
-            <Text style={styles.eventAvg}>평균 {event.avgAmount.toLocaleString()}원</Text>
-          </View>
-        ))}
+          ))}
+        </View>
       </View>
 
+      {/* 이벤트 건수 추세 - 타임라인 스타일 */}
       <View style={styles.eventTrendContainer}>
         <View style={styles.subsectionTitleContainer}>
           <Text style={styles.subsectionTitle}>이벤트 건수 추세</Text>
         </View>
-        <View style={styles.barChartContainer}>
-          {eventData.map((event, index) => (
-            <View key={index} style={styles.eventBar}>
-              <Text style={styles.eventBarLabel}>{event.type}</Text>
-              <View style={styles.eventBarContainer}>
-                <View 
-                  style={[
-                    styles.eventBarFill, 
-                    { 
-                      backgroundColor: chartColors[index % chartColors.length],
-                      width: `${(event.count / Math.max(...eventData.map(e => e.count))) * 100}%` 
-                    }
-                  ]} 
-                />
+        <View style={styles.timelineContainer}>
+          {eventData.map((event, index) => {
+            const maxCount = Math.max(...eventData.map(e => e.count));
+            const percentage = (event.count / maxCount) * 100;
+            const isHighest = event.count === maxCount;
+            
+            return (
+              <View key={index} style={styles.timelineItem}>
+                <View style={styles.timelineContent}>
+                  <View style={styles.timelineHeader}>
+                    <Text style={[styles.timelineEventType, isHighest && styles.timelineEventTypeHighlighted]}>
+                      {event.type}
+                    </Text>
+                    <View style={styles.timelineBadge}>
+                      <Text style={[styles.timelineCount, isHighest && styles.timelineCountHighlighted]}>
+                        {event.count}건
+                      </Text>
+                      {isHighest && <Text style={styles.timelineHighest}>최고</Text>}
+                    </View>
+                  </View>
+                  <View style={styles.timelineBar}>
+                    <View 
+                      style={[
+                        styles.timelineBarFill, 
+                        { 
+                          backgroundColor: chartColors[index % chartColors.length],
+                          width: `${percentage}%`,
+                          opacity: isHighest ? 1 : 0.7
+                        }
+                      ]} 
+                    />
+                  </View>
+                  <Text style={styles.timelineAvg}>평균 {event.avgAmount.toLocaleString()}원</Text>
+                </View>
               </View>
-              <Text style={styles.eventBarCount}>{event.count}건</Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </View>
     </View>
@@ -707,6 +766,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
     fontWeight: '500',
+    flexShrink: 0,
   },
   monthAmount: {
     fontSize: 14,
@@ -714,23 +774,18 @@ const styles = StyleSheet.create({
     color: colors.foreground,
   },
   monthBarContainer: {
-    height: 8,
+    height: 4,
     backgroundColor: '#F0F0F0',
-    borderRadius: 4,
+    borderRadius: 2,
   },
   monthInfoLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  monthDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
   monthBarFill: {
-    height: 8,
-    borderRadius: 4,
+    height: 4,
+    borderRadius: 2,
   },
   topItemsContainer: {
     backgroundColor: 'white',
@@ -792,9 +847,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   topItemAmount: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: colors.foreground,
+    alignItems: 'flex-end',
   },
   distributionContainer: {
     backgroundColor: 'white',
@@ -822,12 +875,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  distributionColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
   distributionRange: {
     flex: 1,
     fontSize: 14,
@@ -840,14 +887,14 @@ const styles = StyleSheet.create({
     color: colors.foreground,
   },
   distributionBar: {
-    height: 6,
+    height: 4,
     backgroundColor: '#F3F4F6',
-    borderRadius: 3,
+    borderRadius: 2,
     marginBottom: 4,
   },
   distributionBarFill: {
-    height: 6,
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
   },
   distributionCount: {
     fontSize: 12,
@@ -1037,8 +1084,10 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   relationshipRight: {
+    flex: 1,
     alignItems: 'flex-end',
-    minWidth: 120,
+    marginLeft: 16,
+    minWidth: 150,
   },
   relationshipAmount: {
     fontSize: 16,
@@ -1047,18 +1096,176 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   relationshipBar: {
-    width: 80,
+    width: '100%',
     height: 4,
     backgroundColor: '#E5E7EB',
     borderRadius: 2,
     overflow: 'hidden',
+    marginTop: 4,
   },
   relationshipBarFill: {
     height: 4,
     borderRadius: 2,
   },
   chartSpacing: {
-    height: 10,
+    height: 15,
+  },
+  
+  // 새로운 고유 스타일들
+  
+  // 항목 탭 - 랭킹 스타일
+  rankSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topItemAmountText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.foreground,
+  },
+  
+  // 분포 차트 스타일
+  distributionGrid: {
+    gap: 12,
+  },
+  
+  // 순간 탭 - 통계 카드 스타일
+  eventStatsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  eventStatCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  eventStatInfo: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  eventStatType: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.foreground,
+    marginBottom: 4,
+  },
+  eventStatCount: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  eventStatAmount: {
+    alignItems: 'center',
+  },
+  eventStatAvgAmount: {
+    fontSize: 11,
+    color: '#999',
+    marginBottom: 2,
+  },
+  eventStatAmountText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.foreground,
+  },
+  
+  // 타임라인 스타일
+  timelineContainer: {
+  },
+  timelineItem: {
+    marginBottom: 20,
+  },
+  timelineContent: {
+    flex: 1,
+    paddingTop: 2,
+  },
+  timelineHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  timelineEventType: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.foreground,
+  },
+  timelineEventTypeHighlighted: {
+    color: '#FF6B6B',
+    fontWeight: '700',
+  },
+  timelineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  timelineCount: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.foreground,
+  },
+  timelineCountHighlighted: {
+    color: '#FF6B6B',
+  },
+  timelineHighest: {
+    fontSize: 10,
+    color: '#FF6B6B',
+    fontWeight: '600',
+    backgroundColor: '#FFE0E0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  timelineBar: {
+    height: 4,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 2,
+    marginBottom: 6,
+    overflow: 'hidden',
+  },
+  timelineBarFill: {
+    height: 4,
+    borderRadius: 2,
+  },
+  timelineAvg: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  
+  // 차트 스타일 (누락된 것들)
+  chartBars: {
+    gap: 8,
+  },
+  monthBarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    minHeight: 24,
+  },
+  monthLabelHighlighted: {
+    color: '#FF6B6B',
+    fontWeight: '700',
+  },
+  monthBarValues: {
+    alignItems: 'flex-end',
+    flex: 1,
+    marginLeft: 12,
+  },
+  monthAmountHighlighted: {
+    color: '#FF6B6B',
+    fontWeight: '700',
   },
 });
 
