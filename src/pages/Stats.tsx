@@ -60,6 +60,8 @@ const formatAmount = (amount: number): string => {
 const Stats: React.FC = (): React.ReactElement => {
   const [selectedType, setSelectedType] = useState<'given' | 'received'>('given');
   const [selectedTab, setSelectedTab] = useState<'total' | 'items' | 'network' | 'events'>('total');
+  const [weddingYear, setWeddingYear] = useState(new Date().getFullYear());
+  const [condolenceYear, setCondolenceYear] = useState(new Date().getFullYear());
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
@@ -81,22 +83,66 @@ const Stats: React.FC = (): React.ReactElement => {
 
   // Mock 데이터 - useMemo로 최적화
   const mockData = useMemo(() => {
-    const weddingMonthlyData: MonthlyData[] = [
+    // 2024년 데이터
+    const weddingMonthlyData2024: MonthlyData[] = [
+      { month: '1월', amount: 800000 },
+      { month: '2월', amount: 1200000 },
+      { month: '3월', amount: 1500000 },
+      { month: '4월', amount: 1800000 },
+      { month: '5월', amount: 2200000 },
+      { month: '6월', amount: 1900000 },
+      { month: '7월', amount: 1600000 },
+      { month: '8월', amount: 1400000 },
+      { month: '9월', amount: 1700000 },
+      { month: '10월', amount: 2100000 },
+      { month: '11월', amount: 1300000 },
+      { month: '12월', amount: 1000000 },
+    ];
+
+    const condolenceMonthlyData2024: MonthlyData[] = [
+      { month: '1월', amount: 60000 },
+      { month: '2월', amount: 80000 },
+      { month: '3월', amount: 70000 },
+      { month: '4월', amount: 120000 },
+      { month: '5월', amount: 90000 },
+      { month: '6월', amount: 110000 },
+      { month: '7월', amount: 85000 },
+      { month: '8월', amount: 95000 },
+      { month: '9월', amount: 100000 },
+      { month: '10월', amount: 75000 },
+      { month: '11월', amount: 80000 },
+      { month: '12월', amount: 65000 },
+    ];
+
+    // 2025년 데이터
+    const weddingMonthlyData2025: MonthlyData[] = [
       { month: '1월', amount: 1200000 },
       { month: '2월', amount: 1500000 },
       { month: '3월', amount: 1800000 },
       { month: '4월', amount: 2200000 },
       { month: '5월', amount: 1900000 },
       { month: '6월', amount: 2500000 },
+      { month: '7월', amount: 2100000 },
+      { month: '8월', amount: 1700000 },
+      { month: '9월', amount: 2000000 },
+      { month: '10월', amount: 2400000 },
+      { month: '11월', amount: 1600000 },
+      { month: '12월', amount: 1300000 },
     ];
 
-    const condolenceMonthlyData: MonthlyData[] = [
+    const condolenceMonthlyData2025: MonthlyData[] = [
       { month: '1월', amount: 80000 },
       { month: '2월', amount: 120000 },
       { month: '3월', amount: 90000 },
       { month: '4월', amount: 150000 },
       { month: '5월', amount: 110000 },
       { month: '6월', amount: 180000 },
+      { month: '7월', amount: 140000 },
+      { month: '8월', amount: 100000 },
+      { month: '9월', amount: 130000 },
+      { month: '10월', amount: 160000 },
+      { month: '11월', amount: 95000 },
+      { month: '12월', amount: 75000 },
     ];
 
     const topItems: TopItem[] = [
@@ -139,8 +185,10 @@ const Stats: React.FC = (): React.ReactElement => {
     const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
 
     return {
-      weddingMonthlyData,
-      condolenceMonthlyData,
+      weddingMonthlyData2024,
+      condolenceMonthlyData2024,
+      weddingMonthlyData2025,
+      condolenceMonthlyData2025,
       topItems,
       networkData,
       relationshipStats,
@@ -151,7 +199,11 @@ const Stats: React.FC = (): React.ReactElement => {
   }, []);
 
   // 계산된 데이터들
-  const { weddingMonthlyData, condolenceMonthlyData, topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
+  const { weddingMonthlyData2024, condolenceMonthlyData2024, weddingMonthlyData2025, condolenceMonthlyData2025, topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
+  
+  // 선택된 년도에 따른 데이터 선택
+  const weddingMonthlyData = weddingYear === 2024 ? weddingMonthlyData2024 : weddingMonthlyData2025;
+  const condolenceMonthlyData = condolenceYear === 2024 ? condolenceMonthlyData2024 : condolenceMonthlyData2025;
 
   // 월별 차트 렌더링 함수 (중복 제거)
 
@@ -207,6 +259,7 @@ const Stats: React.FC = (): React.ReactElement => {
           </View>
         </View>
 
+
         <View style={styles.summaryCards}>
           <View style={styles.summaryCard}>
             <View style={styles.summaryCardContent}>
@@ -231,31 +284,46 @@ const Stats: React.FC = (): React.ReactElement => {
           </View>
         </View>
 
-        {/* 월별 축의금 추세 - 차트 스타일 */}
+        {/* 월별 축의금 추세 - 2줄 그리드 차트 */}
         <View style={styles.chartContainer}>
           <View style={styles.chartHeader}>
             <Text style={styles.chartTitle}>월별 축의금 추세</Text>
+            <View style={styles.arrowYearSelector}>
+              <TouchableOpacity
+                style={styles.arrowButton}
+                onPress={() => setWeddingYear(weddingYear === 2024 ? 2025 : 2024)}
+              >
+                <Text style={styles.arrowText}>‹</Text>
+              </TouchableOpacity>
+              <Text style={styles.yearText}>{weddingYear}</Text>
+              <TouchableOpacity
+                style={styles.arrowButton}
+                onPress={() => setWeddingYear(weddingYear === 2024 ? 2025 : 2024)}
+              >
+                <Text style={styles.arrowText}>›</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.chartBars}>
+          <View style={styles.chartGrid}>
             {(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(item => ({...item, amount: item.amount * 0.3}))).map((item, index) => {
               const maxAmount = Math.max(...(selectedType === 'given' ? weddingMonthlyData : weddingMonthlyData.map(i => ({...i, amount: i.amount * 0.3}))).map(i => i.amount));
               const percentage = (item.amount / maxAmount) * 100;
               const isHighest = item.amount === maxAmount;
               
               return (
-                <View key={index} style={styles.monthBar}>
-                  <View style={styles.monthBarHeader}>
+                <View key={index} style={styles.monthBarGrid}>
+                  <View style={styles.monthBarHeaderGrid}>
                     <Text style={[styles.monthLabel, isHighest && styles.monthLabelHighlighted]}>{item.month}</Text>
-                    <View style={styles.monthBarValues}>
+                    <View style={styles.monthBarValuesGrid}>
                       <Text style={[styles.monthAmount, isHighest && styles.monthAmountHighlighted]}>
                         {item.amount.toLocaleString()}원
                       </Text>
                     </View>
                   </View>
-                  <View style={styles.monthBarContainer}>
+                  <View style={styles.monthBarContainerGrid}>
                     <View 
                       style={[
-                        styles.monthBarFill, 
+                        styles.monthBarFillGrid, 
                         { 
                           backgroundColor: chartColors[index % chartColors.length],
                           width: `${percentage}%`,
@@ -273,31 +341,46 @@ const Stats: React.FC = (): React.ReactElement => {
         {/* 차트 간격 */}
         <View style={styles.chartSpacing} />
 
-        {/* 월별 조의금 추세 - 차트 스타일 */}
+        {/* 월별 조의금 추세 - 2줄 그리드 차트 */}
         <View style={styles.chartContainer}>
           <View style={styles.chartHeader}>
             <Text style={styles.chartTitle}>월별 조의금 추세</Text>
+            <View style={styles.arrowYearSelector}>
+              <TouchableOpacity
+                style={styles.arrowButton}
+                onPress={() => setCondolenceYear(condolenceYear === 2024 ? 2025 : 2024)}
+              >
+                <Text style={styles.arrowText}>‹</Text>
+              </TouchableOpacity>
+              <Text style={styles.yearText}>{condolenceYear}</Text>
+              <TouchableOpacity
+                style={styles.arrowButton}
+                onPress={() => setCondolenceYear(condolenceYear === 2024 ? 2025 : 2024)}
+              >
+                <Text style={styles.arrowText}>›</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.chartBars}>
+          <View style={styles.chartGrid}>
             {(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(item => ({...item, amount: item.amount * 0.5}))).map((item, index) => {
               const maxAmount = Math.max(...(selectedType === 'given' ? condolenceMonthlyData : condolenceMonthlyData.map(i => ({...i, amount: i.amount * 0.5}))).map(i => i.amount));
               const percentage = (item.amount / maxAmount) * 100;
               const isHighest = item.amount === maxAmount;
               
               return (
-                <View key={index} style={styles.monthBar}>
-                  <View style={styles.monthBarHeader}>
+                <View key={index} style={styles.monthBarGrid}>
+                  <View style={styles.monthBarHeaderGrid}>
                     <Text style={[styles.monthLabel, isHighest && styles.monthLabelHighlighted]}>{item.month}</Text>
-                    <View style={styles.monthBarValues}>
+                    <View style={styles.monthBarValuesGrid}>
                       <Text style={[styles.monthAmount, isHighest && styles.monthAmountHighlighted]}>
                         {item.amount.toLocaleString()}원
                       </Text>
                     </View>
                   </View>
-                  <View style={styles.monthBarContainer}>
+                  <View style={styles.monthBarContainerGrid}>
                     <View 
                       style={[
-                        styles.monthBarFill, 
+                        styles.monthBarFillGrid, 
                         { 
                           backgroundColor: chartColors[index % chartColors.length],
                           width: `${percentage}%`,
@@ -318,9 +401,6 @@ const Stats: React.FC = (): React.ReactElement => {
   const renderItemsAnalysis = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>항목별 상세 분석</Text>
-        </View>
       </View>
 
       {/* TOP 5 항목 - 랭킹 스타일 */}
@@ -454,9 +534,6 @@ const Stats: React.FC = (): React.ReactElement => {
   const renderEventsAnalysis = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>함께한 순간</Text>
-        </View>
       </View>
 
       {/* 이벤트별 기록 - 통계 카드 스타일 */}
@@ -741,14 +818,42 @@ const styles = StyleSheet.create({
   },
   chartHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
     marginBottom: 16,
   },
   chartTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.foreground,
+  },
+  arrowYearSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F0F0',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  arrowButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 24,
+  },
+  arrowText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.foreground,
+  },
+  yearText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.foreground,
+    paddingHorizontal: 8,
+    minWidth: 40,
+    textAlign: 'center',
   },
   lineChartContainer: {
     // 자동 높이 조정
@@ -1109,6 +1214,44 @@ const styles = StyleSheet.create({
   },
   chartSpacing: {
     height: 15,
+  },
+
+
+  // 2줄 그리드 차트 스타일
+  chartGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  monthBarGrid: {
+    width: '48%',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  monthBarHeaderGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    minHeight: 24,
+  },
+  monthBarValuesGrid: {
+    flex: 1,
+    marginLeft: 8,
+    alignItems: 'flex-end',
+  },
+  monthBarContainerGrid: {
+    height: 4,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  monthBarFillGrid: {
+    height: 4,
+    borderRadius: 2,
   },
   
   // 새로운 고유 스타일들
