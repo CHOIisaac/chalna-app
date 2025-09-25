@@ -332,12 +332,22 @@ export interface NetworkData {
   relationship: string;
 }
 
+export interface NetworkDataByType {
+  given: NetworkData[];
+  received: NetworkData[];
+}
+
 export interface RelationshipStat {
   relationship: string;
   count: number;
   totalAmount: number;
   avgAmount: number;
-  color: string;
+  color?: string; // color는 프론트엔드에서 추가
+}
+
+export interface RelationshipStatsData {
+  given: RelationshipStat[];
+  received: RelationshipStat[];
 }
 
 export interface EventData {
@@ -436,26 +446,14 @@ export const statsService = {
     return apiClient.get<ApiResponse<AmountDistributionData>>(API_ENDPOINTS.STATS_AMOUNT_DISTRIBUTION);
   },
 
-  // 관계별 분석
-  async getRelationshipBreakdown(params: {
-    entry_type: 'given' | 'received';
-  }): Promise<ApiResponse<RelationshipStat[]>> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('entry_type', params.entry_type);
-    
-    const url = `${API_ENDPOINTS.STATS_RELATIONSHIP_BREAKDOWN}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<RelationshipStat[]>>(url);
+  // 관계별 분석 (given/received 모두 한 번에)
+  async getRelationshipBreakdown(): Promise<ApiResponse<RelationshipStatsData>> {
+    return apiClient.get<ApiResponse<RelationshipStatsData>>(API_ENDPOINTS.STATS_RELATIONSHIP_BREAKDOWN);
   },
 
-  // 개인별 상세
-  async getPersonalDetails(params: {
-    entry_type: 'given' | 'received';
-  }): Promise<ApiResponse<NetworkData[]>> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('entry_type', params.entry_type);
-    
-    const url = `${API_ENDPOINTS.STATS_PERSONAL_DETAILS}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<NetworkData[]>>(url);
+  // 개인별 상세 (given/received 모두 한 번에)
+  async getPersonalDetails(): Promise<ApiResponse<NetworkDataByType>> {
+    return apiClient.get<ApiResponse<NetworkDataByType>>(API_ENDPOINTS.STATS_PERSONAL_DETAILS);
   },
 
   // 이벤트별 기록

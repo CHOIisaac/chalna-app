@@ -16,8 +16,8 @@ import {
   EventData,
   handleApiError,
   MonthlyTrendData,
-  NetworkData,
-  RelationshipStat,
+  NetworkDataByType,
+  RelationshipStatsData,
   statsService,
   TopItemsData,
   TotalAmountsData
@@ -52,6 +52,12 @@ const Stats: React.FC = (): React.ReactElement => {
   
   // 금액대별 분포 데이터 (통합)
   const [amountDistributionData, setAmountDistributionData] = useState<AmountDistributionData | null>(null);
+  
+  // 관계별 분석 데이터 (통합)
+  const [relationshipStatsData, setRelationshipStatsData] = useState<RelationshipStatsData | null>(null);
+  
+  // 개인별 상세 데이터 (통합)
+  const [networkData, setNetworkData] = useState<NetworkDataByType | null>(null);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
@@ -126,6 +132,38 @@ const Stats: React.FC = (): React.ReactElement => {
     }
   }, []);
 
+  // 관계별 분석 데이터 로드 (given/received 모두 한 번에)
+  const loadRelationshipStats = useCallback(async () => {
+    try {
+      const response = await statsService.getRelationshipBreakdown();
+      
+      if (response.success) {
+        setRelationshipStatsData(response.data);
+      } else {
+        setError(response.error || '관계별 분석 데이터를 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('관계별 분석 데이터 로드 실패:', err);
+      setError(handleApiError(err));
+    }
+  }, []);
+
+  // 개인별 상세 데이터 로드 (given/received 모두 한 번에)
+  const loadNetworkData = useCallback(async () => {
+    try {
+      const response = await statsService.getPersonalDetails();
+      
+      if (response.success) {
+        setNetworkData(response.data);
+      } else {
+        setError(response.error || '개인별 상세 데이터를 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('개인별 상세 데이터 로드 실패:', err);
+      setError(handleApiError(err));
+    }
+  }, []);
+
   // 년도 변경 시 데이터 로드 (이제 월별 추세는 한 번에 로드되므로 년도만 업데이트)
   const handleYearChange = useCallback((year: number, type: 'wedding' | 'condolence') => {
     if (type === 'wedding') {
@@ -152,8 +190,13 @@ const Stats: React.FC = (): React.ReactElement => {
         loadTopItems();
         // 금액대별 분포 데이터 로드
         loadAmountDistribution();
+      } else if (selectedTab === 'network') {
+        // 관계별 분석 데이터 로드
+        loadRelationshipStats();
+        // 개인별 상세 데이터 로드
+        loadNetworkData();
       }
-    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution])
+    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution, loadRelationshipStats, loadNetworkData])
   );
 
   React.useEffect(() => {
@@ -175,20 +218,6 @@ const Stats: React.FC = (): React.ReactElement => {
   // Mock 데이터 - useMemo로 최적화 (다른 탭용, 월별 데이터는 API에서 가져옴)
   const mockData = useMemo(() => {
 
-    const networkData: NetworkData[] = [
-      { name: '김민수', total: 300000, count: 2, avg: 150000, relationship: '친구' },
-      { name: '박지영', total: 250000, count: 1, avg: 250000, relationship: '직장동료' },
-      { name: '이철수', total: 200000, count: 1, avg: 200000, relationship: '지인' },
-      { name: '최영희', total: 400000, count: 2, avg: 200000, relationship: '가족' },
-      { name: '정민호', total: 180000, count: 1, avg: 180000, relationship: '친구' },
-    ];
-
-    const relationshipStats: RelationshipStat[] = [
-      { relationship: '가족', count: 3, totalAmount: 1200000, avgAmount: 400000, color: '#1F2937' },
-      { relationship: '친구', count: 8, totalAmount: 1400000, avgAmount: 175000, color: '#9CA3AF' },
-      { relationship: '직장동료', count: 5, totalAmount: 750000, avgAmount: 150000, color: '#1E40AF' },
-      { relationship: '친척', count: 4, totalAmount: 600000, avgAmount: 150000, color: '#6B7280' },
-    ];
 
     const eventData: EventData[] = [
       { type: '결혼식', count: 8, avgAmount: 350000 },
@@ -201,15 +230,13 @@ const Stats: React.FC = (): React.ReactElement => {
     const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
 
     return {
-      networkData,
-      relationshipStats,
       eventData,
       chartColors,
     };
   }, []);
 
   // 계산된 데이터들
-  const { networkData, relationshipStats, eventData, chartColors } = mockData;
+  const { eventData, chartColors } = mockData;
   
   // 선택된 년도와 타입에 따른 데이터 선택 (새로운 API 구조)
   const weddingMonthlyData = useMemo(() => {
@@ -578,11 +605,36 @@ const Stats: React.FC = (): React.ReactElement => {
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>관계별 분석</Text>
         </View>
+        <View style={styles.periodToggle}>
+          <TouchableOpacity
+            style={[styles.periodToggleButton, selectedType === 'given' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('given')}
+            accessibilityRole="button"
+            accessibilityLabel={`나눔 통계 보기, ${selectedType === 'given' ? '현재 선택됨' : '선택되지 않음'}`}
+          >
+            <Text style={[styles.periodToggleText, selectedType === 'given' && styles.periodToggleTextActive]}>
+              나눔
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.periodToggleButton, selectedType === 'received' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('received')}
+            accessibilityRole="button"
+            accessibilityLabel={`받음 통계 보기, ${selectedType === 'received' ? '현재 선택됨' : '선택되지 않음'}`}
+          >
+            <Text style={[styles.periodToggleText, selectedType === 'received' && styles.periodToggleTextActive]}>
+              받음
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* 관계별 분석 */}
       <View style={styles.relationshipContainer}>
-        {relationshipStats.map((stat, index) => (
+        {(relationshipStatsData?.[selectedType] || []).map((stat, index) => {
+          // color를 추가 (API에서는 color가 없으므로 프론트엔드에서 추가)
+          const statWithColor = { ...stat, color: chartColors[index % chartColors.length] };
+          return (
           <View key={index} style={styles.relationshipItem}>
             <View style={styles.relationshipLeft}>
               <Text style={styles.relationshipName}>{stat.relationship}</Text>
@@ -595,15 +647,16 @@ const Stats: React.FC = (): React.ReactElement => {
                   style={[
                     styles.relationshipBarFill, 
                     { 
-                      backgroundColor: stat.color,
-                      width: `${(stat.totalAmount / Math.max(...relationshipStats.map(s => s.totalAmount))) * 100}%`
+                      backgroundColor: statWithColor.color,
+                      width: `${(stat.totalAmount / Math.max(...(relationshipStatsData?.[selectedType] || []).map(s => s.totalAmount), 1)) * 100}%`
                     }
                   ]} 
                 />
               </View>
             </View>
           </View>
-        ))}
+          );
+        })}
       </View>
 
       {/* 개인별 상세 분석 */}
@@ -613,7 +666,7 @@ const Stats: React.FC = (): React.ReactElement => {
         </View>
       </View>
 
-      {networkData.map((person, index) => (
+      {(networkData?.[selectedType] || []).map((person, index) => (
         <View key={index} style={styles.networkCard}>
           <View style={styles.networkHeader}>
             <View style={styles.networkInfo}>
@@ -633,7 +686,7 @@ const Stats: React.FC = (): React.ReactElement => {
                   styles.networkBarFill, 
                   { 
                     backgroundColor: chartColors[index % chartColors.length],
-                    width: `${(person.total / Math.max(...networkData.map(p => p.total))) * 100}%` 
+                    width: `${(person.total / Math.max(...(networkData?.[selectedType] || []).map(p => p.total), 1)) * 100}%` 
                   }
                 ]} 
               />

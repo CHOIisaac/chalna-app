@@ -62,8 +62,8 @@ export const API_ENDPOINTS = {
   STATS_MONTHLY: '/api/v1/stats/stats/monthly',
   STATS_TOP_ITEMS: '/api/v1/stats/stats/top-items',
   STATS_AMOUNT_DISTRIBUTION: '/api/v1/stats/stats/amount-distribution',
-  STATS_RELATIONSHIP_BREAKDOWN: '/api/v1/stats/relationship-breakdown',
-  STATS_PERSONAL_DETAILS: '/api/v1/stats/personal-details',
+  STATS_RELATIONSHIP_BREAKDOWN: '/api/v1/stats/stats/relationship-breakdown',
+  STATS_PERSONAL_DETAILS: '/api/v1/stats/stats/personal-details',
   STATS_EVENT_BREAKDOWN: '/api/v1/stats/event-breakdown',
   STATS_MONTHLY_EVENT_COUNT: '/api/v1/stats/monthly-event-count',
   
