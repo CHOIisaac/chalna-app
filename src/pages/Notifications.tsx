@@ -9,14 +9,16 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { getEventMessage } from '../utils/eventMessages';
 
 const Notifications: React.FC = () => {
   const router = useRouter();
-  const [notifications, setNotifications] = useState([
+
+  // 알림 데이터 생성 (동적 메시지 사용)
+  const notificationsData = [
     {
       id: "1",
       title: "김철수 결혼식 알림",
-      message: "💒 결혼식이 곧 다가옵니다!\n\n김철수님의 결혼식이 내일 오후 12시에 진행됩니다. 축하의 마음을 담아 참석해주시면 감사하겠습니다.",
       time: "1시간 전",
       type: "wedding",
       read: false,
@@ -26,7 +28,6 @@ const Notifications: React.FC = () => {
     {
       id: "2", 
       title: "박영희 어머님 장례식 알림",
-      message: "🕊️ 조문 안내\n\n박영희님 어머님의 장례식이 3일 후 오후 2시에 진행됩니다. 조문 시간은 오후 2시부터 4시까지입니다.",
       time: "3시간 전",
       type: "funeral",
       read: false,
@@ -36,7 +37,6 @@ const Notifications: React.FC = () => {
     {
       id: "3",
       title: "이민수 아들 돌잔치 알림", 
-      message: "🎂 돌잔치 초대\n\n이민수님 아들의 돌잔치가 7일 후 오전 11시 30분에 진행됩니다. 돌잡이 행사와 함께 진행되니 많은 축하 부탁드립니다.",
       time: "1일 전",
       type: "birthday",
       read: true,
@@ -46,7 +46,6 @@ const Notifications: React.FC = () => {
     {
       id: "4",
       title: "정수정 개업식 알림",
-      message: "🎊 개업식 초대\n\n정수정님의 개업식이 10일 후 오후 3시에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.",
       time: "2일 전", 
       type: "opening",
       read: true,
@@ -56,7 +55,6 @@ const Notifications: React.FC = () => {
     {
       id: "5",
       title: "최영수 결혼식 알림",
-      message: "💒 결혼식 알림\n\n최영수님의 결혼식이 15일 후 오후 1시에 진행됩니다. 축하의 마음을 담아 참석해주시면 감사하겠습니다.",
       time: "3일 전",
       type: "wedding", 
       read: false,
@@ -66,14 +64,21 @@ const Notifications: React.FC = () => {
     {
       id: "6",
       title: "김민지 딸 돌잔치 알림",
-      message: "🎂 돌잔치 초대\n\n김민지님 딸의 돌잔치가 20일 후 오전 10시 30분에 진행됩니다. 돌잡이 행사와 함께 진행되니 많은 축하 부탁드립니다.",
       time: "5일 전",
       type: "birthday",
       read: true,
       date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
       location: "롯데호텔 월드 크리스탈볼룸",
     }
-  ]);
+  ];
+
+  // 동적 메시지가 포함된 알림 데이터 생성
+  const [notifications, setNotifications] = useState(
+    notificationsData.map(notification => ({
+      ...notification,
+      message: getEventMessage(notification.type, notification.title, notification.date, notification.location)
+    }))
+  );
 
 
   // 개별 알림 카드 클릭 시 읽음으로 처리하고 상세 페이지로 이동
