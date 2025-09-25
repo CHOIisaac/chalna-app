@@ -144,44 +144,6 @@ const Notifications: React.FC = () => {
         {/* 스크롤 가능한 컨텐츠 */}
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
           
-          {/* 알림 요약 카드 */}
-          <View style={styles.summarySection}>
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryHeader}>
-                <View style={styles.summaryInfo}>
-                  <Text style={styles.summaryTitle}>이번 주 경조사</Text>
-                  <Text style={styles.summarySubtitle}>
-                    {new Date().getFullYear()}년 {new Date().getMonth() + 1}월
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.summaryStats}>
-                <View style={styles.summaryStatItem}>
-                  <Text style={styles.summaryStatValue}>{notifications.filter(n => !n.read).length}</Text>
-                  <Text style={styles.summaryStatLabel}>새 알림</Text>
-                </View>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryStatItem}>
-                  <Text style={styles.summaryStatValue}>{notifications.length}</Text>
-                  <Text style={styles.summaryStatLabel}>총 알림</Text>
-                </View>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryStatItem}>
-                  <Text style={styles.summaryStatValue}>
-                    {notifications.filter(n => {
-                      const today = new Date();
-                      const eventDate = n.date;
-                      const diffTime = eventDate.getTime() - today.getTime();
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      return diffDays >= 0 && diffDays <= 7;
-                    }).length}
-                  </Text>
-                  <Text style={styles.summaryStatLabel}>이번 주</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
         {/* 알림 목록 */}
         <View style={styles.notificationsSection}>
           
@@ -363,67 +325,11 @@ const styles = StyleSheet.create({
   },
 
 
-  // 요약 섹션
-  summarySection: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  summaryCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  summaryHeader: {
-    marginBottom: 20,
-  },
-  summaryInfo: {
-    flex: 1,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 4,
-  },
-  summarySubtitle: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  summaryStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  summaryStatItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  summaryStatValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 4,
-  },
-  summaryStatLabel: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
-  },
-  summaryDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#e9ecef',
-    marginHorizontal: 16,
-  },
 
   // 알림 섹션
   notificationsSection: {
     paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 20,
   },
   sectionTitle: {

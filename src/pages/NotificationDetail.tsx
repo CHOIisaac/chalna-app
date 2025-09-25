@@ -14,11 +14,37 @@ const NotificationDetail: React.FC = () => {
   const router = useRouter();
   const { notificationId } = useLocalSearchParams<{ notificationId: string }>();
 
+  // 경조사 타입별 멘트 정의
+  const getEventMessage = (type: string, title: string, date: Date, location: string) => {
+    const eventName = title.replace(' 알림', '');
+    const dateStr = date.toLocaleDateString('ko-KR', {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+    
+    switch (type) {
+      case 'wedding':
+        return `💒 결혼식이 곧 다가옵니다!\n\n${eventName}이 ${dateStr}에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.`;
+      case 'funeral':
+        return `🕊️ 조문 안내\n\n${eventName}이 ${dateStr}에 진행됩니다. 고인의 명복을 빌어주시면 감사하겠습니다.`;
+      case 'birthday':
+        return `🎂 돌잔치 초대\n\n${eventName}이 ${dateStr}에 진행됩니다. 아이의 건강한 성장을 함께 축하해주시면 감사하겠습니다.`;
+      case 'opening':
+        return `🎊 개업식 초대\n\n${eventName}이 ${dateStr}에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.`;
+      case 'graduation':
+        return `🎓 졸업식 축하\n\n${eventName}이 ${dateStr}에 진행됩니다. 새로운 도전을 함께 축하해주시면 감사하겠습니다.`;
+      case 'promotion':
+        return `🎉 승진 축하\n\n${eventName}이 ${dateStr}에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.`;
+      default:
+        return `📅 경조사 알림\n\n${eventName}이 ${dateStr}에 진행됩니다. 참석해주시면 감사하겠습니다.`;
+    }
+  };
+
   // Mock data - 실제로는 notificationId로 데이터를 가져와야 함
   const notification = {
     id: notificationId || "1",
     title: "김철수 결혼식 알림",
-    message: "💒 결혼식이 곧 다가옵니다!\n\n김철수님의 결혼식이 내일 오후 12시에 진행됩니다. 축하의 마음을 담아 참석해주시면 감사하겠습니다.\n\n※ 참석 확인 및 축하 인사는 미리 연락 부탁드립니다.",
     time: "1시간 전",
     type: "wedding",
     read: false,
@@ -32,6 +58,9 @@ const NotificationDetail: React.FC = () => {
       additionalInfo: "주차장 이용 가능, 지하철 2호선 잠실역 3번 출구 도보 5분"
     }
   };
+
+  // 경조사 타입에 따른 메시지 생성
+  const message = getEventMessage(notification.type, notification.title, notification.date, notification.location);
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
@@ -87,7 +116,7 @@ const NotificationDetail: React.FC = () => {
             <Text style={styles.title}>{notification.title}</Text>
             
             <View style={styles.messageContainer}>
-              <Text style={styles.message}>{notification.message}</Text>
+              <Text style={styles.message}>{message}</Text>
             </View>
 
             {/* 상세 정보 */}
@@ -115,46 +144,8 @@ const NotificationDetail: React.FC = () => {
                 </View>
               </View>
 
-              <View style={styles.detailRow}>
-                <Ionicons name="people-outline" size={20} color="#666" />
-                <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>주최자</Text>
-                  <Text style={styles.detailValue}>{notification.fullDetails.host}</Text>
-                </View>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Ionicons name="call-outline" size={20} color="#666" />
-                <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>연락처</Text>
-                  <Text style={styles.detailValue}>{notification.fullDetails.contact}</Text>
-                </View>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Ionicons name="shirt-outline" size={20} color="#666" />
-                <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>복장</Text>
-                  <Text style={styles.detailValue}>{notification.fullDetails.dressCode}</Text>
-                </View>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Ionicons name="gift-outline" size={20} color="#666" />
-                <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>축하금/선물</Text>
-                  <Text style={styles.detailValue}>{notification.fullDetails.giftInfo}</Text>
-                </View>
-              </View>
             </View>
 
-            {/* 추가 정보 */}
-            <View style={styles.additionalInfo}>
-              <Text style={styles.additionalInfoTitle}>📝 추가 안내사항</Text>
-              <Text style={styles.additionalInfoText}>
-                {notification.fullDetails.additionalInfo}
-              </Text>
-            </View>
           </View>
 
           {/* 액션 버튼들 */}
@@ -285,24 +276,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1F2937',
     fontWeight: '500',
-  },
-  additionalInfo: {
-    backgroundColor: '#FEF3C7',
-    padding: 16,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
-  },
-  additionalInfoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#92400E',
-    marginBottom: 8,
-  },
-  additionalInfoText: {
-    fontSize: 14,
-    color: '#92400E',
-    lineHeight: 20,
   },
   actionButtons: {
     flexDirection: 'row',
