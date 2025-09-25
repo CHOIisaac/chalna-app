@@ -374,6 +374,11 @@ export interface MonthlyEventCount {
   avgAmount: number;
 }
 
+export interface MonthlyEventCountData {
+  given: MonthlyEventCount[];
+  received: MonthlyEventCount[];
+}
+
 export interface TotalAmountsData {
   given: {
     wedding: {
@@ -467,15 +472,14 @@ export const statsService = {
     return apiClient.get<ApiResponse<EventData[]>>(url);
   },
 
-  // 월별 이벤트 건수
-  async getMonthlyEventCount(params: {
-    entry_type: 'given' | 'received';
-  }): Promise<ApiResponse<MonthlyEventCount[]>> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('entry_type', params.entry_type);
-    
-    const url = `${API_ENDPOINTS.STATS_MONTHLY_EVENT_COUNT}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<MonthlyEventCount[]>>(url);
+  // 월별 이벤트 건수 (given/received 모두 한 번에)
+  async getMonthlyEventCount(): Promise<ApiResponse<MonthlyEventCountData>> {
+    return apiClient.get<ApiResponse<MonthlyEventCountData>>(API_ENDPOINTS.STATS_MONTHLY_EVENT_COUNT);
+  },
+
+  // 이벤트별 기록 통계
+  async getEvents(): Promise<ApiResponse<EventData[]>> {
+    return apiClient.get<ApiResponse<EventData[]>>(API_ENDPOINTS.STATS_EVENTS);
   }
 };
 

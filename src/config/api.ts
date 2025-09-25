@@ -66,6 +66,7 @@ export const API_ENDPOINTS = {
   STATS_PERSONAL_DETAILS: '/api/v1/stats/stats/personal-details',
   STATS_EVENT_BREAKDOWN: '/api/v1/stats/event-breakdown',
   STATS_MONTHLY_EVENT_COUNT: '/api/v1/stats/monthly-event-count',
+  STATS_EVENTS: '/api/v1/stats/stats/events',
   
   // 인증 관련
   AUTH_LOGIN: '/api/v1/auth/auth/login',

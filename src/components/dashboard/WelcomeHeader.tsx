@@ -24,10 +24,8 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
 
   // 드롭다운 메뉴 데이터
   const dropdownOptions = [
-    { id: 'ko', label: 'KOREA', sublabel: '한국' },
-    { id: 'en', label: 'ENGLISH', sublabel: '영어' },
-    { id: 'ja', label: 'JAPAN', sublabel: '일본' },
-    { id: 'zh', label: 'CHINA', sublabel: '중국' },
+    { id: 'ko', label: '기록' },
+    { id: 'en', label: '나의 결혼식' },
   ];
 
   // 금액 포맷팅 함수
@@ -177,9 +175,6 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
                     index === 0 && styles.dropdownLabelSelected
                   ]}>
                     {option.label}
-                  </Text>
-                  <Text style={styles.dropdownSublabel}>
-                    {option.sublabel}
                   </Text>
                 </View>
                 <Text style={styles.dropdownArrow}>›</Text>

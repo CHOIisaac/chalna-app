@@ -59,6 +59,9 @@ const Stats: React.FC = (): React.ReactElement => {
   // 개인별 상세 데이터 (통합)
   const [networkData, setNetworkData] = useState<NetworkDataByType | null>(null);
   
+  // 이벤트별 기록 데이터
+  const [eventData, setEventData] = useState<EventData[]>([]);
+  
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -164,6 +167,23 @@ const Stats: React.FC = (): React.ReactElement => {
     }
   }, []);
 
+  // 이벤트별 기록 데이터 로드
+  const loadEventData = useCallback(async () => {
+    try {
+      const response = await statsService.getEvents();
+      
+      if (response.success) {
+        setEventData(response.data);
+      } else {
+        setError(response.error || '이벤트별 기록 데이터를 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('이벤트별 기록 데이터 로드 실패:', err);
+      setError(handleApiError(err));
+    }
+  }, []);
+
+
   // 년도 변경 시 데이터 로드 (이제 월별 추세는 한 번에 로드되므로 년도만 업데이트)
   const handleYearChange = useCallback((year: number, type: 'wedding' | 'condolence') => {
     if (type === 'wedding') {
@@ -195,8 +215,11 @@ const Stats: React.FC = (): React.ReactElement => {
         loadRelationshipStats();
         // 개인별 상세 데이터 로드
         loadNetworkData();
+      } else if (selectedTab === 'events') {
+        // 이벤트별 기록 데이터 로드
+        loadEventData();
       }
-    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution, loadRelationshipStats, loadNetworkData])
+    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution, loadRelationshipStats, loadNetworkData, loadEventData])
   );
 
   React.useEffect(() => {
@@ -215,28 +238,8 @@ const Stats: React.FC = (): React.ReactElement => {
   //   }
   // }, [selectedType, selectedTab, weddingYear, condolenceYear, loadMonthlyData]);
 
-  // Mock 데이터 - useMemo로 최적화 (다른 탭용, 월별 데이터는 API에서 가져옴)
-  const mockData = useMemo(() => {
-
-
-    const eventData: EventData[] = [
-      { type: '결혼식', count: 8, avgAmount: 350000 },
-      { type: '출산', count: 3, avgAmount: 200000 },
-      { type: '장례식', count: 2, avgAmount: 150000 },
-      { type: '기타', count: 1, avgAmount: 100000 },
-    ];
-
-
-    const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
-
-    return {
-      eventData,
-      chartColors,
-    };
-  }, []);
-
-  // 계산된 데이터들
-  const { eventData, chartColors } = mockData;
+  // 차트 색상 정의
+  const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#059669', '#DC2626', '#7C3AED', '#EA580C'];
   
   // 선택된 년도와 타입에 따른 데이터 선택 (새로운 API 구조)
   const weddingMonthlyData = useMemo(() => {
@@ -699,74 +702,77 @@ const Stats: React.FC = (): React.ReactElement => {
 
   const renderEventsAnalysis = () => (
     <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-      </View>
 
-      {/* 이벤트별 기록 - 통계 카드 스타일 */}
+      {/* 이벤트별 기록 - 요약 + 차트 */}
       <View style={styles.eventStatsContainer}>
         <View style={styles.subsectionTitleContainer}>
           <Text style={styles.subsectionTitle}>이벤트별 기록</Text>
         </View>
-        <View style={styles.eventStatsGrid}>
-          {eventData.map((event, index) => (
-            <View key={index} style={styles.eventStatCard}>
-              <View style={styles.eventStatInfo}>
-                <Text style={styles.eventStatType}>{event.type}</Text>
-                <Text style={styles.eventStatCount}>{event.count}회</Text>
-              </View>
-              <View style={styles.eventStatAmount}>
-                <Text style={styles.eventStatAvgAmount}>평균</Text>
-                <Text style={styles.eventStatAmountText}>{event.avgAmount.toLocaleString()}원</Text>
-              </View>
-            </View>
-          ))}
+        
+        {/* 요약 정보 */}
+        <View style={styles.eventSummaryGrid}>
+          <View style={styles.eventSummaryCard}>
+            <Text style={styles.eventSummaryLabel}>총 참여 횟수</Text>
+            <Text style={styles.eventSummaryValue}>
+              {eventData.reduce((sum, event) => sum + event.count, 0)}회
+            </Text>
+          </View>
+          <View style={styles.eventSummaryCard}>
+            <Text style={styles.eventSummaryLabel}>평균 금액</Text>
+            <Text style={styles.eventSummaryValue}>
+              {Math.round(eventData.reduce((sum, event) => sum + (event.avgAmount * event.count), 0) / 
+                         eventData.reduce((sum, event) => sum + event.count, 0) || 0).toLocaleString()}원
+            </Text>
+          </View>
+          <View style={styles.eventSummaryCard}>
+            <Text style={styles.eventSummaryLabel}>가장 많은 이벤트</Text>
+            <Text style={styles.eventSummaryValue}>
+              {eventData.reduce((max, event) => event.count > max.count ? event : max, eventData[0])?.type || '-'}
+            </Text>
+          </View>
+          <View style={styles.eventSummaryCard}>
+            <Text style={styles.eventSummaryLabel}>이벤트 다양성</Text>
+            <Text style={styles.eventSummaryValue}>
+              {eventData.length}가지
+            </Text>
+          </View>
         </View>
-      </View>
 
-      {/* 이벤트 건수 추세 - 타임라인 스타일 */}
-      <View style={styles.eventTrendContainer}>
-        <View style={styles.subsectionTitleContainer}>
-          <Text style={styles.subsectionTitle}>이벤트 건수 추세</Text>
-        </View>
-        <View style={styles.timelineContainer}>
-          {eventData.map((event, index) => {
-            const maxCount = Math.max(...eventData.map(e => e.count));
-            const percentage = (event.count / maxCount) * 100;
-            const isHighest = event.count === maxCount;
-            
-            return (
-              <View key={index} style={styles.timelineItem}>
-                <View style={styles.timelineContent}>
-                  <View style={styles.timelineHeader}>
-                    <Text style={[styles.timelineEventType, isHighest && styles.timelineEventTypeHighlighted]}>
-                      {event.type}
-                    </Text>
-                    <View style={styles.timelineBadge}>
-                      <Text style={[styles.timelineCount, isHighest && styles.timelineCountHighlighted]}>
-                        {event.count}건
-                      </Text>
-                      {isHighest && <Text style={styles.timelineHighest}>최고</Text>}
-                    </View>
-                  </View>
-                  <View style={styles.timelineBar}>
+        {/* 차트 */}
+        <View style={styles.eventChartContainer}>
+          <Text style={styles.eventChartTitle}>이벤트별 참여 현황</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={true}
+            style={styles.eventChartScrollView}
+            contentContainerStyle={styles.eventChartContent}
+          >
+            {eventData.map((event, index) => {
+              const maxCount = Math.max(...eventData.map(e => e.count));
+              const barHeight = (event.count / maxCount) * 120; // 최대 120px
+              
+              return (
+                <View key={index} style={styles.eventChartItem}>
+                  <View style={styles.eventChartBarContainer}>
                     <View 
                       style={[
-                        styles.timelineBarFill, 
+                        styles.eventChartBar, 
                         { 
-                          backgroundColor: chartColors[index % chartColors.length],
-                          width: `${percentage}%`,
-                          opacity: isHighest ? 1 : 0.7
+                          height: barHeight,
+                          backgroundColor: chartColors[index % chartColors.length]
                         }
                       ]} 
                     />
                   </View>
-                  <Text style={styles.timelineAvg}>평균 {event.avgAmount.toLocaleString()}원</Text>
+                  <Text style={styles.eventChartLabel}>{event.type}</Text>
+                  <Text style={styles.eventChartCount}>{event.count}회</Text>
                 </View>
-              </View>
-            );
-          })}
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
+
     </View>
   );
 
@@ -1244,18 +1250,6 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
   },
-  eventStatsContainer: {
-    backgroundColor: 'white',
-    marginHorizontal: 24,
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    marginBottom: 24,
-  },
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1438,54 +1432,18 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   
-  // 순간 탭 - 통계 카드 스타일
-  eventStatsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  eventStatCard: {
-    flex: 1,
-    minWidth: '45%',
+  // 이벤트 통계 컨테이너 스타일 (요약 + 차트 포함)
+  eventStatsContainer: {
     backgroundColor: 'white',
+    marginHorizontal: 24,
+    padding: 20,
     borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  eventStatInfo: {
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  eventStatType: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.foreground,
-    marginBottom: 4,
-  },
-  eventStatCount: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
-  },
-  eventStatAmount: {
-    alignItems: 'center',
-  },
-  eventStatAvgAmount: {
-    fontSize: 11,
-    color: '#999',
-    marginBottom: 2,
-  },
-  eventStatAmountText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.foreground,
+    marginBottom: 24,
   },
   
   // 타임라인 스타일
@@ -1625,6 +1583,99 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,
+  },
+
+  // 이벤트 참여 요약 스타일 (이벤트별 기록 내부로 이동)
+  eventSummaryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 5,
+  },
+  eventSummaryCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    flex: 1,
+    minWidth: '45%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  eventSummaryLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 8,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  eventSummaryValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.foreground,
+    textAlign: 'center',
+  },
+
+  // 이벤트 차트 스타일
+  eventChartContainer: {
+    marginTop: 30,
+  },
+  eventChartTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.foreground,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  eventChartScrollView: {
+    maxHeight: 200,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 8,
+  },
+  eventChartContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    minHeight: 160,
+  },
+  eventChart: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-end',
+    backgroundColor: '#F0F0F0',
+    borderRadius: 8,
+    padding: 16,
+    minHeight: 160,
+  },
+  eventChartItem: {
+    alignItems: 'center',
+    minWidth: 45,
+    marginHorizontal: 2,
+  },
+  eventChartBarContainer: {
+    height: 120,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  eventChartBar: {
+    width: 24,
+    borderRadius: 4,
+    minHeight: 4,
+  },
+  eventChartLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  eventChartCount: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.foreground,
+    textAlign: 'center',
   },
 });
 
