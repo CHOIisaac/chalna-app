@@ -59,8 +59,7 @@ export const API_ENDPOINTS = {
   
   // 통계 관련
   STATS_TOTAL_AMOUNTS: '/api/v1/stats/stats/total-amounts',
-  STATS_MONTHLY_WEDDING: '/api/v1/stats/stats/monthly-wedding',
-  STATS_MONTHLY_CONDOLENCE: '/api/v1/stats/stats/monthly-condolence',
+  STATS_MONTHLY: '/api/v1/stats/stats/monthly',
   STATS_TOP_ITEMS: '/api/v1/stats/top-items',
   STATS_AMOUNT_DISTRIBUTION: '/api/v1/stats/amount-distribution',
   STATS_RELATIONSHIP_BREAKDOWN: '/api/v1/stats/relationship-breakdown',

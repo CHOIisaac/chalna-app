@@ -15,7 +15,7 @@ import {
     AmountDistribution,
     EventData,
     handleApiError,
-    MonthlyData,
+    MonthlyTrendData,
     NetworkData,
     RelationshipStat,
     statsService,
@@ -40,104 +40,62 @@ const Stats: React.FC = (): React.ReactElement => {
   // API 상태 관리
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  // 나눈 월별 데이터
-  const [weddingMonthlyData2024, setWeddingMonthlyData2024] = useState<MonthlyData[]>([]);
-  const [weddingMonthlyData2025, setWeddingMonthlyData2025] = useState<MonthlyData[]>([]);
-  const [condolenceMonthlyData2024, setCondolenceMonthlyData2024] = useState<MonthlyData[]>([]);
-  const [condolenceMonthlyData2025, setCondolenceMonthlyData2025] = useState<MonthlyData[]>([]);
   
-  // 받은 월별 데이터
-  const [receivedWeddingMonthlyData2024, setReceivedWeddingMonthlyData2024] = useState<MonthlyData[]>([]);
-  const [receivedWeddingMonthlyData2025, setReceivedWeddingMonthlyData2025] = useState<MonthlyData[]>([]);
-  const [receivedCondolenceMonthlyData2024, setReceivedCondolenceMonthlyData2024] = useState<MonthlyData[]>([]);
-  const [receivedCondolenceMonthlyData2025, setReceivedCondolenceMonthlyData2025] = useState<MonthlyData[]>([]);
-  const [givenTotalAmounts, setGivenTotalAmounts] = useState<TotalAmountsData | null>(null);
-  const [receivedTotalAmounts, setReceivedTotalAmounts] = useState<TotalAmountsData | null>(null);
+  // 통합 월별 데이터
+  const [monthlyTrendsData, setMonthlyTrendsData] = useState<MonthlyTrendData | null>(null);
+  
+  // 총액 데이터 (통합)
+  const [totalAmountsData, setTotalAmountsData] = useState<TotalAmountsData | null>(null);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
 
   // API 호출 함수들
-  const loadMonthlyData = useCallback(async (year: number, type: 'wedding' | 'condolence') => {
+  const loadMonthlyTrends = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = type === 'wedding' 
-        ? await statsService.getMonthlyWeddingTrend({ entry_type: selectedType, year })
-        : await statsService.getMonthlyCondolenceTrend({ entry_type: selectedType, year });
+      // 실제 데이터가 있는 연도와 월만 받아옴
+      const response = await statsService.getMonthlyTrends();
       
       if (response.success) {
-        if (type === 'wedding') {
-          if (selectedType === 'given') {
-            if (year === 2024) {
-              setWeddingMonthlyData2024(response.data);
-            } else {
-              setWeddingMonthlyData2025(response.data);
-            }
-          } else {
-            if (year === 2024) {
-              setReceivedWeddingMonthlyData2024(response.data);
-            } else {
-              setReceivedWeddingMonthlyData2025(response.data);
-            }
-          }
-        } else {
-          if (selectedType === 'given') {
-            if (year === 2024) {
-              setCondolenceMonthlyData2024(response.data);
-            } else {
-              setCondolenceMonthlyData2025(response.data);
-            }
-          } else {
-            if (year === 2024) {
-              setReceivedCondolenceMonthlyData2024(response.data);
-            } else {
-              setReceivedCondolenceMonthlyData2025(response.data);
-            }
-          }
-        }
+        setMonthlyTrendsData(response.data);
       } else {
-        setError(response.error || `${type} 데이터를 불러오는데 실패했습니다.`);
+        setError(response.error || '월별 추세 데이터를 불러오는데 실패했습니다.');
       }
     } catch (err) {
-      console.error(`${type} 데이터 로드 실패:`, err);
+      console.error('월별 추세 데이터 로드 실패:', err);
       setError(handleApiError(err));
     } finally {
       setLoading(false);
     }
-  }, [selectedType]);
+  }, []);
 
-  // 총액 데이터 로드
-  const loadTotalAmounts = useCallback(async (type: 'given' | 'received') => {
+  // 총액 데이터 로드 (given/received 모두 한 번에)
+  const loadTotalAmounts = useCallback(async () => {
     try {
-      const response = await statsService.getTotalAmounts({ type });
+      const response = await statsService.getTotalAmounts();
       
       if (response.success) {
-        if (type === 'given') {
-          setGivenTotalAmounts(response.data);
-        } else {
-          setReceivedTotalAmounts(response.data);
-        }
+        setTotalAmountsData(response.data);
       } else {
-        setError(response.error || `${type} 총액 데이터를 불러오는데 실패했습니다.`);
+        setError(response.error || '총액 데이터를 불러오는데 실패했습니다.');
       }
     } catch (err) {
-      console.error(`${type} 총액 데이터 로드 실패:`, err);
+      console.error('총액 데이터 로드 실패:', err);
       setError(handleApiError(err));
     }
   }, []);
 
-  // 년도 변경 시 데이터 로드
+  // 년도 변경 시 데이터 로드 (이제 월별 추세는 한 번에 로드되므로 년도만 업데이트)
   const handleYearChange = useCallback((year: number, type: 'wedding' | 'condolence') => {
     if (type === 'wedding') {
       setWeddingYear(year);
-      loadMonthlyData(year, 'wedding');
     } else {
       setCondolenceYear(year);
-      loadMonthlyData(year, 'condolence');
     }
-  }, [loadMonthlyData]);
+  }, []);
 
   // 탭이 포커스될 때마다 스크롤을 맨 위로 이동하고 데이터 로드
   useFocusEffect(
@@ -146,15 +104,13 @@ const Stats: React.FC = (): React.ReactElement => {
       
       // 초기 데이터 로드 (총액 탭의 월별 데이터와 총액 데이터)
       if (selectedTab === 'total') {
-        // 현재 선택된 타입에 따라 월별 데이터 로드
-        loadMonthlyData(weddingYear, 'wedding');
-        loadMonthlyData(condolenceYear, 'condolence');
+        // 월별 추세 데이터 한 번에 로드
+        loadMonthlyTrends();
         
-        // 총액 데이터 로드 (나눈/받은 모두)
-        loadTotalAmounts('given');
-        loadTotalAmounts('received');
+        // 총액 데이터 로드 (나눈/받은 모두 한 번에)
+        loadTotalAmounts();
       }
-    }, [selectedTab, weddingYear, condolenceYear, loadMonthlyData, loadTotalAmounts])
+    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts])
   );
 
   React.useEffect(() => {
@@ -165,13 +121,13 @@ const Stats: React.FC = (): React.ReactElement => {
     }).start();
   }, [fadeAnim]);
 
-  // 타입 변경 시 월별 데이터 로드
-  React.useEffect(() => {
-    if (selectedTab === 'total') {
-      loadMonthlyData(weddingYear, 'wedding');
-      loadMonthlyData(condolenceYear, 'condolence');
-    }
-  }, [selectedType, selectedTab, weddingYear, condolenceYear, loadMonthlyData]);
+  // 타입 변경 시 월별 데이터 로드 (이제 월별 데이터는 한 번에 로드되므로 필요없음)
+  // React.useEffect(() => {
+  //   if (selectedTab === 'total') {
+  //     loadMonthlyData(weddingYear, 'wedding');
+  //     loadMonthlyData(condolenceYear, 'condolence');
+  //   }
+  // }, [selectedType, selectedTab, weddingYear, condolenceYear, loadMonthlyData]);
 
   // Mock 데이터 - useMemo로 최적화 (다른 탭용, 월별 데이터는 API에서 가져옴)
   const mockData = useMemo(() => {
@@ -228,26 +184,30 @@ const Stats: React.FC = (): React.ReactElement => {
   // 계산된 데이터들
   const { topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
   
-  // 선택된 년도와 타입에 따른 데이터 선택
-  const weddingMonthlyData = selectedType === 'given' 
-    ? (weddingYear === 2024 ? weddingMonthlyData2024 : weddingMonthlyData2025)
-    : (weddingYear === 2024 ? receivedWeddingMonthlyData2024 : receivedWeddingMonthlyData2025);
+  // 선택된 년도와 타입에 따른 데이터 선택 (새로운 API 구조)
+  const weddingMonthlyData = useMemo(() => {
+    if (!monthlyTrendsData?.wedding) return [];
     
-  const condolenceMonthlyData = selectedType === 'given'
-    ? (condolenceYear === 2024 ? condolenceMonthlyData2024 : condolenceMonthlyData2025)
-    : (condolenceYear === 2024 ? receivedCondolenceMonthlyData2024 : receivedCondolenceMonthlyData2025);
+    return selectedType === 'given' ? monthlyTrendsData.wedding.given : monthlyTrendsData.wedding.received;
+  }, [monthlyTrendsData, selectedType]);
+    
+  const condolenceMonthlyData = useMemo(() => {
+    if (!monthlyTrendsData?.condolence) return [];
+    
+    return selectedType === 'given' ? monthlyTrendsData.condolence.given : monthlyTrendsData.condolence.received;
+  }, [monthlyTrendsData, selectedType]);
 
   // 월별 차트 렌더링 함수 (중복 제거)
 
   // 계산된 통계 데이터
   const calculatedStats = useMemo(() => {
     // 나눈 금액: API에서 받은 실제 데이터 사용
-    const givenWedding = givenTotalAmounts?.weddingTotal || 0;
-    const givenCondolence = givenTotalAmounts?.condolenceTotal || 0;
+    const givenWedding = totalAmountsData?.given?.wedding?.total || 0;
+    const givenCondolence = totalAmountsData?.given?.condolence?.total || 0;
     
     // 받은 금액: API에서 받은 실제 데이터 사용
-    const receivedWedding = receivedTotalAmounts?.weddingTotal || 0;
-    const receivedCondolence = receivedTotalAmounts?.condolenceTotal || 0;
+    const receivedWedding = totalAmountsData?.received?.wedding?.total || 0;
+    const receivedCondolence = totalAmountsData?.received?.condolence?.total || 0;
     
     return {
       given: {
@@ -261,7 +221,7 @@ const Stats: React.FC = (): React.ReactElement => {
         total: receivedWedding + receivedCondolence,
       }
     };
-  }, [givenTotalAmounts, receivedTotalAmounts]);
+  }, [totalAmountsData]);
 
   const renderTotalAnalysis = () => {
     const currentStats = selectedType === 'given' ? calculatedStats.given : calculatedStats.received;
@@ -357,7 +317,7 @@ const Stats: React.FC = (): React.ReactElement => {
               <TouchableOpacity 
                 style={styles.retryButton}
                 onPress={() => {
-                  loadMonthlyData(weddingYear, 'wedding');
+                  loadMonthlyTrends();
                 }}
               >
                 <Text style={styles.retryButtonText}>다시 시도</Text>
@@ -446,7 +406,7 @@ const Stats: React.FC = (): React.ReactElement => {
               <TouchableOpacity 
                 style={styles.retryButton}
                 onPress={() => {
-                  loadMonthlyData(condolenceYear, 'condolence');
+                  loadMonthlyTrends();
                 }}
               >
                 <Text style={styles.retryButtonText}>다시 시도</Text>

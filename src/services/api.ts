@@ -301,6 +301,18 @@ export interface MonthlyData {
   amount: number;
 }
 
+// 새로운 통합 월별 데이터 타입
+export interface MonthlyDataByType {
+  given: MonthlyData[];
+  received: MonthlyData[];
+}
+
+export interface MonthlyTrendData {
+  wedding: MonthlyDataByType;
+  condolence: MonthlyDataByType;
+  [year: string]: MonthlyDataByType; // 년도별 데이터 (예: "2024", "2025") - 실제 데이터가 있는 연도만
+}
+
 export interface TopItem {
   name: string;
   amount: number;
@@ -343,10 +355,26 @@ export interface MonthlyEventCount {
 }
 
 export interface TotalAmountsData {
-  weddingTotal: number;
-  condolenceTotal: number;
-  weddingCount: number;
-  condolenceCount: number;
+  given: {
+    wedding: {
+      total: number;
+      count: number;
+    };
+    condolence: {
+      total: number;
+      count: number;
+    };
+  };
+  received: {
+    wedding: {
+      total: number;
+      count: number;
+    };
+    condolence: {
+      total: number;
+      count: number;
+    };
+  };
 }
 
 // 홈 화면 API 서비스
@@ -369,41 +397,14 @@ export const homeService = {
 
 // 통계 API 서비스
 export const statsService = {
-  // 월별 축의금 추세
-  async getMonthlyWeddingTrend(params: {
-    entry_type: 'given' | 'received';
-    year: number;
-  }): Promise<ApiResponse<MonthlyData[]>> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('entry_type', params.entry_type);
-    queryParams.append('year', params.year.toString());
-    
-    const url = `${API_ENDPOINTS.STATS_MONTHLY_WEDDING}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<MonthlyData[]>>(url);
+  // 통합 월별 추세 (축의금, 조의금, given, received 모두 포함)
+  async getMonthlyTrends(): Promise<ApiResponse<MonthlyTrendData>> {
+    return apiClient.get<ApiResponse<MonthlyTrendData>>(API_ENDPOINTS.STATS_MONTHLY);
   },
 
-  // 월별 조의금 추세
-  async getMonthlyCondolenceTrend(params: {
-    entry_type: 'given' | 'received';
-    year: number;
-  }): Promise<ApiResponse<MonthlyData[]>> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('entry_type', params.entry_type);
-    queryParams.append('year', params.year.toString());
-    
-    const url = `${API_ENDPOINTS.STATS_MONTHLY_CONDOLENCE}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<MonthlyData[]>>(url);
-  },
-
-  // 총액 조회
-  async getTotalAmounts(params: {
-    type: 'given' | 'received';
-  }): Promise<ApiResponse<TotalAmountsData>> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('type', params.type);
-    
-    const url = `${API_ENDPOINTS.STATS_TOTAL_AMOUNTS}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<TotalAmountsData>>(url);
+  // 총액 조회 (given/received 모두 한 번에)
+  async getTotalAmounts(): Promise<ApiResponse<TotalAmountsData>> {
+    return apiClient.get<ApiResponse<TotalAmountsData>>(API_ENDPOINTS.STATS_TOTAL_AMOUNTS);
   },
 
   // TOP 5 항목
