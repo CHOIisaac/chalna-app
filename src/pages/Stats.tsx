@@ -1,26 +1,26 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Animated,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
 import {
-    AmountDistribution,
-    EventData,
-    handleApiError,
-    MonthlyTrendData,
-    NetworkData,
-    RelationshipStat,
-    statsService,
-    TopItem,
-    TotalAmountsData
+  AmountDistributionData,
+  EventData,
+  handleApiError,
+  MonthlyTrendData,
+  NetworkData,
+  RelationshipStat,
+  statsService,
+  TopItemsData,
+  TotalAmountsData
 } from '../services/api';
 
 // 로컬 타입 정의 (API 타입과 중복되지 않는 것들)
@@ -46,6 +46,12 @@ const Stats: React.FC = (): React.ReactElement => {
   
   // 총액 데이터 (통합)
   const [totalAmountsData, setTotalAmountsData] = useState<TotalAmountsData | null>(null);
+  
+  // TOP 5 항목 데이터 (통합)
+  const [topItemsData, setTopItemsData] = useState<TopItemsData | null>(null);
+  
+  // 금액대별 분포 데이터 (통합)
+  const [amountDistributionData, setAmountDistributionData] = useState<AmountDistributionData | null>(null);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
@@ -88,6 +94,38 @@ const Stats: React.FC = (): React.ReactElement => {
     }
   }, []);
 
+  // TOP 5 항목 데이터 로드 (given/received 모두 한 번에)
+  const loadTopItems = useCallback(async () => {
+    try {
+      const response = await statsService.getTopItems({ limit: 5 });
+      
+      if (response.success) {
+        setTopItemsData(response.data);
+      } else {
+        setError(response.error || 'TOP 5 항목 데이터를 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('TOP 5 항목 데이터 로드 실패:', err);
+      setError(handleApiError(err));
+    }
+  }, []);
+
+  // 금액대별 분포 데이터 로드 (given/received 모두 한 번에)
+  const loadAmountDistribution = useCallback(async () => {
+    try {
+      const response = await statsService.getAmountDistribution();
+      
+      if (response.success) {
+        setAmountDistributionData(response.data);
+      } else {
+        setError(response.error || '금액대별 분포 데이터를 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('금액대별 분포 데이터 로드 실패:', err);
+      setError(handleApiError(err));
+    }
+  }, []);
+
   // 년도 변경 시 데이터 로드 (이제 월별 추세는 한 번에 로드되므로 년도만 업데이트)
   const handleYearChange = useCallback((year: number, type: 'wedding' | 'condolence') => {
     if (type === 'wedding') {
@@ -109,8 +147,13 @@ const Stats: React.FC = (): React.ReactElement => {
         
         // 총액 데이터 로드 (나눈/받은 모두 한 번에)
         loadTotalAmounts();
+      } else if (selectedTab === 'items') {
+        // TOP 5 항목 데이터 로드
+        loadTopItems();
+        // 금액대별 분포 데이터 로드
+        loadAmountDistribution();
       }
-    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts])
+    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution])
   );
 
   React.useEffect(() => {
@@ -131,14 +174,6 @@ const Stats: React.FC = (): React.ReactElement => {
 
   // Mock 데이터 - useMemo로 최적화 (다른 탭용, 월별 데이터는 API에서 가져옴)
   const mockData = useMemo(() => {
-
-    const topItems: TopItem[] = [
-      { name: '김민수 결혼식', amount: 500000, type: '축의금' },
-      { name: '박지영 출산', amount: 300000, type: '축의금' },
-      { name: '이철수 장례식', amount: 200000, type: '조의금' },
-      { name: '최영희 결혼식', amount: 400000, type: '축의금' },
-      { name: '정민호 출산', amount: 250000, type: '축의금' },
-    ];
 
     const networkData: NetworkData[] = [
       { name: '김민수', total: 300000, count: 2, avg: 150000, relationship: '친구' },
@@ -162,27 +197,19 @@ const Stats: React.FC = (): React.ReactElement => {
       { type: '기타', count: 1, avgAmount: 100000 },
     ];
 
-    const amountDistribution: AmountDistribution[] = [
-      { range: '5만원 미만', count: 2, percentage: 14.3 },
-      { range: '5-10만원', count: 4, percentage: 28.6 },
-      { range: '10-20만원', count: 5, percentage: 35.7 },
-      { range: '20만원 이상', count: 3, percentage: 21.4 },
-    ];
 
     const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#9CA3AF', '#D1D5DB'];
 
     return {
-      topItems,
       networkData,
       relationshipStats,
       eventData,
-      amountDistribution,
       chartColors,
     };
   }, []);
 
   // 계산된 데이터들
-  const { topItems, networkData, relationshipStats, eventData, amountDistribution, chartColors } = mockData;
+  const { networkData, relationshipStats, eventData, chartColors } = mockData;
   
   // 선택된 년도와 타입에 따른 데이터 선택 (새로운 API 구조)
   const weddingMonthlyData = useMemo(() => {
@@ -462,6 +489,31 @@ const Stats: React.FC = (): React.ReactElement => {
   const renderItemsAnalysis = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>항목별 분석</Text>
+        </View>
+        <View style={styles.periodToggle}>
+          <TouchableOpacity
+            style={[styles.periodToggleButton, selectedType === 'given' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('given')}
+            accessibilityRole="button"
+            accessibilityLabel={`나눔 통계 보기, ${selectedType === 'given' ? '현재 선택됨' : '선택되지 않음'}`}
+          >
+            <Text style={[styles.periodToggleText, selectedType === 'given' && styles.periodToggleTextActive]}>
+              나눔
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.periodToggleButton, selectedType === 'received' && styles.periodToggleButtonActive]}
+            onPress={() => setSelectedType('received')}
+            accessibilityRole="button"
+            accessibilityLabel={`받음 통계 보기, ${selectedType === 'received' ? '현재 선택됨' : '선택되지 않음'}`}
+          >
+            <Text style={[styles.periodToggleText, selectedType === 'received' && styles.periodToggleTextActive]}>
+              받음
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* TOP 5 항목 - 랭킹 스타일 */}
@@ -469,7 +521,7 @@ const Stats: React.FC = (): React.ReactElement => {
         <View style={styles.subsectionTitleContainer}>
           <Text style={styles.subsectionTitle}>TOP 5 항목</Text>
         </View>
-        {topItems.map((item, index) => (
+        {(topItemsData?.[selectedType] || []).map((item, index) => (
           <View key={index} style={styles.topItemCard}>
             <View style={styles.rankSection}>
               <View style={[styles.rankBadge, { backgroundColor: chartColors[index % chartColors.length] }]}>
@@ -495,7 +547,7 @@ const Stats: React.FC = (): React.ReactElement => {
           <Text style={styles.subsectionTitle}>금액대별 분포</Text>
         </View>
         <View style={styles.distributionGrid}>
-          {amountDistribution.map((item, index) => (
+          {(amountDistributionData?.[selectedType] || []).map((item, index) => (
             <View key={index} style={styles.distributionItem}>
               <View style={styles.distributionHeader}>
                 <Text style={styles.distributionRange}>{item.range}</Text>

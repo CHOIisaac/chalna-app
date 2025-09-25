@@ -319,6 +319,11 @@ export interface TopItem {
   type: string;
 }
 
+export interface TopItemsData {
+  given: TopItem[];
+  received: TopItem[];
+}
+
 export interface NetworkData {
   name: string;
   total: number;
@@ -345,6 +350,11 @@ export interface AmountDistribution {
   range: string;
   count: number;
   percentage: number;
+}
+
+export interface AmountDistributionData {
+  given: AmountDistribution[];
+  received: AmountDistribution[];
 }
 
 export interface MonthlyEventCount {
@@ -407,28 +417,23 @@ export const statsService = {
     return apiClient.get<ApiResponse<TotalAmountsData>>(API_ENDPOINTS.STATS_TOTAL_AMOUNTS);
   },
 
-  // TOP 5 항목
-  async getTopItems(params: {
-    entry_type: 'given' | 'received';
+  // TOP 5 항목 (given/received 모두 한 번에)
+  async getTopItems(params?: {
     limit?: number;
-  }): Promise<ApiResponse<TopItem[]>> {
+  }): Promise<ApiResponse<TopItemsData>> {
     const queryParams = new URLSearchParams();
-    queryParams.append('entry_type', params.entry_type);
-    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
     
-    const url = `${API_ENDPOINTS.STATS_TOP_ITEMS}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<TopItem[]>>(url);
+    const url = queryParams.toString() 
+      ? `${API_ENDPOINTS.STATS_TOP_ITEMS}?${queryParams.toString()}`
+      : API_ENDPOINTS.STATS_TOP_ITEMS;
+      
+    return apiClient.get<ApiResponse<TopItemsData>>(url);
   },
 
-  // 금액대별 분포
-  async getAmountDistribution(params: {
-    entry_type: 'given' | 'received';
-  }): Promise<ApiResponse<AmountDistribution[]>> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('entry_type', params.entry_type);
-    
-    const url = `${API_ENDPOINTS.STATS_AMOUNT_DISTRIBUTION}?${queryParams.toString()}`;
-    return apiClient.get<ApiResponse<AmountDistribution[]>>(url);
+  // 금액대별 분포 (given/received 모두 한 번에)
+  async getAmountDistribution(): Promise<ApiResponse<AmountDistributionData>> {
+    return apiClient.get<ApiResponse<AmountDistributionData>>(API_ENDPOINTS.STATS_AMOUNT_DISTRIBUTION);
   },
 
   // 관계별 분석

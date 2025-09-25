@@ -60,8 +60,8 @@ export const API_ENDPOINTS = {
   // 통계 관련
   STATS_TOTAL_AMOUNTS: '/api/v1/stats/stats/total-amounts',
   STATS_MONTHLY: '/api/v1/stats/stats/monthly',
-  STATS_TOP_ITEMS: '/api/v1/stats/top-items',
-  STATS_AMOUNT_DISTRIBUTION: '/api/v1/stats/amount-distribution',
+  STATS_TOP_ITEMS: '/api/v1/stats/stats/top-items',
+  STATS_AMOUNT_DISTRIBUTION: '/api/v1/stats/stats/amount-distribution',
   STATS_RELATIONSHIP_BREAKDOWN: '/api/v1/stats/relationship-breakdown',
   STATS_PERSONAL_DETAILS: '/api/v1/stats/personal-details',
   STATS_EVENT_BREAKDOWN: '/api/v1/stats/event-breakdown',
