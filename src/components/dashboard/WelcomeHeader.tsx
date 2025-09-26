@@ -1,16 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { colors } from '../../lib/utils';
+import { notificationApiService } from '../../services/api';
 import { MonthlyStats } from '../../types';
 
 interface WelcomeHeaderProps {
@@ -21,6 +22,7 @@ interface WelcomeHeaderProps {
 const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) => {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   // 드롭다운 메뉴 데이터
   const dropdownOptions = [
@@ -38,6 +40,24 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
     const sign = change >= 0 ? '+' : '';
     return `전월 대비 ${sign}${change}%`;
   };
+
+  // 읽지 않은 알림 확인
+  useEffect(() => {
+    const checkUnreadNotifications = async () => {
+      try {
+        const response = await notificationApiService.getNotifications();
+        // API 응답 구조: response.data.notifications
+        const notifications = response.data?.notifications || [];
+        const hasUnread = notifications.some(notification => !notification.read);
+        setHasUnreadNotifications(hasUnread);
+      } catch (error) {
+        console.error('알림 상태 확인 실패:', error);
+        setHasUnreadNotifications(false);
+      }
+    };
+
+    checkUnreadNotifications();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -62,7 +82,7 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
           activeOpacity={0.7}
         >
           <Ionicons name="notifications-outline" size={20} color={colors.foreground} />
-          <View style={styles.notificationBadge} />
+          {hasUnreadNotifications && <View style={styles.notificationBadge} />}
         </TouchableOpacity>
       </View>
 
