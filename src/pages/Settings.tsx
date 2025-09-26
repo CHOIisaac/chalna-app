@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -11,10 +12,11 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
-import { authService } from '../services/api';
+import { kakaoAuthBackendService } from '../services/kakaoAuthBackend';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const [settings, setSettings] = useState({
     notifications: true,
     autoBackup: true,
@@ -26,7 +28,7 @@ export default function SettingsScreen() {
 
   const handleLogout = async () => {
     Alert.alert(
-      '로그아웃',
+      '카카오 로그아웃',
       '정말 로그아웃하시겠습니까?',
       [
         {
@@ -38,11 +40,11 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await authService.logout();
+              await kakaoAuthBackendService.logout();
               // 로그아웃 성공 시 로그인 화면으로 이동
-              // Expo Router에서는 자동으로 라우팅이 처리됩니다
+              router.replace('/login');
             } catch (error) {
-              console.error('로그아웃 오류:', error);
+              console.error('카카오 로그아웃 오류:', error);
               Alert.alert('오류', '로그아웃 중 오류가 발생했습니다.');
             }
           },
@@ -184,7 +186,7 @@ export default function SettingsScreen() {
                 </View>
                 <View style={styles.settingTextContainer}>
                   <Text style={styles.settingTitle}>로그아웃</Text>
-                  <Text style={styles.settingDescription}>계정에서 안전하게 로그아웃</Text>
+                  <Text style={styles.settingDescription}>카카오 계정에서 안전하게 로그아웃</Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9ca3af" />

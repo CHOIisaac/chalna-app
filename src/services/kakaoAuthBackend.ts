@@ -1,10 +1,8 @@
 import {
-    getProfile,
     KakaoOAuthToken,
-    KakaoProfile,
     login,
     logout,
-    unlink,
+    unlink
 } from '@react-native-seoul/kakao-login';
 import { AuthService } from './auth';
 
@@ -13,13 +11,8 @@ export const kakaoAuthBackendService = {
   // 카카오 로그인 (백엔드 연동)
   async login(): Promise<{
     accessToken: string;
-    refreshToken: string;
-    user: {
-      id: string;
-      email: string;
-      name: string;
-      profile_image?: string;
-    };
+    refreshToken?: string;
+    user: { id: string; email: string; name: string; profile_image?: string };
   }> {
     try {
       console.log('🔄 백엔드 연동 카카오 로그인 시작...');
@@ -94,11 +87,24 @@ export const kakaoAuthBackendService = {
   // 카카오 로그아웃
   async logout(): Promise<void> {
     try {
-      console.log('🔄 카카오 로그아웃...');
-      const message = await logout();
-      console.log('✅ 카카오 로그아웃 완료:', message);
+      console.log('🔄 카카오 로그아웃 시작...');
+      
+      // 1. 앱 토큰 삭제 (먼저 삭제)
+      await AuthService.logout();
+      console.log('✅ 앱 토큰 삭제 완료');
+      
+      // 2. 카카오 SDK 로그아웃 (에러가 발생해도 무시)
+      try {
+        const message = await logout();
+        console.log('✅ 카카오 로그아웃 완료:', message);
+      } catch (kakaoError) {
+        console.log('⚠️ 카카오 SDK 로그아웃 실패 (무시):', kakaoError);
+        // 카카오 SDK 로그아웃 실패는 무시하고 계속 진행
+      }
+      
+      console.log('✅ 전체 로그아웃 완료');
     } catch (error) {
-      console.error('❌ 카카오 로그아웃 실패:', error);
+      console.error('❌ 로그아웃 실패:', error);
       throw error;
     }
   },
@@ -106,36 +112,25 @@ export const kakaoAuthBackendService = {
   // 카카오 연결 해제
   async unlink(): Promise<void> {
     try {
-      console.log('🔄 카카오 연결 해제...');
-      const message = await unlink();
-      console.log('✅ 카카오 연결 해제 완료:', message);
+      console.log('🔄 카카오 연결 해제 시작...');
+      
+      // 1. 앱 토큰 삭제 (먼저 삭제)
+      await AuthService.logout();
+      console.log('✅ 앱 토큰 삭제 완료');
+      
+      // 2. 카카오 SDK 연결 해제 (에러가 발생해도 무시)
+      try {
+        const message = await unlink();
+        console.log('✅ 카카오 연결 해제 완료:', message);
+      } catch (kakaoError) {
+        console.log('⚠️ 카카오 SDK 연결 해제 실패 (무시):', kakaoError);
+        // 카카오 SDK 연결 해제 실패는 무시하고 계속 진행
+      }
+      
+      console.log('✅ 전체 연결 해제 완료');
     } catch (error) {
-      console.error('❌ 카카오 연결 해제 실패:', error);
+      console.error('❌ 연결 해제 실패:', error);
       throw error;
     }
   },
-
-  // 사용자 프로필 가져오기 (카카오에서 직접)
-  async getKakaoProfile(): Promise<KakaoProfile> {
-    try {
-      console.log('🔄 카카오 프로필 가져오기...');
-      const profile = await getProfile();
-      console.log('✅ 카카오 프로필 가져오기 성공');
-      return profile;
-    } catch (error) {
-      console.error('❌ 카카오 프로필 가져오기 실패:', error);
-      throw error;
-    }
-  },
-};
-
-// 카카오 SDK 초기화
-export const initializeKakaoBackend = async () => {
-  try {
-    // react-native-seoul/kakao-login은 app.json의 설정을 자동으로 읽어옵니다
-    console.log('✅ 백엔드 연동 카카오 SDK 초기화 완료');
-  } catch (error) {
-    console.error('❌ 백엔드 연동 카카오 SDK 초기화 실패:', error);
-    throw error;
-  }
 };
