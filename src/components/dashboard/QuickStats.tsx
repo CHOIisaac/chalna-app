@@ -28,6 +28,26 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
     return `${sign}${change}%`;
   };
 
+  // 퍼센트 배지 색상 결정 함수
+  const getBadgeColor = (change: number) => {
+    if (change === 0) {
+      return {
+        backgroundColor: '#F3F4F6', // 더 연한 회색
+        textColor: '#9CA3AF',
+      };
+    } else if (change < 0) {
+      return {
+        backgroundColor: '#FEF3C7', // 더 연한 주황색
+        textColor: '#D97706',
+      };
+    } else {
+      return {
+        backgroundColor: colors.success + '20', // 기존 성공 색상
+        textColor: colors.success,
+      };
+    }
+  };
+
   // API 데이터를 StatItem 형태로 변환
   const getStatsFromApi = (): StatItem[] => {
     if (!quickStats) return [];
@@ -127,6 +147,27 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
           stats.map((stat, index) => {
             const IconName = getIconName(stat.icon);
             
+            // 배지 색상 적용
+            let badgeColor = { backgroundColor: colors.success + '20', textColor: colors.success };
+            
+            if (stat.title === '축의금' || stat.title === '조의금' || stat.title === '평균 축의금') {
+              // 퍼센트 값 추출 (예: "+5%" -> 5, "-3%" -> -3)
+              const changeValue = parseFloat(stat.change.replace(/[+%]/g, ''));
+              if (stat.change.startsWith('-')) {
+                badgeColor = getBadgeColor(-changeValue);
+              } else {
+                badgeColor = getBadgeColor(changeValue);
+              }
+            } else if (stat.title === '모든 순간') {
+              // 건수 변화값 추출 (예: "+5건" -> 5, "-3건" -> -3)
+              const changeValue = parseFloat(stat.change.replace(/[+건]/g, ''));
+              if (stat.change.startsWith('-')) {
+                badgeColor = getBadgeColor(-changeValue);
+              } else {
+                badgeColor = getBadgeColor(changeValue);
+              }
+            }
+            
             return (
               <TouchableOpacity
                 key={index}
@@ -148,9 +189,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
                         style={[
                           styles.trendBadge,
                           {
-                            backgroundColor: stat.trend === 'up' 
-                              ? colors.success + '20' 
-                              : colors.warning + '20',
+                            backgroundColor: badgeColor.backgroundColor,
                           },
                         ]}
                       >
@@ -158,7 +197,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
                           style={[
                             styles.trendText,
                             {
-                              color: stat.trend === 'up' ? colors.success : colors.warning,
+                              color: badgeColor.textColor,
                             },
                           ]}
                         >
