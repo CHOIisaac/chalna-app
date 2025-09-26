@@ -11,14 +11,39 @@
     "ios": {
       "supportsTablet": true,
       "backgroundColor": "#000000",
-      "bundleIdentifier": "com.anonymous.chalna"
+      "bundleIdentifier": "com.anonymous.chalna",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "KAKAO",
+            "CFBundleURLSchemes": [
+              "chalna"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/chalna-app-icon1.png",
         "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "chalna"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +67,15 @@
             "backgroundColor": "#0000FF"
           }
         }
-      ]
+      ],
+      "expo-web-browser",
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "cd8ddfc145a849f19e915e54d5dce6f6"
+        }
+      ],
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true
