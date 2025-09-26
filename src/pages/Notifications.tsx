@@ -333,11 +333,8 @@ const Notifications: React.FC = () => {
             <View style={styles.emptyIcon}>
               <Ionicons name="notifications-off-outline" size={48} color="#ddd" />
             </View>
-            <Text style={styles.emptyTitle}>
-              알림이 없습니다
-            </Text>
             <Text style={styles.emptyDescription}>
-              새로운 경조사 알림이 오면 여기에 표시됩니다.
+              알림이 없습니다
             </Text>
           </View>
         )}
