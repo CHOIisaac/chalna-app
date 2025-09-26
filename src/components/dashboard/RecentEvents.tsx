@@ -96,9 +96,8 @@ const RecentEvents: React.FC<RecentEventsProps> = ({ recentLedgers, loading }) =
             // 데이터가 없을 때
             <View style={styles.eventCard}>
               <View style={styles.ledgerInfo}>
-                <Text style={styles.ledgerName}>등록된 장부 기록이 없습니다</Text>
-                <Text style={[styles.dateText, { marginTop: 8 }]}>
-                  새로운 경조사 장부를 추가해보세요
+                <Text style={[styles.dateText]}>
+                  나눈 마음을 기록해 보세요
                 </Text>
               </View>
             </View>
@@ -191,6 +190,20 @@ const styles = StyleSheet.create({
 
   // 장부 정보 섹션
   ledgerInfo: {
+    flex: 1,
+  },
+  infoSection: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
     flex: 1,
   },
   ledgerHeader: {
