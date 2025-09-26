@@ -408,8 +408,8 @@ const Schedules: React.FC = () => {
           <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="일정명, 장소, 경조사 타입으로 검색..."
-            placeholderTextColor="#999"
+            // placeholder="일정명, 장소, 경조사 타입으로 검색..."
+            // placeholderTextColor="#999"명
             value={searchTerm}
             onChangeText={handleSearchChange}
             onFocus={closeAllSwipeables}

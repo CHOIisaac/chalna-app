@@ -299,8 +299,8 @@ const Ledgers: React.FC = () => {
           <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="이름이나 관계로 검색..."
-            placeholderTextColor="#999"
+            // placeholder="이름이나 관계로 검름색..."
+            // placeholderTextColor="#999"
             value={searchTerm}
             onChangeText={handleSearchChange}
             onFocus={closeAllSwipeables}
@@ -444,10 +444,10 @@ const Ledgers: React.FC = () => {
             {filteredAndSortedLedgers.length === 0 && (
               <View style={styles.emptyState}>
                 <View style={styles.emptyIcon}>
-                  <Ionicons name="people-outline" size={48} color="#ddd" />
+                  <Ionicons name="pencil-outline" size={48} color="#ddd" />
                 </View>
-                <Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>
-                <Text style={styles.emptyDescription}>다른 검색어를 시도해보세요</Text>
+                {/*<Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>*/}
+                {/*<Text style={styles.emptyDescription}>다른 검색어를 시도해보세요</Text>*/}
               </View>
             )}
           </>
