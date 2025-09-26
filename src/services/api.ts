@@ -601,6 +601,140 @@ export const authService = {
   },
 };
 
+// 알림 관련 타입 정의
+export interface NotificationData {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  event_type: 'wedding' | 'funeral' | 'birthday' | 'opening' | 'graduation' | 'promotion';
+  read: boolean;
+  date: string; // ISO 8601 형식
+  location: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotificationDetailData extends NotificationData {
+  full_details?: {
+    host?: string;
+    contact?: string;
+    dress_code?: string;
+    gift_info?: string;
+    additional_info?: string;
+  };
+}
+
+export interface NotificationsResponse {
+  notifications: NotificationData[];
+  total_count: number;
+}
+
+// 스케줄 관련 타입 정의
+export interface ScheduleData {
+  id: string;
+  title: string;
+  event_type: 'wedding' | 'funeral' | 'birthday' | 'opening' | 'graduation' | 'promotion';
+  date: string; // ISO 8601 형식
+  location: string;
+  host?: string;
+  contact?: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SchedulesResponse {
+  schedules: ScheduleData[];
+  total_count: number;
+}
+
+// 스케줄 서비스
+export const scheduleApiService = {
+  // 스케줄 목록 조회
+  async getSchedules(params?: {
+    event_type?: string;
+    date_from?: string;
+    date_to?: string;
+  }): Promise<ApiResponse<SchedulesResponse>> {
+    const queryParams = new URLSearchParams();
+    if (params?.event_type) queryParams.append('event_type', params.event_type);
+    if (params?.date_from) queryParams.append('date_from', params.date_from);
+    if (params?.date_to) queryParams.append('date_to', params.date_to);
+    
+    const endpoint = queryParams.toString() 
+      ? `${API_ENDPOINTS.SCHEDULES}?${queryParams.toString()}`
+      : API_ENDPOINTS.SCHEDULES;
+    
+    return apiClient.get<ApiResponse<SchedulesResponse>>(endpoint);
+  },
+
+  // 스케줄 상세 조회
+  async getScheduleDetail(id: string): Promise<ApiResponse<ScheduleData>> {
+    return apiClient.get<ApiResponse<ScheduleData>>(API_ENDPOINTS.SCHEDULE_DETAIL(parseInt(id)));
+  },
+
+  // 스케줄 생성
+  async createSchedule(scheduleData: Partial<ScheduleData>): Promise<ApiResponse<ScheduleData>> {
+    return apiClient.post<ApiResponse<ScheduleData>>(API_ENDPOINTS.SCHEDULES, scheduleData);
+  },
+
+  // 스케줄 수정
+  async updateSchedule(id: string, scheduleData: Partial<ScheduleData>): Promise<ApiResponse<ScheduleData>> {
+    return apiClient.put<ApiResponse<ScheduleData>>(API_ENDPOINTS.SCHEDULE_DETAIL(parseInt(id)), scheduleData);
+  },
+
+  // 스케줄 삭제
+  async deleteSchedule(id: string): Promise<ApiResponse<{ id: string; deleted: boolean }>> {
+    return apiClient.delete<ApiResponse<{ id: string; deleted: boolean }>>(
+      API_ENDPOINTS.SCHEDULE_DETAIL(parseInt(id))
+    );
+  },
+};
+
+// 알림 서비스
+export const notificationApiService = {
+  // 알림 목록 조회
+  async getNotifications(params?: {
+    event_type?: string;
+    read_status?: 'all' | 'read' | 'unread';
+  }): Promise<ApiResponse<NotificationsResponse>> {
+    const queryParams = new URLSearchParams();
+    if (params?.event_type) queryParams.append('event_type', params.event_type);
+    if (params?.read_status) queryParams.append('read_status', params.read_status);
+    
+    const endpoint = queryParams.toString() 
+      ? `${API_ENDPOINTS.NOTIFICATIONS}?${queryParams.toString()}`
+      : API_ENDPOINTS.NOTIFICATIONS;
+    
+    return apiClient.get<ApiResponse<NotificationsResponse>>(endpoint);
+  },
+
+  // 알림 상세 조회
+  async getNotificationDetail(id: string): Promise<ApiResponse<NotificationDetailData>> {
+    return apiClient.get<ApiResponse<NotificationDetailData>>(API_ENDPOINTS.NOTIFICATION_DETAIL(id));
+  },
+
+  // 알림 읽음 처리
+  async markAsRead(id: string): Promise<ApiResponse<{ id: string; read: boolean; read_at: string }>> {
+    return apiClient.put<ApiResponse<{ id: string; read: boolean; read_at: string }>>(
+      API_ENDPOINTS.NOTIFICATION_READ(id)
+    );
+  },
+
+  // 전체 알림 읽음 처리
+  async markAllAsRead(): Promise<ApiResponse<{ updated_count: number }>> {
+    return apiClient.put<ApiResponse<{ updated_count: number }>>(API_ENDPOINTS.NOTIFICATION_READ_ALL);
+  },
+
+  // 알림 삭제
+  async deleteNotification(id: string): Promise<ApiResponse<{ id: string; deleted: boolean }>> {
+    return apiClient.delete<ApiResponse<{ id: string; deleted: boolean }>>(
+      API_ENDPOINTS.NOTIFICATION_DELETE(id)
+    );
+  },
+};
+
 // 에러 처리 헬퍼
 export const handleApiError = (error: any): string => {
   if (error?.response?.data?.message) {
