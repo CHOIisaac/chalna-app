@@ -1,96 +1,156 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
+    ActivityIndicator,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
-import { getEventMessage } from '../utils/eventMessages';
+import { NotificationData as ApiNotificationData, handleApiError, notificationApiService } from '../services/api';
 
 const Notifications: React.FC = () => {
   const router = useRouter();
+  
+  // 상태 관리
+  const [notifications, setNotifications] = useState<ApiNotificationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 알림 데이터 생성 (동적 메시지 사용)
-  const notificationsData = [
-    {
-      id: "1",
-      title: "김철수 결혼식 알림",
-      time: "1시간 전",
-      type: "wedding",
-      read: false,
-      date: new Date(),
-      location: "롯데호텔 크리스탈볼룸",
-    },
-    {
-      id: "2", 
-      title: "박영희 어머님 장례식 알림",
-      time: "3시간 전",
-      type: "funeral",
-      read: false,
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      location: "서울추모공원",
-    },
-    {
-      id: "3",
-      title: "이민수 아들 돌잔치 알림", 
-      time: "1일 전",
-      type: "birthday",
-      read: true,
-      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      location: "강남구청 웨딩홀",
-    },
-    {
-      id: "4",
-      title: "정수정 개업식 알림",
-      time: "2일 전", 
-      type: "opening",
-      read: true,
-      date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-      location: "강남구 신사동 사무실",
-    },
-    {
-      id: "5",
-      title: "최영수 결혼식 알림",
-      time: "3일 전",
-      type: "wedding", 
-      read: false,
-      date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-      location: "그랜드하얏트 서울 웨딩홀",
-    },
-    {
-      id: "6",
-      title: "김민지 딸 돌잔치 알림",
-      time: "5일 전",
-      type: "birthday",
-      read: true,
-      date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
-      location: "롯데호텔 월드 크리스탈볼룸",
+  // 알림 데이터 로드
+  const loadNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔄 알림 데이터를 로드합니다...');
+      const response = await notificationApiService.getNotifications();
+      
+      if (response.success && response.data) {
+        setNotifications(response.data.notifications);
+        console.log(`✅ ${response.data.notifications.length}개의 알림을 로드했습니다.`);
+      } else {
+        throw new Error(response.error || '알림 데이터를 가져올 수 없습니다.');
+      }
+    } catch (err) {
+      console.error('❌ 알림 로드 실패:', err);
+      setError(handleApiError(err));
+      
+      // 오류 발생 시 Mock 데이터 사용
+      console.log('📱 Mock 데이터를 사용합니다.');
+      const mockNotifications: ApiNotificationData[] = [
+        {
+          id: "1",
+          title: "김철수 결혼식 알림",
+          message: "💒 결혼식이 곧 다가옵니다!\n\n김철수님이 내일 오후 12시에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.",
+          time: "1시간 전",
+          event_type: "wedding",
+          read: false,
+          date: new Date().toISOString(),
+          location: "롯데호텔 크리스탈볼룸",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "2", 
+          title: "박영희 어머님 장례식 알림",
+          message: "🕊️ 조문 안내\n\n박영희님 어머님이 3일 후 오후 2시에 진행됩니다. 고인의 명복을 빌어주시면 감사하겠습니다.",
+          time: "3시간 전",
+          event_type: "funeral",
+          read: false,
+          date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          location: "서울추모공원",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "3",
+          title: "이민수 아들 돌잔치 알림", 
+          message: "🎂 돌잔치 초대\n\n이민수님 아들이 7일 후 오전 11시 30분에 진행됩니다. 아이의 건강한 성장을 함께 축하해주시면 감사하겠습니다.",
+          time: "1일 전",
+          event_type: "birthday",
+          read: true,
+          date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          location: "강남구청 웨딩홀",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "4",
+          title: "정수정 개업식 알림",
+          message: "🎊 개업식 초대\n\n정수정님이 10일 후 오후 3시에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.",
+          time: "2일 전", 
+          event_type: "opening",
+          read: true,
+          date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+          location: "강남구 신사동 사무실",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "5",
+          title: "최영수 결혼식 알림",
+          message: "💒 결혼식이 곧 다가옵니다!\n\n최영수님이 15일 후 오후 1시에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.",
+          time: "3일 전",
+          event_type: "wedding", 
+          read: false,
+          date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+          location: "그랜드하얏트 서울 웨딩홀",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "6",
+          title: "김민지 딸 돌잔치 알림",
+          message: "🎂 돌잔치 초대\n\n김민지님 딸이 20일 후 오전 10시 30분에 진행됩니다. 아이의 건강한 성장을 함께 축하해주시면 감사하겠습니다.",
+          time: "5일 전",
+          event_type: "birthday",
+          read: true,
+          date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+          location: "롯데호텔 월드 크리스탈볼룸",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      ];
+      setNotifications(mockNotifications);
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, []);
 
-  // 동적 메시지가 포함된 알림 데이터 생성
-  const [notifications, setNotifications] = useState(
-    notificationsData.map(notification => ({
-      ...notification,
-      message: getEventMessage(notification.type, notification.title, notification.date, notification.location)
-    }))
+  // 화면 포커스 시 데이터 로드
+  useFocusEffect(
+    useCallback(() => {
+      loadNotifications();
+    }, [loadNotifications])
   );
 
 
   // 개별 알림 카드 클릭 시 읽음으로 처리하고 상세 페이지로 이동
-  const handleNotificationPress = (notificationId: string) => {
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, read: true }
-          : notification
-      )
-    );
-    router.push(`/notification-detail?notificationId=${notificationId}`);
+  const handleNotificationPress = async (notificationId: string) => {
+    try {
+      // API에서 읽음 처리
+      await notificationApiService.markAsRead(notificationId);
+      
+      // 로컬 상태 업데이트
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => 
+          notification.id === notificationId 
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+      
+      // 상세 페이지로 이동
+      router.push(`/notification-detail?notificationId=${notificationId}`);
+    } catch (error) {
+      console.error('알림 읽음 처리 실패:', error);
+      // API 실패해도 상세 페이지는 이동
+      router.push(`/notification-detail?notificationId=${notificationId}`);
+    }
   };
 
   const getEventTypeColor = (type: string) => {
@@ -109,6 +169,8 @@ const Notifications: React.FC = () => {
       case 'funeral': return '장례식';
       case 'birthday': return '돌잔치';
       case 'opening': return '개업식';
+      case 'graduation': return '졸업식';
+      case 'promotion': return '승진';
       default: return '기타';
     }
   };
@@ -151,13 +213,31 @@ const Notifications: React.FC = () => {
           
         {/* 알림 목록 */}
         <View style={styles.notificationsSection}>
-          
-          <View style={styles.notificationsList}>
-            {filteredNotifications.map((notification) => {
-              const typeStyle = getEventTypeColor(notification.type);
-              const isToday = notification.date.toDateString() === new Date().toDateString();
-              const isTomorrow = notification.date.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
-              const isUrgent = isToday || isTomorrow;
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#3B82F6" />
+              <Text style={styles.loadingText}>알림을 불러오는 중...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={48} color="#EF4444" />
+              <Text style={styles.errorTitle}>알림 로드 실패</Text>
+              <Text style={styles.errorMessage}>{error}</Text>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={loadNotifications}
+              >
+                <Text style={styles.retryButtonText}>다시 시도</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.notificationsList}>
+              {filteredNotifications.map((notification) => {
+                const typeStyle = getEventTypeColor(notification.event_type);
+                const notificationDate = new Date(notification.date);
+                const isToday = notificationDate.toDateString() === new Date().toDateString();
+                const isTomorrow = notificationDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
+                const isUrgent = isToday || isTomorrow;
 
               return (
                 <TouchableOpacity
@@ -235,19 +315,20 @@ const Notifications: React.FC = () => {
                       </View>
                       <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
                         <Text style={[styles.typeText, { color: typeStyle.text }]}>
-                          {getEventTypeName(notification.type)}
+                          {getEventTypeName(notification.event_type)}
                         </Text>
                       </View>
                     </View>
                   </View>
                 </TouchableOpacity>
               );
-            })}
-          </View>
+              })}
+            </View>
+          )}
         </View>
 
         {/* 빈 상태 */}
-        {filteredNotifications.length === 0 && (
+        {!loading && !error && filteredNotifications.length === 0 && (
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
               <Ionicons name="notifications-off-outline" size={48} color="#ddd" />
@@ -476,6 +557,50 @@ const styles = StyleSheet.create({
   },
   typeText: {
     fontSize: 11,
+    fontWeight: '600',
+  },
+
+  // 로딩 상태
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 16,
+  },
+
+  // 에러 상태
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
     fontWeight: '600',
   },
 
