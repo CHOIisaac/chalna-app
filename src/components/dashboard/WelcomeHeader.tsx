@@ -383,8 +383,6 @@ const styles = StyleSheet.create({
   progressSection: {
     marginTop: 20,
     paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   progressHeader: {
     flexDirection: 'row',
