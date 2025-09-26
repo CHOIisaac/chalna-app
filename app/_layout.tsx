@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthService } from '@/src/services/auth';
@@ -29,7 +30,7 @@ export default function RootLayout() {
       try {
         console.log('🔍 인증 상태 확인 중...');
         const isLoggedIn = await AuthService.isLoggedIn();
-        console.log('🔑 저장된 토큰:', isLoggedIn ? '있음' : '없음');
+        // console.log('🔑 저장된 토큰:', isLoggedIn ? '있음' : '없음');
         console.log('🔍 로그인 상태:', isLoggedIn);
         
         if (!isMounted) return; // 컴포넌트가 언마운트되었으면 실행하지 않음
@@ -71,27 +72,30 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack
-          initialRouteName={isAuthenticated === null ? undefined : (isAuthenticated ? "(tabs)" : "login")}
-          screenOptions={{ headerShown: false }}
-        >
-          <Stack.Screen name="login" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="notifications" options={{ headerShown: false }} />
-          <Stack.Screen name="notification-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="ledger-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="edit-field" options={{ headerShown: false }} />
-          <Stack.Screen name="add-ledger" options={{ headerShown: false }} />
-          <Stack.Screen name="add-schedule" options={{ headerShown: false }} />
-          <Stack.Screen name="schedule-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="edit-schedule-field" options={{ headerShown: false }} />
-          <Stack.Screen name="settings" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="dark" />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack
+            initialRouteName={isAuthenticated === null ? undefined : (isAuthenticated ? "(tabs)" : "login")}
+            screenOptions={{ headerShown: false }}
+          >
+            <Stack.Screen name="login" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="notifications" options={{ headerShown: false }} />
+            <Stack.Screen name="notification-detail" options={{ headerShown: false }} />
+            <Stack.Screen name="ledger-detail" options={{ headerShown: false }} />
+            <Stack.Screen name="edit-field" options={{ headerShown: false }} />
+            <Stack.Screen name="add-ledger" options={{ headerShown: false }} />
+            <Stack.Screen name="add-schedule" options={{ headerShown: false }} />
+            <Stack.Screen name="schedule-detail" options={{ headerShown: false }} />
+            <Stack.Screen name="edit-schedule-field" options={{ headerShown: false }} />
+            <Stack.Screen name="settings" options={{ headerShown: false }} />
+            <Stack.Screen name="notification-test" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="dark" />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
