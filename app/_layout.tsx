@@ -90,9 +90,6 @@ export default function RootLayout() {
             <Stack.Screen name="schedule-detail" options={{ headerShown: false }} />
             <Stack.Screen name="edit-schedule-field" options={{ headerShown: false }} />
             <Stack.Screen name="settings" options={{ headerShown: false }} />
-            <Stack.Screen name="notification-test" options={{ headerShown: false }} />
-            <Stack.Screen name="kakao-login-test" options={{ headerShown: false }} />
-            <Stack.Screen name="kakao-login-test-v2" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="dark" />

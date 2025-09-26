@@ -104,30 +104,6 @@ ${appStoreUrl || ''}`,
 
   const serviceMenuItems = [
     {
-      title: '알림 테스트',
-      description: '푸시 알림 기능 테스트',
-      icon: 'notifications-outline',
-      onPress: () => {
-        router.push('/notification-test');
-      },
-    },
-    {
-      title: '카카오 로그인 테스트',
-      description: '카카오 OAuth 로그인 테스트',
-      icon: 'logo-google',
-      onPress: () => {
-        router.push('/kakao-login-test');
-      },
-    },
-    {
-      title: '카카오 로그인 테스트 V2',
-      description: 'react-native-kakao-login 테스트',
-      icon: 'logo-google',
-      onPress: () => {
-        router.push('/kakao-login-test-v2');
-      },
-    },
-    {
       title: '고객센터',
       description: '문의사항 및 신고하기',
       icon: 'headset-outline',

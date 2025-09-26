@@ -19,6 +19,7 @@ import { Card, CardContent } from '../src/components/ui/Card';
 import Input from '../src/components/ui/Input';
 import { colors } from '../src/lib/utils';
 import { authService, handleApiError } from '../src/services/api';
+import { kakaoAuthBackendService } from '../src/services/kakaoAuthBackend';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function LoginScreen() {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [kakaoLoading, setKakaoLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -59,14 +61,32 @@ export default function LoginScreen() {
 
   const handleKakaoLogin = async () => {
     try {
-      setLoading(true);
-      // 카카오 SDK 로그인은 나중에 구현
-      Alert.alert('카카오 로그인', '카카오 로그인은 준비 중입니다.');
+      setKakaoLoading(true);
+      console.log('🔄 카카오 로그인 시작...');
+      
+      const result = await kakaoAuthBackendService.login();
+      
+      Alert.alert(
+        '카카오 로그인 성공!',
+        `환영합니다, ${result.user.name}님!\n\n이메일: ${result.user.email}`,
+        [
+          {
+            text: '확인',
+            onPress: () => router.replace('/(tabs)'),
+          },
+        ]
+      );
+      
+      console.log('✅ 카카오 로그인 성공:', result);
+      
     } catch (error) {
-      console.error('카카오 로그인 오류:', error);
-      Alert.alert('로그인 실패', '카카오 로그인에 실패했습니다.');
+      console.error('❌ 카카오 로그인 실패:', error);
+      Alert.alert(
+        '카카오 로그인 실패',
+        handleApiError(error)
+      );
     } finally {
-      setLoading(false);
+      setKakaoLoading(false);
     }
   };
 
@@ -142,13 +162,22 @@ export default function LoginScreen() {
                 </View>
 
                 <TouchableOpacity 
-                  style={[styles.socialButton, loading && styles.socialButtonDisabled]} 
+                  style={[styles.socialButton, kakaoLoading && styles.socialButtonDisabled]} 
                   activeOpacity={0.7}
                   onPress={handleKakaoLogin}
-                  disabled={loading}
+                  disabled={kakaoLoading}
                 >
-                  <Ionicons name="chatbubble" size={20} color={colors.foreground} />
-                  <Text style={styles.socialButtonText}>카카오로 계속하기</Text>
+                  {kakaoLoading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="small" color={colors.foreground} />
+                      <Text style={styles.socialButtonText}>카카오 로그인 중...</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Ionicons name="chatbubble" size={20} color={colors.foreground} />
+                      <Text style={styles.socialButtonText}>카카오로 계속하기</Text>
+                    </>
+                  )}
                 </TouchableOpacity>
 
                 <View style={styles.signupContainer}>

@@ -80,6 +80,32 @@ class ApiClient {
           throw new Error('권한이 없습니다. 다시 로그인해주세요.');
         }
         
+        // 422 에러 시 상세 정보 포함
+        if (response.status === 422) {
+          let errorData = null;
+          try {
+            errorData = await response.json();
+            console.error('422 Error Response:', errorData);
+            const errorMessage = errorData?.message || errorData?.detail || '데이터 유효성 검사 실패';
+            throw new Error(`422 Unprocessable Entity: ${errorMessage}`);
+          } catch (e) {
+            throw new Error(`422 Unprocessable Entity: 요청 데이터를 확인해주세요.`);
+          }
+        }
+        
+        // 500 에러 시 상세 정보 포함
+        if (response.status === 500) {
+          let errorData = null;
+          try {
+            errorData = await response.json();
+            console.error('500 Error Response:', errorData);
+            const errorMessage = errorData?.message || errorData?.detail || '서버 내부 오류';
+            throw new Error(`500 Internal Server Error: ${errorMessage}`);
+          } catch (e) {
+            throw new Error(`500 Internal Server Error: 서버 내부 오류가 발생했습니다.`);
+          }
+        }
+        
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -615,6 +641,31 @@ export interface NotificationData {
   updated_at: string;
 }
 
+// 카카오 로그인 관련 타입
+export interface KakaoLoginRequest {
+  access_token?: string;
+  accessToken?: string;
+  token?: string;
+  kakao_token?: string;
+  kakaoToken?: string;
+  code?: string;
+}
+
+export interface KakaoLoginResponse {
+  success: boolean;
+  data: {
+    access_token: string;
+    refresh_token: string;
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      profile_image?: string;
+    };
+  };
+  message: string;
+}
+
 export interface NotificationDetailData extends NotificationData {
   full_details?: {
     host?: string;
@@ -735,8 +786,27 @@ export const notificationApiService = {
   },
 };
 
+// 카카오 로그인 API 서비스
+export const kakaoApiService = {
+  async login(request: KakaoLoginRequest): Promise<ApiResponse<KakaoLoginResponse['data']>> {
+    // Request Body로 전송 (보안상 더 안전)
+    return apiClient.post<ApiResponse<KakaoLoginResponse['data']>>('/api/v1/kakao/login', request);
+  },
+};
+
 // 에러 처리 헬퍼
 export const handleApiError = (error: any): string => {
+  console.log('🔍 에러 상세 정보:', {
+    status: error?.response?.status,
+    statusText: error?.response?.statusText,
+    data: error?.response?.data,
+    message: error?.message,
+  });
+  
+  if (error?.response?.status === 422) {
+    return `데이터 유효성 오류 (422): ${error?.response?.data?.message || '요청 데이터를 확인해주세요.'}`;
+  }
+  
   if (error?.response?.data?.message) {
     return error.response.data.message;
   }
