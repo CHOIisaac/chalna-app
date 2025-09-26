@@ -72,6 +72,13 @@ export const API_ENDPOINTS = {
   AUTH_LOGIN: '/api/v1/auth/auth/login',
   AUTH_LOGOUT: '/api/v1/auth/logout/',
   AUTH_REFRESH: '/api/v1/auth/refresh/',
+
+  // 알림 관련
+  NOTIFICATIONS: '/api/v1/notifications/',
+  NOTIFICATION_DETAIL: (id: string) => `/api/v1/notifications/${id}`,
+  NOTIFICATION_READ: (id: string) => `/api/v1/notifications/${id}/read`,
+  NOTIFICATION_READ_ALL: '/api/v1/notifications/read-all',
+  NOTIFICATION_DELETE: (id: string) => `/api/v1/notifications/${id}`,
 } as const;
 
 // 타임아웃 설정 (ms)
