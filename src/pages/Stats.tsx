@@ -415,9 +415,9 @@ const Stats: React.FC = (): React.ReactElement => {
               );
             }) : (
               <View style={styles.noDataContainer}>
-                <Text style={styles.noDataText}>
-                  {selectedType === 'received' ? '받은 축의금 월별 데이터가 없습니다.' : '월별 데이터가 없습니다.'}
-                </Text>
+                {/*<Text style={styles.noDataText}>*/}
+                {/*  {selectedType === 'received' ? '받은 축의금 월별 데이터가 없습니다.' : '월별 데이터가 없습니다.'}*/}
+                {/*</Text>*/}
               </View>
             )}
             </View>
@@ -504,9 +504,9 @@ const Stats: React.FC = (): React.ReactElement => {
               );
             }) : (
               <View style={styles.noDataContainer}>
-                <Text style={styles.noDataText}>
-                  {selectedType === 'received' ? '받은 조의금 월별 데이터가 없습니다.' : '월별 데이터가 없습니다.'}
-                </Text>
+                {/*<Text style={styles.noDataText}>*/}
+                {/*  {selectedType === 'received' ? '받은 조의금 월별 데이터가 없습니다.' : '월별 데이터가 없습니다.'}*/}
+                {/*</Text>*/}
               </View>
             )}
             </View>
