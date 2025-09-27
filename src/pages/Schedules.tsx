@@ -434,7 +434,7 @@ const Schedules: React.FC = () => {
           <View style={styles.statsCard}>
             <View style={styles.statsHeader}>
               <Text style={styles.statsTitle}>
-                {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
+                이번 달
               </Text>
               <View style={styles.statsBadge}>
                 <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
@@ -590,7 +590,6 @@ const Schedules: React.FC = () => {
               onMonthChange={(month) => {
                 setCurrentMonth(new Date(month.year, month.month - 1));
               }}
-              enableSwipeMonths={true}
               theme={{
                 backgroundColor: '#ffffff',
                 calendarBackground: '#ffffff',
