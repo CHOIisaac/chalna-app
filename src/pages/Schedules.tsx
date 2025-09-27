@@ -3,13 +3,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -472,10 +472,11 @@ const Schedules: React.FC = () => {
 
         {/* 뷰 모드에 따른 콘텐츠 */}
         {!error && viewMode === 'list' ? (
-          /* 무신사 스타일 일정 목록 */
-          <View style={styles.eventsSection}>
-            <View style={styles.eventsGrid}>
-              {filteredAndSortedEvents.map((event) => {
+          <>
+            /* 무신사 스타일 일정 목록 */
+            <View style={styles.eventsSection}>
+              <View style={styles.eventsGrid}>
+                {filteredAndSortedEvents.map((event) => {
                 const typeStyle = getEventTypeColor(event.event_type);
                 const eventDate = new Date(event.event_date);
                 const isToday = eventDate.toDateString() === new Date().toDateString();
@@ -567,6 +568,14 @@ const Schedules: React.FC = () => {
               })}
             </View>
           </View>
+
+            {/* 빈 상태 */}
+            {filteredAndSortedEvents.length === 0 && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyDescription}>일정이 없습니다</Text>
+              </View>
+            )}
+          </>
         ) : (
           /* 달력 뷰 */
           <View style={styles.calendarSection}>
@@ -608,47 +617,6 @@ const Schedules: React.FC = () => {
           </View>
         )}
 
-        {/* 무신사 스타일 추천 섹션 */}
-        <View style={styles.recommendationsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>추천 서비스</Text>
-          </View>
-
-          <View style={styles.recommendationsGrid}>
-            <TouchableOpacity style={styles.recommendationCard} activeOpacity={0.8}>
-              <View style={styles.recommendationIcon}>
-                <Ionicons name="heart-outline" size={24} color="#ff6b6b" />
-              </View>
-              <View style={styles.recommendationInfo}>
-                <Text style={styles.recommendationTitle}>웨딩홀 검색</Text>
-                <Text style={styles.recommendationDescription}>지역별 웨딩홀 정보</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#999" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.recommendationCard} activeOpacity={0.8}>
-              <View style={styles.recommendationIcon}>
-                <Ionicons name="flower-outline" size={24} color="#4ecdc4" />
-              </View>
-              <View style={styles.recommendationInfo}>
-                <Text style={styles.recommendationTitle}>장례식장 안내</Text>
-                <Text style={styles.recommendationDescription}>24시간 운영 장례식장</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#999" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.recommendationCard} activeOpacity={0.8}>
-              <View style={styles.recommendationIcon}>
-                <Ionicons name="gift-outline" size={24} color="#ffa726" />
-              </View>
-              <View style={styles.recommendationInfo}>
-                <Text style={styles.recommendationTitle}>연회장 예약</Text>
-                <Text style={styles.recommendationDescription}>돌잔치, 회갑연 장소</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#999" />
-            </TouchableOpacity>
-          </View>
-        </View>
       </ScrollView>
 
       {/* 날짜별 일정 모달 */}
@@ -1116,7 +1084,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 4,
@@ -1282,50 +1250,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  // 추천 섹션
-  recommendationsSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  recommendationsGrid: {
-    gap: 12,
-  },
-  recommendationCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  recommendationIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  recommendationInfo: {
-    flex: 1,
-  },
-  recommendationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 4,
-  },
-  recommendationDescription: {
-    fontSize: 13,
-    color: '#666',
-  },
 
   // 달력 스타일
   calendarSection: {
@@ -1857,6 +1781,26 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
+  },
+
+  // 빈 상태 스타일
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyDescription: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

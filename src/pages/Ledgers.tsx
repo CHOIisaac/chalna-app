@@ -443,11 +443,11 @@ const Ledgers: React.FC = () => {
             {/* 빈 상태 */}
             {filteredAndSortedLedgers.length === 0 && (
               <View style={styles.emptyState}>
-                <View style={styles.emptyIcon}>
-                  <Ionicons name="pencil-outline" size={48} color="#ddd" />
-                </View>
+                {/*<View style={styles.emptyIcon}>*/}
+                {/*  <Ionicons name="pencil-outline" size={48} color="#ddd" />*/}
+                {/*</View>*/}
                 {/*<Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>*/}
-                {/*<Text style={styles.emptyDescription}>다른 검색어를 시도해보세요</Text>*/}
+                <Text style={styles.emptyDescription}>기록이 없습니다</Text>
               </View>
             )}
           </>
