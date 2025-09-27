@@ -1013,7 +1013,7 @@ const styles = StyleSheet.create({
   // 헤더 스타일
   header: {
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 20,
   },
@@ -1038,7 +1038,7 @@ const styles = StyleSheet.create({
 
   // 통계 섹션
   statsSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 20,
   },
@@ -1103,7 +1103,7 @@ const styles = StyleSheet.create({
 
   // 일정 섹션
   eventsSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingBottom: 20,
   },
   sectionHeader: {
@@ -1552,7 +1552,7 @@ const styles = StyleSheet.create({
   // 검색 섹션
   searchSection: {
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 8,
   },
   searchContainer: {

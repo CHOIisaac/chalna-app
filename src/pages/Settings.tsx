@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
 
   // 프로필 섹션
   profileSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 20,
   },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
 
   // 섹션 스타일
   section: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingBottom: 20,
   },
   sectionHeader: {

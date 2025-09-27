@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   // 헤더 스타일
   header: {
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 24,
     flexDirection: 'row',
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
 
   // 프로필 섹션
   profileSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 12,
   },
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
 
   // 빠른 액션 섹션
   quickActionsSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingBottom: 12,
   },
   quickActionsGrid: {
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
 
   // 추가 메뉴 섹션
   additionalMenuSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingBottom: 12,
   },
   sectionHeader: {
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
 
   // 앱 정보 섹션
   appInfoSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 0,
     paddingBottom: 20,
   },

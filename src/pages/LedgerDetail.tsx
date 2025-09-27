@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
 
   // 수정 섹션
   editSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 20,
   },
   profileCard: {

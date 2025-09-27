@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 23,
     paddingBottom: 20,
   },
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: 'white',
-    marginHorizontal: 20,
+    marginHorizontal: 24,
     marginBottom: 16,
     borderRadius: 16,
     padding: 4,
@@ -937,7 +937,7 @@ const styles = StyleSheet.create({
   },
   summaryCards: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
+    paddingHorizontal: 23,
     gap: 12,
     marginBottom: 24,
     alignItems: 'stretch',
@@ -1092,8 +1092,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#F0F0F0',
     gap: 12,
   },
   topItemInfo: {
