@@ -473,7 +473,7 @@ const Schedules: React.FC = () => {
         {/* 뷰 모드에 따른 콘텐츠 */}
         {!error && viewMode === 'list' ? (
           <>
-            /* 무신사 스타일 일정 목록 */
+            {/* 무신사 스타일 일정 목록 */}
             <View style={styles.eventsSection}>
               <View style={styles.eventsGrid}>
                 {filteredAndSortedEvents.map((event) => {
@@ -577,8 +577,9 @@ const Schedules: React.FC = () => {
             )}
           </>
         ) : (
-          /* 달력 뷰 */
-          <View style={styles.calendarSection}>
+          <>
+            {/* 달력 뷰 */}
+            <View style={styles.calendarSection}>
             <Calendar
               current={currentMonth.toISOString().split('T')[0]}
               onDayPress={onDayPress}
@@ -615,6 +616,7 @@ const Schedules: React.FC = () => {
               style={styles.calendar}
             />
           </View>
+          </>
         )}
 
       </ScrollView>
