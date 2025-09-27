@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   // 수정 섹션 스타일
   editSection: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 20,
   },
   editCard: {
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
 
   // 액션 버튼 스타일
   actionButtons: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 24,
     backgroundColor: 'f8f9fa',
   },

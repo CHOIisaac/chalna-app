@@ -1253,7 +1253,7 @@ const styles = StyleSheet.create({
 
   // 달력 스타일
   calendarSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingBottom: 20,
     zIndex: 1,
     elevation: 2,
@@ -1376,11 +1376,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#f8f9fa',
   },
   modalTitle: {
     fontSize: 20,
@@ -1397,7 +1395,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 20,
   },
   modalEventsList: {
