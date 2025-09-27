@@ -3,13 +3,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -572,6 +572,10 @@ const Schedules: React.FC = () => {
             {/* 빈 상태 */}
             {filteredAndSortedEvents.length === 0 && (
               <View style={styles.emptyState}>
+                {/*<View style={styles.emptyIcon}>*/}
+                {/*  <Ionicons name="calendar-outline" size={48} color="#ddd" />*/}
+                {/*</View>*/}
+                {/*<Text style={styles.emptyTitle}>일정이 없습니다</Text>*/}
                 <Text style={styles.emptyDescription}>일정이 없습니다</Text>
               </View>
             )}
@@ -1041,7 +1045,7 @@ const styles = StyleSheet.create({
   statsSection: {
     paddingHorizontal: 24,
     paddingTop: 8,
-    paddingBottom: 20,
+    paddingBottom: 15,
   },
   statsCard: {
     backgroundColor: 'white',
@@ -1787,13 +1791,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 60,
     paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginTop: 16,
-    marginBottom: 8,
   },
   emptyDescription: {
     fontSize: 14,
