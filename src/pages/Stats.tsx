@@ -1,26 +1,26 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Animated,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Animated,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
 import {
-  AmountDistributionData,
-  EventData,
-  handleApiError,
-  MonthlyTrendData,
-  NetworkDataByType,
-  RelationshipStatsData,
-  statsService,
-  TopItemsData,
-  TotalAmountsData
+    AmountDistributionData,
+    EventData,
+    handleApiError,
+    MonthlyTrendData,
+    NetworkDataByType,
+    RelationshipStatsData,
+    statsService,
+    TopItemsData,
+    TotalAmountsData
 } from '../services/api';
 
 // 로컬 타입 정의 (API 타입과 중복되지 않는 것들)
@@ -1330,10 +1330,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   relationshipLeft: {
     flex: 1,
