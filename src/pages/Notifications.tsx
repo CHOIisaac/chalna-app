@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 16,
     zIndex: 1000,
   },
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
 
   // 알림 섹션
   notificationsSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 20,
   },
