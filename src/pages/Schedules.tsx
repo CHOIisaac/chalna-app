@@ -3,13 +3,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Animated,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -72,11 +73,15 @@ const Schedules: React.FC = () => {
 
   // API 상태 관리
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 삭제된 항목과 되돌리기 상태
   const [deletedSchedule, setDeletedSchedule] = useState<ScheduleItem | null>(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
+
+  // 페이드인 애니메이션
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // API 함수들 (메모이제이션)
   const loadSchedules = useCallback(async (filterParams?: {
@@ -86,6 +91,7 @@ const Schedules: React.FC = () => {
     sort_by?: 'date_asc' | 'date_desc';
   }) => {
     try {
+      setLoading(true);
       setError(null);
       const response = await scheduleService.getSchedules(filterParams);
       
@@ -97,6 +103,8 @@ const Schedules: React.FC = () => {
     } catch (err) {
       console.error('일정 목록 로드 실패:', err);
       setError(handleApiError(err));
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -236,6 +244,19 @@ const Schedules: React.FC = () => {
       loadSchedules();
     }, [loadSchedules])
   );
+
+  // 페이드인 애니메이션 효과
+  React.useEffect(() => {
+    if (!loading && !error) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      fadeAnim.setValue(0);
+    }
+  }, [loading, error, fadeAnim]);
 
   // 모든 열린 Swipeable 닫기
   const closeAllSwipeables = () => {
@@ -428,9 +449,36 @@ const Schedules: React.FC = () => {
         showsVerticalScrollIndicator={false}
         onTouchStart={closeAllSwipeables}
       >
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          {/* 로딩 상태 */}
+          {/*{loading && (*/}
+          {/*  <View style={styles.loadingContainer}>*/}
+          {/*    <ActivityIndicator size="large" color="#4a5568" />*/}
+          {/*    <Text style={styles.loadingText}>일정 목록을 불러오는 중...</Text>*/}
+          {/*  </View>*/}
+          {/*)}*/}
 
-        {/* 무신사 스타일 통계 카드 */}
-        <View style={styles.statsSection}>
+          {/* 에러 상태 */}
+          {error && !loading && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="warning-outline" size={48} color="#FF3B30" />
+              <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
+              <Text style={styles.errorMessage}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={() => loadSchedules()}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.retryButtonText}>다시 시도</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* 정상 데이터가 있을 때만 표시 */}
+          {!loading && !error && (
+          <>
+            {/* 무신사 스타일 통계 카드 */}
+            <View style={styles.statsSection}>
           <View style={styles.statsCard}>
             <View style={styles.statsHeader}>
               <Text style={styles.statsTitle}>
@@ -620,8 +668,10 @@ const Schedules: React.FC = () => {
             />
           </View>
           </>
-        )}
-
+          )}
+          </>
+          )}
+        </Animated.View>
       </ScrollView>
 
       {/* 날짜별 일정 모달 */}
@@ -1013,6 +1063,9 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  content: {
+    flex: 1,
   },
 
   // 헤더 스타일
@@ -1785,6 +1838,54 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+
+  // 로딩 상태 스타일
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '500',
+  },
+
+  // // 에러 상태 스타일
+  // errorContainer: {
+  //   flex: 1,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   paddingVertical: 60,
+  //   paddingHorizontal: 40,
+  // },
+  // errorTitle: {
+  //   fontSize: 18,
+  //   fontWeight: '600',
+  //   color: '#1F2937',
+  //   marginTop: 16,
+  //   marginBottom: 8,
+  // },
+  // errorMessage: {
+  //   fontSize: 14,
+  //   color: '#6B7280',
+  //   textAlign: 'center',
+  //   lineHeight: 20,
+  //   marginBottom: 24,
+  // },
+  // retryButton: {
+  //   backgroundColor: '#4F46E5',
+  //   paddingHorizontal: 24,
+  //   paddingVertical: 12,
+  //   borderRadius: 8,
+  // },
+  // retryButtonText: {
+  //   color: 'white',
+  //   fontSize: 16,
+  //   fontWeight: '600',
+  // },
 
   // 빈 상태 스타일
   emptyState: {
