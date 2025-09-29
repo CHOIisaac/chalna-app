@@ -6,8 +6,8 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  FlatList,
   Modal,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -22,7 +22,7 @@ import { handleApiError, LedgerItem, ledgerService } from '../services/api';
 
 const Ledgers: React.FC = () => {
   const router = useRouter();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<FlatList>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   
@@ -219,7 +219,7 @@ const Ledgers: React.FC = () => {
   // 탭이 포커스될 때 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      scrollViewRef.current?.scrollToOffset({ offset: 0, animated: true });
       // Swipeable 제거로 인한 성능 최적화
       // 데이터 새로고침 (무한 스크롤을 위해 limit 20으로 설정)
       loadLedgers(undefined, 20, 0, false);
@@ -365,7 +365,7 @@ const Ledgers: React.FC = () => {
       </View>
 
       {/* 고정 검색바 */}
-      <View style={styles.searchSection}>
+      <Animated.View style={[styles.searchSection, { opacity: fadeAnim }]}>
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
           <TextInput
@@ -382,22 +382,20 @@ const Ledgers: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </Animated.View>
 
-      <ScrollView 
-        ref={scrollViewRef} 
-        style={styles.scrollContainer} 
+      <FlatList
+        ref={scrollViewRef}
+        data={filteredAndSortedLedgers}
+        style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         onTouchStart={handleSwipeableClose}
-        onScroll={({ nativeEvent }) => {
-          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-          const paddingToBottom = 20;
-          if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-            loadMoreLedgers();
-          }
-        }}
-        scrollEventThrottle={400}
-      >
+        onEndReached={loadMoreLedgers}
+        onEndReachedThreshold={0.1}
+        keyExtractor={(item) => item.id.toString()}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        ListHeaderComponent={() => (
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           {/* 에러 상태 */}
           {error && !loading && (
@@ -405,7 +403,7 @@ const Ledgers: React.FC = () => {
               <Ionicons name="warning-outline" size={48} color="#FF3B30" />
               <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
               <Text style={styles.errorMessage}>{error}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.retryButton}
                 onPress={() => loadLedgers()}
                 activeOpacity={0.8}
@@ -441,93 +439,81 @@ const Ledgers: React.FC = () => {
               </View>
             </View>
 
-            {/* 경조사 내역 목록 */}
-            <View style={styles.ledgersSection}>
-              <View style={styles.ledgersList}>
-                {filteredAndSortedLedgers.map((ledger) => {
-                  return (
-                    <Swipeable 
-                      key={ledger.id}
-                      renderRightActions={() => renderRightActions(ledger.id)}
-                      rightThreshold={40}
-                      onSwipeableWillOpen={() => handleSwipeableOpen(ledger.id)}
-                      onSwipeableWillClose={handleSwipeableClose}
-                    >
-                      <TouchableOpacity
-                        style={styles.ledgerCard}
-                        activeOpacity={0.8}
-                        onPress={() => {
-                          if (openSwipeableId !== ledger.id) {
-                            router.push({
-                              pathname: '/ledger-detail',
-                              params: {
-                                id: ledger.id.toString(),
-                                data: JSON.stringify(ledger)
-                              }
-                            });
-                          }
-                        }}
-                      >
-                        {/* 메모 표시 - 카드 모서리 */}
-                        {ledger.memo && ledger.memo.trim() !== '' && (
-                          <View style={styles.memoCorner} />
-                        )}
-
-                        {/* 정보 영역 */}
-                        <View style={styles.ledgerInfo}>
-                          <View style={styles.ledgerHeader}>
-                            <Text style={styles.ledgerName}>{ledger.counterparty_name}</Text>
-                          </View>
-                          
-                          <View style={styles.ledgerDetails}>
-                            <Text style={styles.relationshipText}>{ledger.relationship_type}</Text>
-                            <Text style={styles.separator}>•</Text>
-                            <Text style={styles.eventTypeText}>{ledger.event_type}</Text>
-                          </View>
-                          
-                          <View style={styles.ledgerMeta}>
-                            <Text style={styles.dateText}>{ledger.event_date}</Text>
-                          </View>
-                        </View>
-
-                        {/* 금액 영역 */}
-                        <View style={styles.amountSection}>
-                          <Text style={[styles.amountText, { color: '#4a5568' }]}>
-                            {ledger.amount.toLocaleString()}원
-                          </Text>
-                          <Text style={[styles.typeLabel, { color: ledger.entry_type === 'given' ? '#4a5568' : '#718096' }]}>
-                            {ledger.entry_type === 'given' ? '나눔' : '받음'}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    </Swipeable>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* 빈 상태 */}
-            {filteredAndSortedLedgers.length === 0 && (
-              <View style={styles.emptyState}>
-                {/*<View style={styles.emptyIcon}>*/}
-                {/*  <Ionicons name="pencil-outline" size={48} color="#ddd" />*/}
-                {/*</View>*/}
-                {/*<Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>*/}
-                <Text style={styles.emptyDescription}>기록이 없습니다</Text>
-              </View>
-            )}
-
-            {/* 무한 스크롤 로딩 인디케이터 */}
-            {loadingMore && (
-              <View style={styles.loadingMoreContainer}>
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text style={styles.loadingMoreText}>더 많은 기록을 불러오는 중...</Text>
-              </View>
-            )}
           </>
           )}
         </Animated.View>
-      </ScrollView>
+        )}
+        renderItem={({ item: ledger }) => (
+          <Animated.View style={{ opacity: fadeAnim }}>
+            <Swipeable
+              key={ledger.id}
+              renderRightActions={() => renderRightActions(ledger.id)}
+              rightThreshold={40}
+              onSwipeableWillOpen={() => handleSwipeableOpen(ledger.id)}
+              onSwipeableWillClose={handleSwipeableClose}
+            >
+              <TouchableOpacity
+                style={styles.ledgerCard}
+                activeOpacity={0.8}
+                onPress={() => {
+                  if (openSwipeableId !== ledger.id) {
+                    router.push({
+                      pathname: '/ledger-detail',
+                      params: {
+                        id: ledger.id.toString(),
+                        data: JSON.stringify(ledger)
+                      }
+                    });
+                  }
+                }}
+              >
+                {/* 메모 표시 - 카드 모서리 */}
+                {ledger.memo && ledger.memo.trim() !== '' && (
+                  <View style={styles.memoCorner} />
+                )}
+
+                {/* 정보 영역 */}
+                <View style={styles.ledgerInfo}>
+                  <View style={styles.ledgerHeader}>
+                    <Text style={styles.ledgerName}>{ledger.counterparty_name}</Text>
+                  </View>
+
+                  <View style={styles.ledgerDetails}>
+                    <Text style={styles.relationshipText}>{ledger.relationship_type}</Text>
+                    <Text style={styles.separator}>•</Text>
+                    <Text style={styles.eventTypeText}>{ledger.event_type}</Text>
+                  </View>
+
+                  <View style={styles.ledgerMeta}>
+                    <Text style={styles.dateText}>{ledger.event_date}</Text>
+                  </View>
+                </View>
+
+                {/* 금액 영역 */}
+                <View style={styles.amountSection}>
+                  <Text style={[styles.amountText, { color: '#4a5568' }]}>
+                    {ledger.amount.toLocaleString()}원
+                  </Text>
+                  <Text style={[styles.typeLabel, { color: ledger.entry_type === 'given' ? '#4a5568' : '#718096' }]}>
+                    {ledger.entry_type === 'given' ? '나눔' : '받음'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </Swipeable>
+          </Animated.View>
+        )}
+        ListEmptyComponent={() => !loading && !error && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyDescription}>기록이 없습니다</Text>
+          </View>
+        )}
+        ListFooterComponent={() => loadingMore && (
+          <View style={styles.loadingMoreContainer}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={styles.loadingMoreText}>더 많은 기록을 불러오는 중...</Text>
+          </View>
+        )}
+      />
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton />
@@ -539,7 +525,7 @@ const Ledgers: React.FC = () => {
             <Text style={styles.undoToastText}>
               {deletedLedger?.counterparty_name} 기록이 삭제되었습니다
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.undoButton}
               onPress={handleUndoDelete}
               activeOpacity={0.8}
@@ -558,7 +544,7 @@ const Ledgers: React.FC = () => {
         onRequestClose={() => setShowFilterModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
             onPress={() => setShowFilterModal(false)}
@@ -580,13 +566,13 @@ const Ledgers: React.FC = () => {
                 <Text style={styles.dropdownButtonText}>
                   {filterType === 'all' ? '전체' : filterType === 'given' ? '나눔' : '받음'}
                 </Text>
-                <Ionicons 
-                  name={showFilterDropdown ? "chevron-up" : "chevron-down"} 
-                  size={20} 
-                  color="#666" 
+                <Ionicons
+                  name={showFilterDropdown ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color="#666"
                 />
               </TouchableOpacity>
-              
+
               {showFilterDropdown && (
                 <View style={styles.dropdownOptions}>
                   <TouchableOpacity
@@ -668,13 +654,13 @@ const Ledgers: React.FC = () => {
                    sortBy === 'date_asc' ? '오래된순' :
                    sortBy === 'amount_desc' ? '높은금액순' : '낮은금액순'}
                 </Text>
-                <Ionicons 
-                  name={showSortDropdown ? "chevron-up" : "chevron-down"} 
-                  size={20} 
-                  color="#666" 
+                <Ionicons
+                  name={showSortDropdown ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color="#666"
                 />
               </TouchableOpacity>
-              
+
               {showSortDropdown && (
                 <View style={styles.dropdownOptions}>
                   <TouchableOpacity
@@ -763,7 +749,7 @@ const Ledgers: React.FC = () => {
 
             {/* 적용 버튼 */}
             <View style={styles.modalActions}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.applyButton, loading && styles.applyButtonDisabled]}
                 onPress={applyFilter}
                 disabled={loading}
@@ -941,6 +927,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0f0f0',
     position: 'relative',
+    marginHorizontal: 24,
   },
 
   // 장부 정보 섹션
