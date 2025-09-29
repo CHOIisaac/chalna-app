@@ -3,16 +3,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  FlatList,
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Animated,
+    FlatList,
+    Modal,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
@@ -59,7 +59,7 @@ const Ledgers: React.FC = () => {
     search?: string;
     entry_type?: 'given' | 'received';
     sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
-  }, limit: number = 20, skip: number = 0, isLoadMore: boolean = false) => {
+  }, limit: number = 10, skip: number = 0, isLoadMore: boolean = false) => {
     try {
       if (!isLoadMore) {
         setLoading(true);
@@ -82,7 +82,7 @@ const Ledgers: React.FC = () => {
         } else {
           setLedgers(response.data);
         }
-        setHasMore(response.data.length === 20); // 20개 미만이면 더 이상 데이터 없음
+        setHasMore(response.data.length === 10); // 10개 미만이면 더 이상 데이터 없음
         setCurrentSkip(skip + response.data.length);
       } else {
         setError(response.error || '장부 목록을 불러오는데 실패했습니다.');
@@ -123,7 +123,7 @@ const Ledgers: React.FC = () => {
 
       const params = {
         ...searchParams,
-        limit: 20,
+        limit: 10,
         skip: currentSkip
       };
       
@@ -131,7 +131,7 @@ const Ledgers: React.FC = () => {
       
       if (response.success) {
         setLedgers(prev => [...prev, ...response.data]);
-        setHasMore(response.data.length === 20); // 20개 미만이면 더 이상 데이터 없음
+        setHasMore(response.data.length === 10); // 10개 미만이면 더 이상 데이터 없음
         setCurrentSkip(currentSkip + response.data.length);
       }
     } catch (err) {
@@ -193,8 +193,8 @@ const Ledgers: React.FC = () => {
   const applyFilter = useCallback(async () => {
     const filterParams = buildFilterParams();
     
-    // API 호출 (무한 스크롤을 위해 limit 20으로 설정)
-    await loadLedgers(filterParams, 20, 0, false);
+    // API 호출 (무한 스크롤을 위해 limit 10으로 설정)
+    await loadLedgers(filterParams, 10, 0, false);
     
     // 모달 닫기
     setShowFilterModal(false);
@@ -210,7 +210,7 @@ const Ledgers: React.FC = () => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const searchParams = buildSearchParams();
-      loadLedgers(searchParams, 20, 0, false);
+      loadLedgers(searchParams, 10, 0, false);
     }, 200); // 200ms로 최적화 (반응성 향상)
 
     return () => clearTimeout(timeoutId);
@@ -221,8 +221,8 @@ const Ledgers: React.FC = () => {
     useCallback(() => {
       scrollViewRef.current?.scrollToOffset({ offset: 0, animated: true });
       // Swipeable 제거로 인한 성능 최적화
-      // 데이터 새로고침 (무한 스크롤을 위해 limit 20으로 설정)
-      loadLedgers(undefined, 20, 0, false);
+      // 데이터 새로고침 (무한 스크롤을 위해 limit 10으로 설정)
+      loadLedgers(undefined, 10, 0, false);
     }, [loadLedgers])
   );
 
@@ -392,7 +392,7 @@ const Ledgers: React.FC = () => {
         onTouchStart={handleSwipeableClose}
         onEndReached={loadMoreLedgers}
         onEndReachedThreshold={0.1}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id || index}-${item.name || 'unknown'}-${item.event_date || Date.now()}`}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         contentContainerStyle={{ paddingBottom: 20 }}
         ListHeaderComponent={() => (
