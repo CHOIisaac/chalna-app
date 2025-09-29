@@ -38,7 +38,7 @@ const Stats: React.FC = (): React.ReactElement => {
   const [condolenceYear, setCondolenceYear] = useState(new Date().getFullYear());
   
   // API 상태 관리
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
   // 통합 월별 데이터
@@ -64,6 +64,12 @@ const Stats: React.FC = (): React.ReactElement => {
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
+  
+  // 각 탭별 개별 페이드인 애니메이션
+  const totalFadeAnim = useRef(new Animated.Value(0)).current;
+  const itemsFadeAnim = useRef(new Animated.Value(0)).current;
+  const networkFadeAnim = useRef(new Animated.Value(0)).current;
+  const eventsFadeAnim = useRef(new Animated.Value(0)).current;
 
   // API 호출 함수들
   const loadMonthlyTrends = useCallback(async () => {
@@ -236,6 +242,38 @@ const Stats: React.FC = (): React.ReactElement => {
     }
   }, [loading, error, fadeAnim]);
 
+  // 각 탭별 개별 페이드인 애니메이션 관리
+  React.useEffect(() => {
+    console.log('📊 통계 화면 페이드인 체크:', { loading, error, selectedTab });
+    if (!loading && !error) {
+      // 모든 탭 애니메이션을 먼저 초기화
+      totalFadeAnim.setValue(0);
+      itemsFadeAnim.setValue(0);
+      networkFadeAnim.setValue(0);
+      eventsFadeAnim.setValue(0);
+      
+      // 현재 선택된 탭에 해당하는 애니메이션만 실행
+      const currentAnim = selectedTab === 'total' ? totalFadeAnim :
+                         selectedTab === 'items' ? itemsFadeAnim :
+                         selectedTab === 'network' ? networkFadeAnim :
+                         eventsFadeAnim;
+      
+      console.log(`📊 ${selectedTab} 탭 페이드인 애니메이션 시작`);
+      Animated.timing(currentAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      console.log('📊 통계 화면 페이드인 애니메이션 초기화');
+      // 모든 탭 애니메이션 초기화
+      totalFadeAnim.setValue(0);
+      itemsFadeAnim.setValue(0);
+      networkFadeAnim.setValue(0);
+      eventsFadeAnim.setValue(0);
+    }
+  }, [loading, error, selectedTab, totalFadeAnim, itemsFadeAnim, networkFadeAnim, eventsFadeAnim]);
+
   // 타입 변경 시 월별 데이터 로드 (이제 월별 데이터는 한 번에 로드되므로 필요없음)
   // React.useEffect(() => {
   //   if (selectedTab === 'total') {
@@ -290,7 +328,7 @@ const Stats: React.FC = (): React.ReactElement => {
     const currentStats = selectedType === 'given' ? calculatedStats.given : calculatedStats.received;
     
     return (
-      <View style={styles.section}>
+      <Animated.View style={[styles.section, { opacity: totalFadeAnim }]}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitle}>총액 및 추세 분석</Text>
@@ -518,12 +556,12 @@ const Stats: React.FC = (): React.ReactElement => {
             </View>
           )}
         </View>
-      </View>
+      </Animated.View>
     );
   };
 
   const renderItemsAnalysis = () => (
-    <View style={styles.section}>
+    <Animated.View style={[styles.section, { opacity: itemsFadeAnim }]}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>항목별 분석</Text>
@@ -605,11 +643,11 @@ const Stats: React.FC = (): React.ReactElement => {
           ))}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 
   const renderNetworkAnalysis = () => (
-    <View style={styles.section}>
+    <Animated.View style={[styles.section, { opacity: networkFadeAnim }]}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>관계별 분석</Text>
@@ -703,11 +741,11 @@ const Stats: React.FC = (): React.ReactElement => {
           </View>
         </View>
       ))}
-    </View>
+    </Animated.View>
   );
 
   const renderEventsAnalysis = () => (
-    <View style={styles.section}>
+    <Animated.View style={[styles.section, { opacity: eventsFadeAnim }]}>
 
       {/* 이벤트별 기록 - 요약 + 차트 */}
       <View style={styles.eventStatsContainer}>
@@ -779,7 +817,7 @@ const Stats: React.FC = (): React.ReactElement => {
         </View>
       </View>
 
-    </View>
+    </Animated.View>
   );
 
   const renderTabContent = () => {
