@@ -225,7 +225,7 @@ const Stats: React.FC = (): React.ReactElement => {
         // 이벤트별 기록 데이터 로드
         loadEventData();
       }
-    }, [selectedTab, loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution, loadRelationshipStats, loadNetworkData, loadEventData])
+    }, []) // 의존성 배열을 비워서 중복 호출 방지
   );
 
   React.useEffect(() => {
