@@ -3,8 +3,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
+    Animated,
     Modal,
     ScrollView,
     StyleSheet,
@@ -44,6 +44,9 @@ const Ledgers: React.FC = () => {
   // 삭제된 항목과 되돌리기 상태
   const [deletedLedger, setDeletedLedger] = useState<LedgerItem | null>(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
+
+  // 페이드인 애니메이션
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // API 함수들 (메모이제이션)
   const loadLedgers = useCallback(async (filterParams?: {
@@ -158,6 +161,19 @@ const Ledgers: React.FC = () => {
       loadLedgers();
     }, [loadLedgers])
   );
+
+  // 페이드인 애니메이션 효과
+  React.useEffect(() => {
+    if (!loading && !error) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      fadeAnim.setValue(0);
+    }
+  }, [loading, error, fadeAnim]);
 
   // 삭제 함수 (API 연동)
   const handleDeleteLedger = async (ledgerId: number) => {
@@ -315,32 +331,25 @@ const Ledgers: React.FC = () => {
         showsVerticalScrollIndicator={false}
         onTouchStart={closeAllSwipeables}
       >
-        {/* 로딩 상태 */}
-        {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4a5568" />
-            <Text style={styles.loadingText}>장부 목록을 불러오는 중...</Text>
-          </View>
-        )}
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          {/* 에러 상태 */}
+          {error && !loading && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="warning-outline" size={48} color="#FF3B30" />
+              <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
+              <Text style={styles.errorMessage}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={() => loadLedgers()}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.retryButtonText}>다시 시도</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
-        {/* 에러 상태 */}
-        {error && !loading && (
-          <View style={styles.errorContainer}>
-            <Ionicons name="warning-outline" size={48} color="#FF3B30" />
-            <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
-            <Text style={styles.errorMessage}>{error}</Text>
-            <TouchableOpacity 
-              style={styles.retryButton}
-              onPress={() => loadLedgers()}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.retryButtonText}>다시 시도</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 정상 데이터가 있을 때만 표시 */}
-        {!loading && !error && (
+          {/* 정상 데이터가 있을 때만 표시 */}
+          {!loading && !error && (
           <>
             {/* 무신사 스타일 통계 카드 */}
             <View style={styles.statsSection}>
@@ -447,8 +456,8 @@ const Ledgers: React.FC = () => {
               </View>
             )}
           </>
-        )}
-
+          )}
+        </Animated.View>
       </ScrollView>
 
       {/* 플로팅 액션 버튼 */}
@@ -710,6 +719,9 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  content: {
+    flex: 1,
   },
   
   // 헤더 스타일
