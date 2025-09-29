@@ -414,7 +414,7 @@ const Schedules: React.FC = () => {
       </View>
 
       {/* 고정 검색바 */}
-      <View style={styles.searchSection}>
+      <Animated.View style={[styles.searchSection, { opacity: fadeAnim }]}>
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
           <TextInput
@@ -431,7 +431,7 @@ const Schedules: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </Animated.View>
 
       <ScrollView 
         ref={scrollViewRef} 
