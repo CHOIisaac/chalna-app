@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Animated,
     Modal,
@@ -49,8 +49,8 @@ const Schedules: React.FC = () => {
 
 
   
-  // 현재 열린 Swipeable 관리
-  const openSwipeableRefs = useRef<{[key: number]: any}>({});
+  // 현재 열린 Swipeable ID (단일 관리로 성능 최적화)
+  const [openSwipeableId, setOpenSwipeableId] = useState<number | null>(null);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -231,12 +231,7 @@ const Schedules: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-      // 탭 전환 시 열린 스와이프 모두 닫기
-      Object.values(openSwipeableRefs.current).forEach(ref => {
-        if (ref && ref.close) {
-          ref.close();
-        }
-      });
+      // Swipeable 제거로 인한 성능 최적화
       // 데이터 새로고침
       loadSchedules();
     }, [loadSchedules])
@@ -255,25 +250,16 @@ const Schedules: React.FC = () => {
     }
   }, [loading, error, fadeAnim]);
 
-  // 모든 열린 Swipeable 닫기
-  const closeAllSwipeables = () => {
-    Object.values(openSwipeableRefs.current).forEach(ref => {
-      if (ref && ref.close) {
-        ref.close();
-      }
-    });
+  // Swipeable 관리 (단순화된 버전)
+  const handleSwipeableOpen = (id: number) => {
+    setOpenSwipeableId(id);
   };
 
-  // Swipeable ref 등록
-  const registerSwipeableRef = useCallback((id: number, ref: any) => {
-    if (ref) {
-      openSwipeableRefs.current[id] = ref;
-    } else {
-      delete openSwipeableRefs.current[id];
-    }
-  }, []);
+  const handleSwipeableClose = () => {
+    setOpenSwipeableId(null);
+  };
 
-  // 스와이프 삭제 버튼 렌더링 (현업 표준)
+  // 스와이프 삭제 버튼 렌더링
   const renderRightActions = (eventId: number) => {
     return (
       <TouchableOpacity
@@ -288,6 +274,13 @@ const Schedules: React.FC = () => {
 
   // 서버에서 이미 필터링 및 정렬된 데이터 사용
   const filteredAndSortedEvents = schedules || [];
+
+  // 통계 계산을 useMemo로 최적화
+  const { totalEvents, upcomingEvents } = useMemo(() => {
+    const total = filteredAndSortedEvents.length;
+    const upcoming = filteredAndSortedEvents.filter(e => e.status === 'upcoming').length;
+    return { totalEvents: total, upcomingEvents: upcoming };
+  }, [filteredAndSortedEvents]);
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
@@ -369,7 +362,7 @@ const Schedules: React.FC = () => {
   return (
     <MobileLayout currentPage="schedules">
       {/* 고정 헤더 */}
-      <View style={styles.header} onTouchStart={closeAllSwipeables}>
+      <View style={styles.header} onTouchStart={handleSwipeableClose}>
         <View style={styles.headerTop}>
           <Text style={styles.title}>함께할 순간</Text>
           <View style={styles.headerActions}>
@@ -380,7 +373,7 @@ const Schedules: React.FC = () => {
                   viewMode === 'list' && styles.activeToggleButtonCompact,
                 ]}
                 onPress={() => {
-                  closeAllSwipeables();
+                  handleSwipeableClose();
                   setViewMode('list');
                 }}
               >
@@ -396,7 +389,7 @@ const Schedules: React.FC = () => {
                   viewMode === 'calendar' && styles.activeToggleButtonCompact,
                 ]}
                 onPress={() => {
-                  closeAllSwipeables();
+                  handleSwipeableClose();
                   setViewMode('calendar');
                 }}
               >
@@ -410,7 +403,7 @@ const Schedules: React.FC = () => {
             <TouchableOpacity 
               style={styles.filterButton}
               onPress={() => {
-                closeAllSwipeables();
+                handleSwipeableClose();
                 setShowFilterModal(true);
               }}
             >
@@ -430,7 +423,7 @@ const Schedules: React.FC = () => {
             // placeholderTextColor="#999"명
             value={searchTerm}
             onChangeText={handleSearchChange}
-            onFocus={closeAllSwipeables}
+            onFocus={handleSwipeableClose}
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
@@ -444,7 +437,7 @@ const Schedules: React.FC = () => {
         ref={scrollViewRef} 
         style={styles.scrollContainer} 
         showsVerticalScrollIndicator={false}
-        onTouchStart={closeAllSwipeables}
+        onTouchStart={handleSwipeableClose}
       >
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           {/* 로딩 상태 */}
@@ -487,12 +480,12 @@ const Schedules: React.FC = () => {
             </View>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{filteredAndSortedEvents.length}</Text>
+                <Text style={styles.statValue}>{totalEvents}</Text>
                 <Text style={styles.statLabel}>총 일정</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{filteredAndSortedEvents.filter(e => e.status === 'upcoming').length}</Text>
+                <Text style={styles.statValue}>{upcomingEvents}</Text>
                 <Text style={styles.statLabel}>다가오는 일정</Text>
               </View>
             </View>
@@ -530,30 +523,24 @@ const Schedules: React.FC = () => {
                 return (
                   <Swipeable 
                     key={event.id}
-                    ref={ref => registerSwipeableRef(event.id, ref)}
                     renderRightActions={() => renderRightActions(event.id)}
                     rightThreshold={40}
-                    onSwipeableWillOpen={() => {
-                      // 다른 Swipeable들 닫기
-                      Object.entries(openSwipeableRefs.current).forEach(([id, ref]) => {
-                        if (parseInt(id) !== event.id && ref && ref.close) {
-                          ref.close();
-                        }
-                      });
-                    }}
+                    onSwipeableWillOpen={() => handleSwipeableOpen(event.id)}
+                    onSwipeableWillClose={handleSwipeableClose}
                   >
                     <TouchableOpacity
                       style={styles.eventCard}
                       activeOpacity={0.8}
                       onPress={() => {
-                        closeAllSwipeables();
-                        router.push({
-                          pathname: '/schedule-detail',
-                          params: {
-                            id: event.id,
-                            data: JSON.stringify(event)
-                          }
-                        });
+                        if (openSwipeableId !== event.id) {
+                          router.push({
+                            pathname: '/schedule-detail',
+                            params: {
+                              id: event.id,
+                              data: JSON.stringify(event)
+                            }
+                          });
+                        }
                       }}
                     >
                     {/* 메모 표시 - 카드 모서리 */}
@@ -615,7 +602,7 @@ const Schedules: React.FC = () => {
           </View>
 
             {/* 빈 상태 */}
-            {filteredAndSortedEvents.length === 0 && (
+            {totalEvents === 0 && (
               <View style={styles.emptyState}>
                 {/*<View style={styles.emptyIcon}>*/}
                 {/*  <Ionicons name="calendar-outline" size={48} color="#ddd" />*/}
