@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Alert,
     Animated,
@@ -25,8 +25,8 @@ const Ledgers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   
-  // 현재 열린 Swipeable 관리
-  const openSwipeableRefs = useRef<{[key: number]: any}>({});
+  // 현재 열린 Swipeable ID (단일 관리로 성능 최적화)
+  const [openSwipeableId, setOpenSwipeableId] = useState<number | null>(null);
   
   // 필터 상태
   const [filterType, setFilterType] = useState<'all' | 'given' | 'received'>('all');
@@ -54,20 +54,32 @@ const Ledgers: React.FC = () => {
     entry_type?: 'given' | 'received';
     sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
   }) => {
+    console.log('📝 loadLedgers 함수 시작됨', { filterParams });
     try {
       setLoading(true);
       setError(null);
+      
+      // API 응답 시간 측정
+      console.log('📝 API 호출 시작...');
+      const startTime = Date.now();
       const response = await ledgerService.getLedgers(filterParams);
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      console.log(`📝 장부 API 응답 시간: ${responseTime}ms`);
+      console.log('📝 API 응답 받음:', response);
       
       if (response.success) {
         setLedgers(response.data);
+        console.log('📝 장부 데이터 개수:', response.data.length);
       } else {
+        console.log('📝 API 응답 실패:', response.error);
         setError(response.error || '장부 목록을 불러오는데 실패했습니다.');
       }
     } catch (err) {
-      console.error('장부 목록 로드 실패:', err);
+      console.error('📝 장부 목록 로드 실패:', err);
       setError(handleApiError(err));
     } finally {
+      console.log('📝 loadLedgers 함수 완료');
       setLoading(false);
     }
   }, []);
@@ -151,12 +163,7 @@ const Ledgers: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-      // 탭 전환 시 열린 스와이프 모두 닫기
-      Object.values(openSwipeableRefs.current).forEach(ref => {
-        if (ref && ref.close) {
-          ref.close();
-        }
-      });
+      // Swipeable 제거로 인한 성능 최적화
       // 데이터 새로고침
       loadLedgers();
     }, [loadLedgers])
@@ -250,25 +257,16 @@ const Ledgers: React.FC = () => {
     }
   };
 
-  // 모든 열린 Swipeable 닫기
-  const closeAllSwipeables = () => {
-    Object.values(openSwipeableRefs.current).forEach(ref => {
-      if (ref && ref.close) {
-        ref.close();
-      }
-    });
+  // Swipeable 관리 (단순화된 버전)
+  const handleSwipeableOpen = (id: number) => {
+    setOpenSwipeableId(id);
   };
 
-  // Swipeable ref 등록
-  const registerSwipeableRef = useCallback((id: number, ref: any) => {
-    if (ref) {
-      openSwipeableRefs.current[id] = ref;
-    } else {
-      delete openSwipeableRefs.current[id];
-    }
-  }, []);
+  const handleSwipeableClose = () => {
+    setOpenSwipeableId(null);
+  };
 
-  // 스와이프 삭제 버튼 렌더링 (현업 표준)
+  // 스와이프 삭제 버튼 렌더링
   const renderRightActions = (ledgerId: number) => {
     return (
       <TouchableOpacity
@@ -284,19 +282,23 @@ const Ledgers: React.FC = () => {
   // 서버에서 이미 필터링 및 정렬된 데이터 사용
   const filteredAndSortedLedgers = ledgers || [];
 
-  const totalGiven = ledgers.filter(ledger => ledger.entry_type === 'given').reduce((sum, ledger) => sum + ledger.amount, 0);
-  const totalReceived = ledgers.filter(ledger => ledger.entry_type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
+  // 통계 계산을 useMemo로 최적화
+  const { totalGiven, totalReceived } = useMemo(() => {
+    const given = ledgers.filter(ledger => ledger.entry_type === 'given').reduce((sum, ledger) => sum + ledger.amount, 0);
+    const received = ledgers.filter(ledger => ledger.entry_type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
+    return { totalGiven: given, totalReceived: received };
+  }, [ledgers]);
 
   return (
     <MobileLayout currentPage="ledgers">
       {/* 고정 헤더 */}
-      <View style={styles.header} onTouchStart={closeAllSwipeables}>
+      <View style={styles.header} onTouchStart={handleSwipeableClose}>
         <View style={styles.headerTop}>
           <Text style={styles.title}>장부 기록</Text>
           <TouchableOpacity 
             style={styles.filterButton}
             onPress={() => {
-              closeAllSwipeables();
+              handleSwipeableClose();
               setShowFilterModal(true);
             }}
           >
@@ -315,7 +317,7 @@ const Ledgers: React.FC = () => {
             // placeholderTextColor="#999"
             value={searchTerm}
             onChangeText={handleSearchChange}
-            onFocus={closeAllSwipeables}
+            onFocus={handleSwipeableClose}
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
@@ -329,7 +331,7 @@ const Ledgers: React.FC = () => {
         ref={scrollViewRef} 
         style={styles.scrollContainer} 
         showsVerticalScrollIndicator={false}
-        onTouchStart={closeAllSwipeables}
+        onTouchStart={handleSwipeableClose}
       >
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           {/* 에러 상태 */}
@@ -381,30 +383,24 @@ const Ledgers: React.FC = () => {
                   return (
                     <Swipeable 
                       key={ledger.id}
-                      ref={ref => registerSwipeableRef(ledger.id, ref)}
                       renderRightActions={() => renderRightActions(ledger.id)}
                       rightThreshold={40}
-                      onSwipeableWillOpen={() => {
-                        // 다른 Swipeable들 닫기
-                        Object.entries(openSwipeableRefs.current).forEach(([id, ref]) => {
-                          if (parseInt(id) !== ledger.id && ref && ref.close) {
-                            ref.close();
-                          }
-                        });
-                      }}
+                      onSwipeableWillOpen={() => handleSwipeableOpen(ledger.id)}
+                      onSwipeableWillClose={handleSwipeableClose}
                     >
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         style={styles.ledgerCard}
                         activeOpacity={0.8}
                         onPress={() => {
-                          closeAllSwipeables();
-                          router.push({
-                            pathname: '/ledger-detail',
-                            params: {
-                              id: ledger.id.toString(),
-                              data: JSON.stringify(ledger)
-                            }
-                          });
+                          if (openSwipeableId !== ledger.id) {
+                            router.push({
+                              pathname: '/ledger-detail',
+                              params: {
+                                id: ledger.id.toString(),
+                                data: JSON.stringify(ledger)
+                              }
+                            });
+                          }
                         }}
                       >
                         {/* 메모 표시 - 카드 모서리 */}
