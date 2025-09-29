@@ -28,7 +28,11 @@ export interface LoginResponse {
 
 // 인증 서비스 클래스
 export class AuthService {
-  
+  // 토큰 메모리 캐싱
+  private static tokenCache: string | null = null;
+  private static cacheExpiry: number = 0;
+  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5분 캐시
+
   // 토큰 저장
   static async setTokens(accessToken: string, refreshToken: string): Promise<void> {
     try {
@@ -36,20 +40,44 @@ export class AuthService {
         AsyncStorage.setItem(TOKEN_KEY, accessToken),
         AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken),
       ]);
+      
+      // 메모리 캐시도 업데이트
+      this.tokenCache = accessToken;
+      this.cacheExpiry = Date.now() + this.CACHE_DURATION;
+      console.log('🔑 토큰 저장 및 캐시 업데이트 완료');
     } catch (error) {
       console.error('토큰 저장 실패:', error);
       throw error;
     }
   }
 
-  // 액세스 토큰 가져오기
+  // 액세스 토큰 가져오기 (메모리 캐싱 적용)
   static async getAccessToken(): Promise<string | null> {
     try {
+      // 캐시된 토큰이 유효하면 바로 반환 (AsyncStorage 접근 없음)
+      if (this.tokenCache && Date.now() < this.cacheExpiry) {
+        console.log('🔑 캐시된 토큰 사용 (AsyncStorage 접근 없음)');
+        return this.tokenCache;
+      }
+      
+      // 캐시가 없거나 만료되면 AsyncStorage에서 조회
+      console.log('🔑 AsyncStorage에서 토큰 조회');
       const token = await AsyncStorage.getItem(TOKEN_KEY);
-      console.log('🔑 저장된 토큰:', token ? '있음' : '없음');
+      
+      if (token) {
+        // 새로 조회한 토큰을 캐시에 저장
+        this.tokenCache = token;
+        this.cacheExpiry = Date.now() + this.CACHE_DURATION;
+        console.log('🔑 토큰 캐시 업데이트 완료');
+      } else {
+        // 토큰이 없으면 캐시도 초기화
+        this.clearCache();
+      }
+      
       return token;
     } catch (error) {
       console.error('토큰 조회 실패:', error);
+      this.clearCache(); // 에러 시 캐시 초기화
       return null;
     }
   }
@@ -96,6 +124,13 @@ export class AuthService {
     }
   }
 
+  // 캐시 초기화
+  private static clearCache(): void {
+    this.tokenCache = null;
+    this.cacheExpiry = 0;
+    console.log('🔑 토큰 캐시 초기화');
+  }
+
   // 로그아웃 (모든 토큰 삭제)
   static async logout(): Promise<void> {
     try {
@@ -104,6 +139,10 @@ export class AuthService {
         AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
         AsyncStorage.removeItem(USER_DATA_KEY),
       ]);
+      
+      // 메모리 캐시도 초기화
+      this.clearCache();
+      console.log('🔑 로그아웃 완료 - 모든 토큰 및 캐시 삭제');
     } catch (error) {
       console.error('로그아웃 실패:', error);
       throw error;
@@ -114,6 +153,10 @@ export class AuthService {
   static async clearAllData(): Promise<void> {
     try {
       await AsyncStorage.clear();
+      
+      // 메모리 캐시도 초기화
+      this.clearCache();
+      console.log('🔑 모든 데이터 삭제 완료 - 캐시도 초기화');
     } catch (error) {
       console.error('데이터 전체 삭제 실패:', error);
       throw error;
