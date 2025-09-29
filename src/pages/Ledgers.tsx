@@ -54,32 +54,20 @@ const Ledgers: React.FC = () => {
     entry_type?: 'given' | 'received';
     sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
   }) => {
-    console.log('📝 loadLedgers 함수 시작됨', { filterParams });
     try {
       setLoading(true);
       setError(null);
-      
-      // API 응답 시간 측정
-      console.log('📝 API 호출 시작...');
-      const startTime = Date.now();
       const response = await ledgerService.getLedgers(filterParams);
-      const endTime = Date.now();
-      const responseTime = endTime - startTime;
-      console.log(`📝 장부 API 응답 시간: ${responseTime}ms`);
-      console.log('📝 API 응답 받음:', response);
       
       if (response.success) {
         setLedgers(response.data);
-        console.log('📝 장부 데이터 개수:', response.data.length);
       } else {
-        console.log('📝 API 응답 실패:', response.error);
         setError(response.error || '장부 목록을 불러오는데 실패했습니다.');
       }
     } catch (err) {
-      console.error('📝 장부 목록 로드 실패:', err);
+      console.error('장부 목록 로드 실패:', err);
       setError(handleApiError(err));
     } finally {
-      console.log('📝 loadLedgers 함수 완료');
       setLoading(false);
     }
   }, []);
