@@ -3,15 +3,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
@@ -41,6 +42,11 @@ const Ledgers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 무한 스크롤 상태
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentSkip, setCurrentSkip] = useState(0);
+
   // 삭제된 항목과 되돌리기 상태
   const [deletedLedger, setDeletedLedger] = useState<LedgerItem | null>(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
@@ -53,14 +59,31 @@ const Ledgers: React.FC = () => {
     search?: string;
     entry_type?: 'given' | 'received';
     sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
-  }) => {
+  }, limit: number = 20, skip: number = 0, isLoadMore: boolean = false) => {
     try {
-      setLoading(true);
+      if (!isLoadMore) {
+        setLoading(true);
+        setCurrentSkip(0);
+        setHasMore(true);
+      }
       setError(null);
-      const response = await ledgerService.getLedgers(filterParams);
+      
+      const params = {
+        ...filterParams,
+        limit,
+        skip
+      };
+      
+      const response = await ledgerService.getLedgers(params);
       
       if (response.success) {
-        setLedgers(response.data);
+        if (isLoadMore) {
+          setLedgers(prev => [...prev, ...response.data]);
+        } else {
+          setLedgers(response.data);
+        }
+        setHasMore(response.data.length === 20); // 20개 미만이면 더 이상 데이터 없음
+        setCurrentSkip(skip + response.data.length);
       } else {
         setError(response.error || '장부 목록을 불러오는데 실패했습니다.');
       }
@@ -71,6 +94,52 @@ const Ledgers: React.FC = () => {
       setLoading(false);
     }
   }, []);
+
+  // 더 많은 데이터 로드 함수
+  const loadMoreLedgers = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    
+    try {
+      const searchParams: {
+        search?: string;
+        entry_type?: 'given' | 'received';
+        sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
+      } = {};
+
+      // 검색어만 추가 (현재 적용된 필터 상태 유지)
+      if (searchTerm.trim()) {
+        searchParams.search = searchTerm.trim();
+      }
+
+      // 현재 적용된 타입 필터 유지
+      if (filterType !== 'all') {
+        searchParams.entry_type = filterType;
+      }
+
+      // 현재 적용된 정렬 유지
+      searchParams.sort_by = sortBy;
+
+      const params = {
+        ...searchParams,
+        limit: 20,
+        skip: currentSkip
+      };
+      
+      const response = await ledgerService.getLedgers(params);
+      
+      if (response.success) {
+        setLedgers(prev => [...prev, ...response.data]);
+        setHasMore(response.data.length === 20); // 20개 미만이면 더 이상 데이터 없음
+        setCurrentSkip(currentSkip + response.data.length);
+      }
+    } catch (err) {
+      console.error('더 많은 장부 로드 실패:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, currentSkip, searchTerm, filterType, sortBy]);
 
   // 검색어 전용 파라미터 빌드 함수 (검색어만 의존성으로 가짐)
   const buildSearchParams = useCallback(() => {
@@ -94,7 +163,7 @@ const Ledgers: React.FC = () => {
     searchParams.sort_by = sortBy;
 
     return searchParams;
-  }, [searchTerm]); // 검색어만 의존성으로 가짐
+  }, [searchTerm, filterType, sortBy]); // 검색어, 필터 타입, 정렬 모두 의존성으로 가짐
 
   // 전체 필터 파라미터 빌드 함수 (적용 버튼용)
   const buildFilterParams = useCallback(() => {
@@ -124,8 +193,8 @@ const Ledgers: React.FC = () => {
   const applyFilter = useCallback(async () => {
     const filterParams = buildFilterParams();
     
-    // API 호출
-    await loadLedgers(filterParams);
+    // API 호출 (무한 스크롤을 위해 limit 20으로 설정)
+    await loadLedgers(filterParams, 20, 0, false);
     
     // 모달 닫기
     setShowFilterModal(false);
@@ -141,7 +210,7 @@ const Ledgers: React.FC = () => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const searchParams = buildSearchParams();
-      loadLedgers(searchParams);
+      loadLedgers(searchParams, 20, 0, false);
     }, 200); // 200ms로 최적화 (반응성 향상)
 
     return () => clearTimeout(timeoutId);
@@ -152,8 +221,8 @@ const Ledgers: React.FC = () => {
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       // Swipeable 제거로 인한 성능 최적화
-      // 데이터 새로고침
-      loadLedgers();
+      // 데이터 새로고침 (무한 스크롤을 위해 limit 20으로 설정)
+      loadLedgers(undefined, 20, 0, false);
     }, [loadLedgers])
   );
 
@@ -320,6 +389,14 @@ const Ledgers: React.FC = () => {
         style={styles.scrollContainer} 
         showsVerticalScrollIndicator={false}
         onTouchStart={handleSwipeableClose}
+        onScroll={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const paddingToBottom = 20;
+          if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
+            loadMoreLedgers();
+          }
+        }}
+        scrollEventThrottle={400}
       >
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           {/* 에러 상태 */}
@@ -437,6 +514,14 @@ const Ledgers: React.FC = () => {
                 {/*</View>*/}
                 {/*<Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>*/}
                 <Text style={styles.emptyDescription}>기록이 없습니다</Text>
+              </View>
+            )}
+
+            {/* 무한 스크롤 로딩 인디케이터 */}
+            {loadingMore && (
+              <View style={styles.loadingMoreContainer}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={styles.loadingMoreText}>더 많은 기록을 불러오는 중...</Text>
               </View>
             )}
           </>
@@ -1170,6 +1255,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingMoreContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
+  loadingMoreText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666',
   },
 });
 
