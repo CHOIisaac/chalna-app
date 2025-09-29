@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
-    ActivityIndicator,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -138,24 +137,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
-        {loading ? (
-          // 로딩 중일 때는 4개의 로딩 카드 표시
-          Array.from({ length: 4 }).map((_, index) => (
-            <View key={index} style={styles.statCard}>
-              <LinearGradient
-                colors={['#FFFFFF', '#F8F9FA']}
-                style={styles.cardGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <View style={styles.statContent}>
-                  <ActivityIndicator size="small" color={colors.primary} />
-                  <Text style={styles.statTitle}>로딩 중...</Text>
-                </View>
-              </LinearGradient>
-            </View>
-          ))
-        ) : (
+        {!loading && (
           stats.map((stat, index) => {
             // 배지 색상 적용
             let badgeColor = { backgroundColor: colors.success + '20', textColor: colors.success };

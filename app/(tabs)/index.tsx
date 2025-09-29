@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Animated,
     ScrollView,
@@ -20,28 +20,21 @@ export default function HomeScreen() {
   const [monthlyStats, setMonthlyStats] = useState<MonthlyStats | null>(null);
   const [quickStats, setQuickStats] = useState<QuickStatsType | null>(null);
   const [recentLedgers, setRecentLedgers] = useState<RecentLedger[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // 홈 화면 데이터 로드 (메모이제이션)
   const loadHomeData = useCallback(async () => {
-    console.log('🏠 loadHomeData 함수 시작됨');
     try {
       setLoading(true);
       setError(null);
       
-             // 3개 API를 병렬로 호출
-             console.log('🏠 홈 API 호출 시작...');
-             const startTime = Date.now();
-             const [monthlyResponse, quickResponse, recentResponse] = await Promise.all([
-               homeService.getMonthlyStats(),
-               homeService.getQuickStats(),
-               homeService.getRecentLedgers()
-             ]);
-             const endTime = Date.now();
-             const responseTime = endTime - startTime;
-             console.log(`🏠 홈 API 응답 시간: ${responseTime}ms`);
-             console.log('🏠 홈 API 응답 받음:', { monthlyResponse, quickResponse, recentResponse });
+      // 3개 API를 병렬로 호출
+      const [monthlyResponse, quickResponse, recentResponse] = await Promise.all([
+        homeService.getMonthlyStats(),
+        homeService.getQuickStats(),
+        homeService.getRecentLedgers()
+      ]);
 
       if (monthlyResponse.success) {
         setMonthlyStats(monthlyResponse.data);
@@ -62,31 +55,25 @@ export default function HomeScreen() {
     }
   }, []);
 
-  // 컴포넌트 마운트 시 데이터 로드
-  useEffect(() => {
-    loadHomeData();
-  }, [loadHomeData]);
+  // 컴포넌트 마운트 시 데이터 로드 제거 (useFocusEffect에서 처리)
 
   // 탭이 포커스될 때마다 스크롤을 맨 위로 이동하고 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       loadHomeData(); // 탭 포커스 시 데이터 새로고침
-    }, [loadHomeData])
+    }, []) // loadHomeData 의존성 제거로 중복 호출 방지
   );
 
   // 페이드인 애니메이션 효과 (다른 화면과 동일하게 로딩 완료 후 실행)
   React.useEffect(() => {
-    console.log('🏠 홈 화면 페이드인 애니메이션:', { loading, error });
     if (!loading && !error) {
-      console.log('🏠 페이드인 애니메이션 시작');
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
       }).start();
     } else {
-      console.log('🏠 페이드인 애니메이션 초기화');
       fadeAnim.setValue(0);
     }
   }, [loading, error, fadeAnim]);

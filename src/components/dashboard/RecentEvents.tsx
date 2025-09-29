@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    ActivityIndicator,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -36,22 +35,7 @@ const RecentEvents: React.FC<RecentEventsProps> = ({ recentLedgers, loading }) =
         </View>
 
         <View style={styles.eventsList}>
-          {loading ? (
-            // 로딩 중일 때는 로딩 카드 표시
-            Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.eventCard}>
-                <View style={styles.infoSection}>
-                  <View style={styles.titleRow}>
-                    <ActivityIndicator size="small" color="#666" />
-                    <Text style={[styles.eventTitle, { marginLeft: 8 }]}>로딩 중...</Text>
-                  </View>
-                </View>
-                <View style={styles.amountSection}>
-                  <Text style={styles.amountText}>-</Text>
-                </View>
-              </View>
-            ))
-          ) : recentLedgers.length > 0 ? (
+          {!loading && recentLedgers.length > 0 ? (
             recentLedgers.map((ledger, index) => (
               <TouchableOpacity 
                 key={ledger.id} 

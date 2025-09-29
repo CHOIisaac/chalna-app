@@ -3,7 +3,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Modal,
     StyleSheet,
     Text,
@@ -107,33 +106,25 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>나눈 마음</Text>
-              {loading ? (
-                <ActivityIndicator size="small" color={colors.primary} />
-              ) : (
-                <>
-                  <Text style={styles.statValue}>
-                    {monthlyStats ? formatAmount(monthlyStats.total_amount) : '0'}원
-                  </Text>
-                  <Text style={styles.statChange}>
-                    {monthlyStats ? formatChange(monthlyStats.total_amount_change) : '전월 대비 0%'}
-                  </Text>
-                </>
-              )}
+              <>
+                <Text style={styles.statValue}>
+                  {monthlyStats ? formatAmount(monthlyStats.total_amount) : '0'}원
+                </Text>
+                <Text style={styles.statChange}>
+                  {monthlyStats ? formatChange(monthlyStats.total_amount_change) : '전월 대비 0%'}
+                </Text>
+              </>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>함께할 순간</Text>
-              {loading ? (
-                <ActivityIndicator size="small" color={colors.primary} />
-              ) : (
-                <>
-                  <Text style={styles.statValue}>
-                    {monthlyStats ? `${monthlyStats.event_count}건` : '0건'}
-                  </Text>
-                  <Text style={styles.statChange}>
-                    {monthlyStats ? `이번 주 ${monthlyStats.this_week_event_count}건` : '이번 주 0건'}
-                  </Text>
-                </>
-              )}
+              <>
+                <Text style={styles.statValue}>
+                  {monthlyStats ? `${monthlyStats.event_count}건` : '0건'}
+                </Text>
+                <Text style={styles.statChange}>
+                  {monthlyStats ? `이번 주 ${monthlyStats.this_week_event_count}건` : '이번 주 0건'}
+                </Text>
+              </>
             </View>
           </View>
           
@@ -141,13 +132,9 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressLabel}>일정 완료율</Text>
-              {loading ? (
-                <ActivityIndicator size="small" color={colors.primary} />
-              ) : (
-                <Text style={styles.progressValue}>
-                  {monthlyStats ? `${monthlyStats.completion_rate}%` : '0%'}
-                </Text>
-              )}
+              <Text style={styles.progressValue}>
+                {monthlyStats ? `${monthlyStats.completion_rate}%` : '0%'}
+              </Text>
             </View>
             <View style={styles.progressBar}>
               <View style={[
