@@ -213,11 +213,15 @@ export const ledgerService = {
     search?: string;
     entry_type?: 'given' | 'received';
     sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
+    limit?: number;
+    skip?: number;
   }): Promise<ApiResponse<LedgerItem[]>> {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append('search', params.search);
     if (params?.entry_type) queryParams.append('entry_type', params.entry_type);
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.skip) queryParams.append('skip', params.skip.toString());
     
     const url = queryParams.toString() 
       ? `${API_ENDPOINTS.LEDGERS}?${queryParams.toString()}`
