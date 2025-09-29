@@ -32,18 +32,18 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
   const getBadgeColor = (change: number) => {
     if (change === 0) {
       return {
-        backgroundColor: '#F3F4F6', // 더 연한 회색
+        backgroundColor: '#F3F4F6', // 연한 회색
         textColor: '#9CA3AF',
       };
     } else if (change < 0) {
       return {
-        backgroundColor: '#FEF3C7', // 더 연한 주황색
-        textColor: '#D97706',
+        backgroundColor: '#FEF3F2', // 연한 주황색 (같은 감도)
+        textColor: '#F87171',
       };
     } else {
       return {
-        backgroundColor: colors.success + '20', // 기존 성공 색상
-        textColor: colors.success,
+        backgroundColor: '#F0FDF4', // 연한 초록색 (같은 감도)
+        textColor: '#22C55E',
       };
     }
   };
@@ -102,7 +102,19 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
 
   const stats = getStatsFromApi();
 
-  const getIconName = (icon: string): keyof typeof Ionicons.glyphMap => {
+  const getIconName = (icon: string, changeValue?: number): keyof typeof Ionicons.glyphMap => {
+    // 변화량에 따른 아이콘 우선 적용
+    if (changeValue !== undefined) {
+      if (changeValue > 0) {
+        return 'trending-up-outline';
+      } else if (changeValue < 0) {
+        return 'trending-down';
+      } else {
+        return 'remove-outline';
+      }
+    }
+    
+    // 기본 아이콘 매핑
     switch (icon) {
       case 'trending-up':
         return 'trending-up';
@@ -145,28 +157,21 @@ const QuickStats: React.FC<QuickStatsProps> = ({ quickStats, loading }) => {
           ))
         ) : (
           stats.map((stat, index) => {
-            const IconName = getIconName(stat.icon);
-            
             // 배지 색상 적용
             let badgeColor = { backgroundColor: colors.success + '20', textColor: colors.success };
+            let changeValue = 0;
             
             if (stat.title === '축의금' || stat.title === '조의금' || stat.title === '평균 축의금') {
               // 퍼센트 값 추출 (예: "+5%" -> 5, "-3%" -> -3)
-              const changeValue = parseFloat(stat.change.replace(/[+%]/g, ''));
-              if (stat.change.startsWith('-')) {
-                badgeColor = getBadgeColor(-changeValue);
-              } else {
-                badgeColor = getBadgeColor(changeValue);
-              }
+              changeValue = parseFloat(stat.change.replace(/[%]/g, ''));
+              badgeColor = getBadgeColor(changeValue);
             } else if (stat.title === '모든 순간') {
               // 건수 변화값 추출 (예: "+5건" -> 5, "-3건" -> -3)
-              const changeValue = parseFloat(stat.change.replace(/[+건]/g, ''));
-              if (stat.change.startsWith('-')) {
-                badgeColor = getBadgeColor(-changeValue);
-              } else {
-                badgeColor = getBadgeColor(changeValue);
-              }
+              changeValue = parseFloat(stat.change.replace(/[건]/g, ''));
+              badgeColor = getBadgeColor(changeValue);
             }
+            
+            const IconName = getIconName(stat.icon, changeValue);
             
             return (
               <TouchableOpacity
