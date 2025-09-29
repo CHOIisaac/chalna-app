@@ -510,7 +510,7 @@ const Ledgers: React.FC = () => {
         ListFooterComponent={() => loadingMore && (
           <View style={styles.loadingMoreContainer}>
             <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={styles.loadingMoreText}>더 많은 기록을 불러오는 중...</Text>
+            <Text style={styles.loadingMoreText}>기록을 불러오는 중...</Text>
           </View>
         )}
       />
