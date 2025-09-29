@@ -223,12 +223,18 @@ const Stats: React.FC = (): React.ReactElement => {
   );
 
   React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+    // 데이터 로딩이 완료되고 에러가 없을 때만 페이드인 효과 실행
+    if (!loading && !error) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // 로딩 중이거나 에러가 있을 때는 투명하게
+      fadeAnim.setValue(0);
+    }
+  }, [loading, error, fadeAnim]);
 
   // 타입 변경 시 월별 데이터 로드 (이제 월별 데이터는 한 번에 로드되므로 필요없음)
   // React.useEffect(() => {

@@ -215,10 +215,7 @@ const Schedules: React.FC = () => {
     }
   };
 
-  // 컴포넌트 마운트 시 데이터 로드 (한 번만)
-  useEffect(() => {
-    loadSchedules();
-  }, [loadSchedules]);
+  // 컴포넌트 마운트 시 데이터 로드 제거 (useFocusEffect에서 처리)
 
   // 검색어 변경 시 디바운싱된 API 호출
   useEffect(() => {
