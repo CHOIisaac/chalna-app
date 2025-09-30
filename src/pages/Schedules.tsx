@@ -308,20 +308,20 @@ const Schedules: React.FC = () => {
 
   // 선택된 날짜의 이벤트 필터링
   const getEventsForDate = (date: Date) => {
-    return schedules.filter(event => {
-      const eventDate = new Date(event.event_date);
+    return schedules.filter(schedule => {
+      const eventDate = new Date(schedule.event_date);
       return eventDate.getDate() === date.getDate() &&
         eventDate.getMonth() === date.getMonth() &&
         eventDate.getFullYear() === date.getFullYear();
     });
   };
 
-  // 달력에서 이벤트가 있는 날짜들을 markedDates 형태로 변환
+  // 달력에서 일정이 있는 날짜들을 markedDates 형태로 변환
   const getMarkedDates = () => {
     const marked: any = {};
     
-    schedules.forEach(event => {
-      const eventDate = event.event_date;
+    schedules.forEach(schedule => {
+      const eventDate = schedule.event_date;
       marked[eventDate] = {
         marked: true,
         dotColor: '#4a5568',
@@ -553,7 +553,7 @@ const Schedules: React.FC = () => {
                       )}
                     </View>
 
-                    {/* 이벤트 정보 */}
+                    {/* 일정 정보 */}
                     <View style={styles.scheduleInfo}>
                       <View style={styles.scheduleHeader}>
                         <Text style={styles.scheduleTitle}>{schedule.title}</Text>
@@ -667,12 +667,12 @@ const Schedules: React.FC = () => {
           <ScrollView style={styles.modalContent}>
             {selectedDate && getEventsForDate(selectedDate).length > 0 ? (
               <View style={styles.modalSchedulesList}>
-                {getEventsForDate(selectedDate).map((event) => {
-                  const typeStyle = getEventTypeColor(event.event_type);
+                {getEventsForDate(selectedDate).map((schedule) => {
+                  const typeStyle = getEventTypeColor(schedule.event_type);
 
                   return (
                     <TouchableOpacity
-                      key={event.id}
+                      key={schedule.id}
                       style={styles.modalScheduleCard}
                       activeOpacity={0.8}
                       onPress={() => {
@@ -680,39 +680,39 @@ const Schedules: React.FC = () => {
                         router.push({
                           pathname: '/schedule-detail',
                           params: {
-                            id: event.id,
-                            data: JSON.stringify(event)
+                            id: schedule.id,
+                            data: JSON.stringify(schedule)
                           }
                         });
                       }}
                     >
                       {/* 메모 표시 - 카드 모서리 */}
-                      {event.memo && event.memo.trim() !== '' && (
+                      {schedule.memo && schedule.memo.trim() !== '' && (
                         <View style={styles.memoCorner} />
                       )}
 
                       {/* 날짜 표시 */}
                       <View style={styles.modalDateSection}>
                         <View style={styles.modalDateContainer}>
-                          <Text style={styles.modalDateNumber}>{new Date(event.event_date).getDate()}</Text>
-                          <Text style={styles.modalDateMonth}>{new Date(event.event_date).getMonth() + 1}월</Text>
+                          <Text style={styles.modalDateNumber}>{new Date(schedule.event_date).getDate()}</Text>
+                          <Text style={styles.modalDateMonth}>{new Date(schedule.event_date).getMonth() + 1}월</Text>
                         </View>
                       </View>
 
-                      {/* 이벤트 정보 */}
+                      {/* 일정 정보 */}
                       <View style={styles.modalScheduleInfo}>
                         <View style={styles.modalScheduleHeader}>
-                          <Text style={styles.modalScheduleTitle}>{event.title}</Text>
+                          <Text style={styles.modalScheduleTitle}>{schedule.title}</Text>
                         </View>
                         
                         <View style={styles.modalScheduleDetails}>
                           <View style={styles.modalDetailRow}>
                             <Ionicons name="time-outline" size={14} color="#666" />
-                            <Text style={styles.modalDetailText}>{formatTime(event.event_time)}</Text>
+                            <Text style={styles.modalDetailText}>{formatTime(schedule.event_time)}</Text>
                           </View>
                           <View style={styles.modalDetailRow}>
                             <Ionicons name="location-outline" size={14} color="#666" />
-                            <Text style={styles.modalDetailText}>{event.location}</Text>
+                            <Text style={styles.modalDetailText}>{schedule.location}</Text>
                           </View>
                         </View>
                       </View>
@@ -721,12 +721,12 @@ const Schedules: React.FC = () => {
                       <View style={styles.modalStatusSection}>
                         <View style={[styles.modalTypeBadge, { backgroundColor: typeStyle.bg }]}>
                           <Text style={[styles.modalTypeText, { color: typeStyle.text }]}>
-                            {event.event_type}
+                            {schedule.event_type}
                           </Text>
                         </View>
-                        <View style={[styles.modalStatusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
-                          <Text style={[styles.modalStatusText, { color: getStatusColor(event.status).text }]}>
-                            {getStatusText(event.status)}
+                        <View style={[styles.modalStatusBadge, { backgroundColor: getStatusColor(schedule.status).bg }]}>
+                          <Text style={[styles.modalStatusText, { color: getStatusColor(schedule.status).text }]}>
+                            {getStatusText(schedule.status)}
                           </Text>
                         </View>
                       </View>
@@ -1469,7 +1469,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // 모달 이벤트 정보
+  // 모달 일정 정보
   modalScheduleInfo: {
     flex: 1,
   },
