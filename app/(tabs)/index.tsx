@@ -81,44 +81,43 @@ export default function HomeScreen() {
 
   return (
     <MobileLayout currentPage="home">
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* 헤더 */}
-        <WelcomeHeader
-            monthlyStats={monthlyStats}
-            loading={loading}
-        />
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView} 
+          showsVerticalScrollIndicator={false}
+        >
+          {/* 헤더 */}
+          <WelcomeHeader
+              monthlyStats={monthlyStats}
+              loading={loading}
+          />
 
-        {/* 통계 카드 */}
-        <QuickStats
-            quickStats={quickStats}
-            loading={loading}
-        />
+          {/* 통계 카드 */}
+          <QuickStats
+              quickStats={quickStats}
+              loading={loading}
+          />
 
-        {/* 최근 경조사 */}
-        <RecentEvents
-            recentLedgers={recentLedgers}
-            loading={loading}
-        />
+          {/* 최근 경조사 */}
+          <RecentEvents
+              recentLedgers={recentLedgers}
+              loading={loading}
+          />
+        </ScrollView>
+
+        {/* 플로팅 액션 버튼 */}
+        {/*<FloatingActionButton />*/}
       </Animated.View>
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollView} 
-        showsVerticalScrollIndicator={false}
-      >
-
-      </ScrollView>
-
-      {/*/!* 플로팅 액션 버튼 *!/*/}
-      {/*<FloatingActionButton />*/}
     </MobileLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  container: {
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
   },
 });
