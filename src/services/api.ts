@@ -297,18 +297,22 @@ export const scheduleService = {
     status?: 'upcoming' | 'completed';
     event_type?: string;
     sort_by?: 'date_asc' | 'date_desc';
+    limit?: number;
+    skip?: number;
   }): Promise<ScheduleApiResponse<ScheduleItem[]>> {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append('search', params.search);
     if (params?.status) queryParams.append('status', params.status);
     if (params?.event_type) queryParams.append('event_type', params.event_type);
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.skip) queryParams.append('skip', params.skip.toString());
     
     const url = queryParams.toString() 
       ? `${API_ENDPOINTS.SCHEDULES}?${queryParams.toString()}`
       : API_ENDPOINTS.SCHEDULES;
       
-    return apiClient.get<ApiResponse<ScheduleItem[]>>(url);
+    return apiClient.get<ScheduleApiResponse<ScheduleItem[]>>(url);
   },
 
   // 일정 생성
