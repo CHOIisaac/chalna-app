@@ -184,6 +184,15 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+// 장부 API 응답 타입 (통계 데이터 포함)
+export interface LedgerApiResponse<T> extends ApiResponse<T> {
+  this_month_stats?: {
+    this_month_total_count: number;
+    this_month_total_given: number;
+    this_month_total_received: number;
+  };
+}
+
 // 장부 관련 타입
 export interface LedgerItem {
   id: number;
@@ -215,7 +224,7 @@ export const ledgerService = {
     sort_by?: 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
     limit?: number;
     skip?: number;
-  }): Promise<ApiResponse<LedgerItem[]>> {
+  }): Promise<LedgerApiResponse<LedgerItem[]>> {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append('search', params.search);
     if (params?.entry_type) queryParams.append('entry_type', params.entry_type);
