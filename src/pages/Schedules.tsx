@@ -3,6 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+    ActivityIndicator,
     Animated,
     FlatList,
     Modal,
@@ -74,6 +75,11 @@ const Schedules: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 무한 스크롤 상태
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentSkip, setCurrentSkip] = useState(0);
+
   // 삭제된 항목과 되돌리기 상태
   const [deletedSchedule, setDeletedSchedule] = useState<ScheduleItem | null>(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
@@ -87,14 +93,31 @@ const Schedules: React.FC = () => {
     status?: 'upcoming' | 'completed';
     event_type?: string;
     sort_by?: 'date_asc' | 'date_desc';
-  }) => {
+  }, limit: number = 10, skip: number = 0, isLoadMore: boolean = false) => {
     try {
-      setLoading(true);
+      if (!isLoadMore) {
+        setLoading(true);
+        setCurrentSkip(0);
+        setHasMore(true);
+      }
       setError(null);
-      const response = await scheduleService.getSchedules(filterParams);
+      
+      const params = {
+        ...filterParams,
+        limit,
+        skip
+      };
+      
+      const response = await scheduleService.getSchedules(params);
       
       if (response.success) {
-        setSchedules(response.data);
+        if (isLoadMore) {
+          setSchedules(prev => [...prev, ...response.data]);
+        } else {
+          setSchedules(response.data);
+        }
+        setHasMore(response.data.length === 10); // 10개 미만이면 더 이상 데이터 없음
+        setCurrentSkip(skip + response.data.length);
       } else {
         setError(response.error || '일정 목록을 불러오는데 실패했습니다.');
       }
@@ -105,6 +128,58 @@ const Schedules: React.FC = () => {
       setLoading(false);
     }
   }, []);
+
+  // 더 많은 데이터 로드 함수
+  const loadMoreSchedules = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    
+    try {
+      const searchParams: {
+        search?: string;
+        status?: 'upcoming' | 'completed';
+        event_type?: string;
+        sort_by?: 'date_asc' | 'date_desc';
+      } = {};
+
+      // 검색어만 추가 (현재 적용된 필터 상태 유지)
+      if (searchTerm.trim()) {
+        searchParams.search = searchTerm.trim();
+      }
+
+      // 현재 적용된 상태 필터 유지
+      if (statusFilter !== 'all') {
+        searchParams.status = statusFilter;
+      }
+
+      // 현재 적용된 경조사 타입 필터 유지
+      if (eventTypeFilter !== 'all') {
+        searchParams.event_type = eventTypeFilter;
+      }
+
+      // 현재 적용된 정렬 유지
+      searchParams.sort_by = sortBy;
+
+      const params = {
+        ...searchParams,
+        limit: 10,
+        skip: currentSkip
+      };
+      
+      const response = await scheduleService.getSchedules(params);
+      
+      if (response.success) {
+        setSchedules(prev => [...prev, ...response.data]);
+        setHasMore(response.data.length === 10); // 10개 미만이면 더 이상 데이터 없음
+        setCurrentSkip(currentSkip + response.data.length);
+      }
+    } catch (err) {
+      console.error('더 많은 일정 로드 실패:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, currentSkip, searchTerm, statusFilter, eventTypeFilter, sortBy]);
 
   // 필터 파라미터 빌드 함수 (메모이제이션)
   const buildFilterParams = useCallback(() => {
@@ -140,8 +215,8 @@ const Schedules: React.FC = () => {
   const applyFilter = useCallback(async () => {
     const filterParams = buildFilterParams();
     
-    // API 호출
-    await loadSchedules(filterParams);
+    // API 호출 (무한 스크롤을 위해 limit 10으로 설정)
+    await loadSchedules(filterParams, 10, 0, false);
     
     // 모달 닫기
     setShowFilterModal(false);
@@ -215,23 +290,23 @@ const Schedules: React.FC = () => {
 
   // 컴포넌트 마운트 시 데이터 로드 제거 (useFocusEffect에서 처리)
 
-  // 검색어 변경 시 디바운싱된 API 호출
+  // 검색어 변경 시 디바운싱된 API 호출 (검색어만 실시간 적용)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const filterParams = buildFilterParams();
-      loadSchedules(filterParams);
+      loadSchedules(filterParams, 10, 0, false);
     }, 200); // 200ms로 최적화 (반응성 향상)
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, statusFilter, sortBy, buildFilterParams, loadSchedules]);
+  }, [searchTerm, statusFilter, eventTypeFilter, sortBy, buildFilterParams, loadSchedules]);
 
-  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동 및 스와이프 닫기
+  // 탭이 포커스될 때 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollToOffset({ offset: 0, animated: true });
       // Swipeable 제거로 인한 성능 최적화
-      // 데이터 새로고침
-      loadSchedules();
+      // 데이터 새로고침 (무한 스크롤을 위해 limit 10으로 설정)
+      loadSchedules(undefined, 10, 0, false);
     }, [loadSchedules])
   );
 
@@ -240,7 +315,7 @@ const Schedules: React.FC = () => {
     if (!loading && !error) {
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 400,
         useNativeDriver: true,
       }).start();
     } else {
@@ -524,7 +599,9 @@ const Schedules: React.FC = () => {
                 style={styles.scrollContainer}
                 showsVerticalScrollIndicator={false}
                 onTouchStart={handleSwipeableClose}
-                keyExtractor={(item, index) => `${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}`}
+                onEndReached={loadMoreSchedules}
+                onEndReachedThreshold={0.1}
+                keyExtractor={(item, index) => `schedule-${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}-${item.event_time || ''}-${index}`}
                 ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
                 contentContainerStyle={{ paddingBottom: 20 }}
                 renderItem={({ item: schedule }) => {
@@ -616,6 +693,12 @@ const Schedules: React.FC = () => {
                 ListEmptyComponent={() => !loading && !error && (
                   <View style={styles.emptyState}>
                     <Text style={styles.emptyDescription}>일정이 없습니다</Text>
+                  </View>
+                )}
+                ListFooterComponent={() => loadingMore && (
+                  <View style={styles.loadingMoreContainer}>
+                    <ActivityIndicator size="small" color="#4a5568" />
+                    <Text style={styles.loadingMoreText}>일정을 불러오는 중...</Text>
                   </View>
                 )}
               />
@@ -1801,6 +1884,20 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,
+  },
+
+  // 로딩 상태 스타일
+  loadingMoreContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
+  loadingMoreText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666',
   },
 });
 
