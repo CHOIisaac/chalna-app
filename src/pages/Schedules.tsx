@@ -125,12 +125,8 @@ const Schedules: React.FC = () => {
       
       if (response.success) {
         if (isLoadMore) {
-          // 중복 제거 로직 추가
-          setSchedules(prev => {
-            const existingIds = new Set(prev.map(item => item.id));
-            const newData = response.data.filter(item => !existingIds.has(item.id));
-            return [...prev, ...newData];
-          });
+          // 백엔드에서 skip 파라미터를 처리하므로 중복 제거 불필요
+          setSchedules(prev => [...prev, ...response.data]);
         } else {
           setSchedules(response.data);
           
@@ -193,9 +189,10 @@ const Schedules: React.FC = () => {
       const response = await scheduleService.getSchedules(params);
       
       if (response.success) {
+        // 백엔드에서 skip 파라미터를 처리하므로 중복 제거 불필요
         setSchedules(prev => [...prev, ...response.data]);
         setHasMore(response.data.length === 10); // 10개 미만이면 더 이상 데이터 없음
-        setCurrentSkip(currentSkip + response.data.length);
+        setCurrentSkip(prev => prev + response.data.length);
       }
     } catch (err) {
       console.error('더 많은 일정 로드 실패:', err);
@@ -413,6 +410,7 @@ const Schedules: React.FC = () => {
 
   // 서버에서 이미 필터링 및 정렬된 데이터 사용
   const filteredAndSortedEvents = schedules || [];
+  
 
   // 이번 달 통계 계산 (백엔드 데이터 사용, 없으면 0)
   const { totalEvents, upcomingEvents } = useMemo(() => {
@@ -673,7 +671,7 @@ const Schedules: React.FC = () => {
                   showsVerticalScrollIndicator={false}
                   onTouchStart={handleSwipeableClose}
                   onEndReached={loadMoreSchedules}
-                  onEndReachedThreshold={0.1}
+                  onEndReachedThreshold={0.5}
                   keyExtractor={(item, index) => `schedule-${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}-${item.event_time || ''}-${index}`}
                   ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
                   contentContainerStyle={{ paddingBottom: 20 }}
