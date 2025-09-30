@@ -81,6 +81,12 @@ const Schedules: React.FC = () => {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 이번 달 통계 상태
+  const [thisMonthStats, setThisMonthStats] = useState<{
+    this_month_total_count: number;
+    this_month_upcoming_count: number;
+  } | null>(null);
 
   // 무한 스크롤 상태
   const [hasMore, setHasMore] = useState(true);
@@ -127,6 +133,11 @@ const Schedules: React.FC = () => {
           });
         } else {
           setSchedules(response.data);
+          
+          // 이번 달 통계 데이터 설정 (첫 로드 시에만)
+          if (response.this_month_stats) {
+            setThisMonthStats(response.this_month_stats);
+          }
         }
         setHasMore(response.data.length === 10); // 10개 미만이면 더 이상 데이터 없음
         setCurrentSkip(skip + response.data.length);
@@ -403,12 +414,21 @@ const Schedules: React.FC = () => {
   // 서버에서 이미 필터링 및 정렬된 데이터 사용
   const filteredAndSortedEvents = schedules || [];
 
-  // 통계 계산을 useMemo로 최적화
+  // 이번 달 통계 계산 (백엔드 데이터 사용, 없으면 0)
   const { totalEvents, upcomingEvents } = useMemo(() => {
-    const total = filteredAndSortedEvents.length;
-    const upcoming = filteredAndSortedEvents.filter(e => e.status === 'upcoming').length;
-    return { totalEvents: total, upcomingEvents: upcoming };
-  }, [filteredAndSortedEvents]);
+    if (thisMonthStats) {
+      return {
+        totalEvents: thisMonthStats.this_month_total_count,
+        upcomingEvents: thisMonthStats.this_month_upcoming_count
+      };
+    }
+    
+    // 백엔드 데이터가 없으면 0으로 표시
+    return { 
+      totalEvents: 0, 
+      upcomingEvents: 0
+    };
+  }, [thisMonthStats]);
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
@@ -590,9 +610,6 @@ const Schedules: React.FC = () => {
                     <Text style={styles.statsTitle}>
                       이번 달
                     </Text>
-                    <View style={styles.statsBadge}>
-                      <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
-                    </View>
                   </View>
                   <View style={styles.statsGrid}>
                     <View style={styles.statItem}>
@@ -754,7 +771,7 @@ const Schedules: React.FC = () => {
                   ListFooterComponent={() => loadingMore && (
                     <View style={styles.loadingMoreContainer}>
                       <ActivityIndicator size="small" color="#4a5568" />
-                      <Text style={styles.loadingMoreText}>일정을 불러오는 중...</Text>
+                      {/*<Text style={styles.loadingMoreText}>일정을 불러오는 중...</Text>*/}
                     </View>
                   )}
                 />
