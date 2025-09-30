@@ -81,30 +81,30 @@ export default function HomeScreen() {
 
   return (
     <MobileLayout currentPage="home">
-      <ScrollView 
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        {/* 헤더 */}
+        <WelcomeHeader
+            monthlyStats={monthlyStats}
+            loading={loading}
+        />
+
+        {/* 통계 카드 */}
+        <QuickStats
+            quickStats={quickStats}
+            loading={loading}
+        />
+
+        {/* 최근 경조사 */}
+        <RecentEvents
+            recentLedgers={recentLedgers}
+            loading={loading}
+        />
+      </Animated.View>
+      <ScrollView
         ref={scrollViewRef}
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          {/* 헤더 */}
-          <WelcomeHeader 
-            monthlyStats={monthlyStats}
-            loading={loading}
-          />
-
-          {/* 통계 카드 */}
-          <QuickStats 
-            quickStats={quickStats}
-            loading={loading}
-          />
-
-          {/* 최근 경조사 */}
-          <RecentEvents 
-            recentLedgers={recentLedgers}
-            loading={loading}
-          />
-        </Animated.View>
 
       </ScrollView>
 

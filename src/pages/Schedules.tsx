@@ -439,277 +439,279 @@ const Schedules: React.FC = () => {
 
   return (
     <MobileLayout currentPage="schedules">
-      {/* 고정 헤더 */}
-      <View style={styles.header} onTouchStart={handleSwipeableClose}>
-        <View style={styles.headerTop}>
-          <Text style={styles.title}>함께할 순간</Text>
-          <View style={styles.headerActions}>
-            <View style={styles.viewToggleCompact}>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButtonCompact,
-                  viewMode === 'list' && styles.activeToggleButtonCompact,
-                ]}
-                onPress={() => {
-                  handleSwipeableClose();
-                  setViewMode('list');
-                }}
-              >
-                <Ionicons
-                  name="list"
-                  size={16}
-                  color={viewMode === 'list' ? 'white' : '#666'}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButtonCompact,
-                  viewMode === 'calendar' && styles.activeToggleButtonCompact,
-                ]}
-                onPress={() => {
-                  handleSwipeableClose();
-                  setViewMode('calendar');
-                }}
-              >
-                <Ionicons
-                  name="calendar"
-                  size={16}
-                  color={viewMode === 'calendar' ? 'white' : '#666'}
-                />
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity 
-              style={styles.filterButton}
-              onPress={() => {
-                handleSwipeableClose();
-                setShowFilterModal(true);
-              }}
-            >
-              <Ionicons name="options-outline" size={20} color="#1a1a1a" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      {/* 고정 검색바 */}
-      <Animated.View style={[styles.searchSection, { opacity: fadeAnim }]}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            // placeholder="일정명, 장소, 경조사 타입으로 검색..."
-            // placeholderTextColor="#999"명
-            value={searchTerm}
-            onChangeText={handleSearchChange}
-            onFocus={handleSwipeableClose}
-          />
-          {searchTerm.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={18} color="#999" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </Animated.View>
-
-      {/* 공통 콘텐츠 - 통계 카드와 에러 상태 */}
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* 에러 상태 */}
-        {error && !loading && (
-          <View style={styles.errorContainer}>
-            <Ionicons name="warning-outline" size={48} color="#FF3B30" />
-            <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
-            <Text style={styles.errorMessage}>{error}</Text>
-            <TouchableOpacity 
-              style={styles.retryButton}
-              onPress={() => loadSchedules()}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.retryButtonText}>다시 시도</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 정상 데이터가 있을 때만 표시 */}
-        {!loading && !error && (
-          <>
-            {/* 무신사 스타일 통계 카드 */}
-            <View style={styles.statsSection}>
-              <View style={styles.statsCard}>
-                <View style={styles.statsHeader}>
-                  <Text style={styles.statsTitle}>
-                    이번 달
-                  </Text>
-                  <View style={styles.statsBadge}>
-                    <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
-                  </View>
-                </View>
-                <View style={styles.statsGrid}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{totalEvents}</Text>
-                    <Text style={styles.statLabel}>총 일정</Text>
-                  </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{upcomingEvents}</Text>
-                    <Text style={styles.statLabel}>다가오는 일정</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* 뷰 모드에 따른 콘텐츠 */}
-            {viewMode === 'calendar' ? (
-              /* 달력 뷰 */
-              <View style={styles.calendarSection}>
-                <Calendar
-                  current={currentMonth.toISOString().split('T')[0]}
-                  onDayPress={onDayPress}
-                  markedDates={getMarkedDates()}
-                  monthFormat={'yyyy년 M월'}
-                  hideExtraDays={true}
-                  firstDay={0}
-                  onMonthChange={(month) => {
-                    setCurrentMonth(new Date(month.year, month.month - 1));
-                  }}
-                  theme={{
-                    backgroundColor: '#ffffff',
-                    calendarBackground: '#ffffff',
-                    textSectionTitleColor: '#666666',
-                    selectedDayBackgroundColor: '#f0f0f0',
-                    selectedDayTextColor: '#1a1a1a',
-                    todayTextColor: '#1a1a1a',
-                    dayTextColor: '#1a1a1a',
-                    textDisabledColor: '#d9e1e8',
-                    dotColor: '#4a5568',
-                    selectedDotColor: '#4a5568',
-                    arrowColor: '#666666',
-                    disabledArrowColor: '#d9e1e8',
-                    monthTextColor: '#1a1a1a',
-                    indicatorColor: '#666666',
-                    textDayFontWeight: '500',
-                    textMonthFontWeight: '600',
-                    textDayHeaderFontWeight: '600',
-                    textDayFontSize: 16,
-                    textMonthFontSize: 20,
-                    textDayHeaderFontSize: 14,
-                  }}
-                  style={styles.calendar}
-                />
-              </View>
-            ) : (
-              /* 리스트 뷰 - FlatList */
-              <FlatList
-                ref={scrollViewRef} 
-                data={filteredAndSortedEvents}
-                style={styles.scrollContainer}
-                showsVerticalScrollIndicator={false}
-                onTouchStart={handleSwipeableClose}
-                onEndReached={loadMoreSchedules}
-                onEndReachedThreshold={0.1}
-                keyExtractor={(item, index) => `schedule-${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}-${item.event_time || ''}-${index}`}
-                ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                renderItem={({ item: schedule }) => {
-          const typeStyle = getEventTypeColor(schedule.event_type);
-          const eventDate = new Date(schedule.event_date);
-          const isToday = eventDate.toDateString() === new Date().toDateString();
-          const isTomorrow = eventDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
-
-          return (
-            <Animated.View style={{ opacity: fadeAnim }}>
-              <Swipeable 
-                key={schedule.id}
-                renderRightActions={() => renderRightActions(schedule.id)}
-                rightThreshold={40}
-                onSwipeableWillOpen={() => handleSwipeableOpen(schedule.id)}
-                onSwipeableWillClose={handleSwipeableClose}
-              >
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        {/* 고정 헤더 */}
+        <View style={styles.header} onTouchStart={handleSwipeableClose}>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>함께할 순간</Text>
+            <View style={styles.headerActions}>
+              <View style={styles.viewToggleCompact}>
                 <TouchableOpacity
-                  style={styles.scheduleCard}
-                  activeOpacity={0.8}
+                  style={[
+                    styles.toggleButtonCompact,
+                    viewMode === 'list' && styles.activeToggleButtonCompact,
+                  ]}
                   onPress={() => {
-                    if (openSwipeableId !== schedule.id) {
-                      router.push({
-                        pathname: '/schedule-detail',
-                        params: {
-                          id: schedule.id.toString(),
-                          data: JSON.stringify(schedule)
-                        }
-                      });
-                    }
+                    handleSwipeableClose();
+                    setViewMode('list');
                   }}
                 >
-                  {/* 메모 표시 - 카드 모서리 */}
-                  {schedule.memo && schedule.memo.trim() !== '' && (
-                    <View style={styles.memoCorner} />
-                  )}
+                  <Ionicons
+                    name="list"
+                    size={16}
+                    color={viewMode === 'list' ? 'white' : '#666'}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButtonCompact,
+                    viewMode === 'calendar' && styles.activeToggleButtonCompact,
+                  ]}
+                  onPress={() => {
+                    handleSwipeableClose();
+                    setViewMode('calendar');
+                  }}
+                >
+                  <Ionicons
+                    name="calendar"
+                    size={16}
+                    color={viewMode === 'calendar' ? 'white' : '#666'}
+                  />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity 
+                style={styles.filterButton}
+                onPress={() => {
+                  handleSwipeableClose();
+                  setShowFilterModal(true);
+                }}
+              >
+                <Ionicons name="options-outline" size={20} color="#1a1a1a" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
 
-                  {/* 날짜 표시 */}
-                  <View style={styles.dateSection}>
-                    <View style={styles.dateContainer}>
-                      <Text style={styles.dateNumber}>{eventDate.getDate()}</Text>
-                      <Text style={styles.dateMonth}>{eventDate.getMonth() + 1}월</Text>
-                    </View>
-                    {(isToday || isTomorrow) && (
-                      <View style={styles.urgentBadge}>
-                        <Text style={styles.urgentText}>
-                          {isToday ? '오늘' : '내일'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
+        {/* 고정 검색바 */}
+        <View style={styles.searchSection}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              // placeholder="일정명, 장소, 경조사 타입으로 검색..."
+              // placeholderTextColor="#999"명
+              value={searchTerm}
+              onChangeText={handleSearchChange}
+              onFocus={handleSwipeableClose}
+            />
+            {searchTerm.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
+                <Ionicons name="close-circle" size={18} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
-                  {/* 일정 정보 */}
-                  <View style={styles.scheduleInfo}>
-                    <View style={styles.scheduleHeader}>
-                      <Text style={styles.scheduleTitle}>{schedule.title}</Text>
-                    </View>
+        {/* 공통 콘텐츠 - 통계 카드와 에러 상태 */}
+        <View style={styles.content}>
+          {/* 에러 상태 */}
+          {error && !loading && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="warning-outline" size={48} color="#FF3B30" />
+              <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
+              <Text style={styles.errorMessage}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={() => loadSchedules()}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.retryButtonText}>다시 시도</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
-                    <View style={styles.scheduleDetails}>
-                      <View style={styles.detailRow}>
-                        <Ionicons name="time-outline" size={14} color="#666" />
-                        <Text style={styles.detailText}>{formatTime(schedule.event_time)}</Text>
-                      </View>
-                      <View style={styles.detailRow}>
-                        <Ionicons name="location-outline" size={14} color="#666" />
-                        <Text style={styles.detailText}>{schedule.location}</Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* 상태 섹션 (이벤트 타입 + 상태) */}
-                  <View style={styles.statusSection}>
-                    <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
-                    <Text style={[styles.typeText, { color: typeStyle.text }]}>
-                      {schedule.event_type}
+          {/* 정상 데이터가 있을 때만 표시 */}
+          {!loading && !error && (
+            <>
+              {/* 무신사 스타일 통계 카드 */}
+              <View style={styles.statsSection}>
+                <View style={styles.statsCard}>
+                  <View style={styles.statsHeader}>
+                    <Text style={styles.statsTitle}>
+                      이번 달
                     </Text>
+                    <View style={styles.statsBadge}>
+                      <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
+                    </View>
                   </View>
-                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(schedule.status).bg }]}>
-                    <Text style={[styles.statusText, { color: getStatusColor(schedule.status).text }]}>
-                      {getStatusText(schedule.status)}
-                    </Text>
+                  <View style={styles.statsGrid}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{totalEvents}</Text>
+                      <Text style={styles.statLabel}>총 일정</Text>
+                    </View>
+                    <View style={styles.statDivider} />
+                    <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{upcomingEvents}</Text>
+                      <Text style={styles.statLabel}>다가오는 일정</Text>
+                    </View>
                   </View>
                 </View>
-                </TouchableOpacity>
-              </Swipeable>
-            </Animated.View>
-          );
-        }}
-                ListEmptyComponent={() => !loading && !error && (
-                  <View style={styles.emptyState}>
-                    <Text style={styles.emptyDescription}>일정이 없습니다</Text>
+              </View>
+
+              {/* 뷰 모드에 따른 콘텐츠 */}
+              {viewMode === 'calendar' ? (
+                /* 달력 뷰 */
+                <View style={styles.calendarSection}>
+                  <Calendar
+                    current={currentMonth.toISOString().split('T')[0]}
+                    onDayPress={onDayPress}
+                    markedDates={getMarkedDates()}
+                    monthFormat={'yyyy년 M월'}
+                    hideExtraDays={true}
+                    firstDay={0}
+                    onMonthChange={(month) => {
+                      setCurrentMonth(new Date(month.year, month.month - 1));
+                    }}
+                    theme={{
+                      backgroundColor: '#ffffff',
+                      calendarBackground: '#ffffff',
+                      textSectionTitleColor: '#666666',
+                      selectedDayBackgroundColor: '#f0f0f0',
+                      selectedDayTextColor: '#1a1a1a',
+                      todayTextColor: '#1a1a1a',
+                      dayTextColor: '#1a1a1a',
+                      textDisabledColor: '#d9e1e8',
+                      dotColor: '#4a5568',
+                      selectedDotColor: '#4a5568',
+                      arrowColor: '#666666',
+                      disabledArrowColor: '#d9e1e8',
+                      monthTextColor: '#1a1a1a',
+                      indicatorColor: '#666666',
+                      textDayFontWeight: '500',
+                      textMonthFontWeight: '600',
+                      textDayHeaderFontWeight: '600',
+                      textDayFontSize: 16,
+                      textMonthFontSize: 20,
+                      textDayHeaderFontSize: 14,
+                    }}
+                    style={styles.calendar}
+                  />
+                </View>
+              ) : (
+                /* 리스트 뷰 - FlatList */
+                <FlatList
+                  ref={scrollViewRef} 
+                  data={filteredAndSortedEvents}
+                  style={styles.scrollContainer}
+                  showsVerticalScrollIndicator={false}
+                  onTouchStart={handleSwipeableClose}
+                  onEndReached={loadMoreSchedules}
+                  onEndReachedThreshold={0.1}
+                  keyExtractor={(item, index) => `schedule-${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}-${item.event_time || ''}-${index}`}
+                  ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  renderItem={({ item: schedule }) => {
+            const typeStyle = getEventTypeColor(schedule.event_type);
+            const eventDate = new Date(schedule.event_date);
+            const isToday = eventDate.toDateString() === new Date().toDateString();
+            const isTomorrow = eventDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
+
+            return (
+              <View>
+                <Swipeable 
+                  key={schedule.id}
+                  renderRightActions={() => renderRightActions(schedule.id)}
+                  rightThreshold={40}
+                  onSwipeableWillOpen={() => handleSwipeableOpen(schedule.id)}
+                  onSwipeableWillClose={handleSwipeableClose}
+                >
+                  <TouchableOpacity
+                    style={styles.scheduleCard}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      if (openSwipeableId !== schedule.id) {
+                        router.push({
+                          pathname: '/schedule-detail',
+                          params: {
+                            id: schedule.id.toString(),
+                            data: JSON.stringify(schedule)
+                          }
+                        });
+                      }
+                    }}
+                  >
+                    {/* 메모 표시 - 카드 모서리 */}
+                    {schedule.memo && schedule.memo.trim() !== '' && (
+                      <View style={styles.memoCorner} />
+                    )}
+
+                    {/* 날짜 표시 */}
+                    <View style={styles.dateSection}>
+                      <View style={styles.dateContainer}>
+                        <Text style={styles.dateNumber}>{eventDate.getDate()}</Text>
+                        <Text style={styles.dateMonth}>{eventDate.getMonth() + 1}월</Text>
+                      </View>
+                      {(isToday || isTomorrow) && (
+                        <View style={styles.urgentBadge}>
+                          <Text style={styles.urgentText}>
+                            {isToday ? '오늘' : '내일'}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* 일정 정보 */}
+                    <View style={styles.scheduleInfo}>
+                      <View style={styles.scheduleHeader}>
+                        <Text style={styles.scheduleTitle}>{schedule.title}</Text>
+                      </View>
+
+                      <View style={styles.scheduleDetails}>
+                        <View style={styles.detailRow}>
+                          <Ionicons name="time-outline" size={14} color="#666" />
+                          <Text style={styles.detailText}>{formatTime(schedule.event_time)}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                          <Ionicons name="location-outline" size={14} color="#666" />
+                          <Text style={styles.detailText}>{schedule.location}</Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* 상태 섹션 (이벤트 타입 + 상태) */}
+                    <View style={styles.statusSection}>
+                      <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
+                      <Text style={[styles.typeText, { color: typeStyle.text }]}>
+                        {schedule.event_type}
+                      </Text>
+                    </View>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(schedule.status).bg }]}>
+                      <Text style={[styles.statusText, { color: getStatusColor(schedule.status).text }]}>
+                        {getStatusText(schedule.status)}
+                      </Text>
+                    </View>
                   </View>
-                )}
-                ListFooterComponent={() => loadingMore && (
-                  <View style={styles.loadingMoreContainer}>
-                    <ActivityIndicator size="small" color="#4a5568" />
-                    <Text style={styles.loadingMoreText}>일정을 불러오는 중...</Text>
-                  </View>
-                )}
-              />
-            )}
-          </>
-        )}
+                  </TouchableOpacity>
+                </Swipeable>
+              </View>
+            );
+          }}
+                  ListEmptyComponent={() => !loading && !error && (
+                    <View style={styles.emptyState}>
+                      <Text style={styles.emptyDescription}>일정이 없습니다</Text>
+                    </View>
+                  )}
+                  ListFooterComponent={() => loadingMore && (
+                    <View style={styles.loadingMoreContainer}>
+                      <ActivityIndicator size="small" color="#4a5568" />
+                      <Text style={styles.loadingMoreText}>일정을 불러오는 중...</Text>
+                    </View>
+                  )}
+                />
+              )}
+            </>
+          )}
+        </View>
       </Animated.View>
 
       {/* 날짜별 일정 모달 */}

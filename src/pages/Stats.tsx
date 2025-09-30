@@ -65,11 +65,6 @@ const Stats: React.FC = (): React.ReactElement => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   
-  // 각 탭별 개별 페이드인 애니메이션
-  const totalFadeAnim = useRef(new Animated.Value(0)).current;
-  const itemsFadeAnim = useRef(new Animated.Value(0)).current;
-  const networkFadeAnim = useRef(new Animated.Value(0)).current;
-  const eventsFadeAnim = useRef(new Animated.Value(0)).current;
 
   // API 호출 함수들
   const loadMonthlyTrends = useCallback(async () => {
@@ -228,51 +223,21 @@ const Stats: React.FC = (): React.ReactElement => {
     }, []) // 의존성 배열을 비워서 중복 호출 방지
   );
 
+  // 전체 페이드인 애니메이션 관리
   React.useEffect(() => {
-    // 데이터 로딩이 완료되고 에러가 없을 때만 페이드인 효과 실행
+    console.log('📊 통계 화면 페이드인 체크:', { loading, error });
     if (!loading && !error) {
+      console.log('📊 통계 화면 페이드인 애니메이션 시작');
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
       }).start();
     } else {
-      // 로딩 중이거나 에러가 있을 때는 투명하게
+      console.log('📊 통계 화면 페이드인 애니메이션 초기화');
       fadeAnim.setValue(0);
     }
   }, [loading, error, fadeAnim]);
-
-  // 각 탭별 개별 페이드인 애니메이션 관리
-  React.useEffect(() => {
-    console.log('📊 통계 화면 페이드인 체크:', { loading, error, selectedTab });
-    if (!loading && !error) {
-      // 모든 탭 애니메이션을 먼저 초기화
-      totalFadeAnim.setValue(0);
-      itemsFadeAnim.setValue(0);
-      networkFadeAnim.setValue(0);
-      eventsFadeAnim.setValue(0);
-      
-      // 현재 선택된 탭에 해당하는 애니메이션만 실행
-      const currentAnim = selectedTab === 'total' ? totalFadeAnim :
-                         selectedTab === 'items' ? itemsFadeAnim :
-                         selectedTab === 'network' ? networkFadeAnim :
-                         eventsFadeAnim;
-      
-      console.log(`📊 ${selectedTab} 탭 페이드인 애니메이션 시작`);
-      Animated.timing(currentAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      console.log('📊 통계 화면 페이드인 애니메이션 초기화');
-      // 모든 탭 애니메이션 초기화
-      totalFadeAnim.setValue(0);
-      itemsFadeAnim.setValue(0);
-      networkFadeAnim.setValue(0);
-      eventsFadeAnim.setValue(0);
-    }
-  }, [loading, error, selectedTab, totalFadeAnim, itemsFadeAnim, networkFadeAnim, eventsFadeAnim]);
 
   // 타입 변경 시 월별 데이터 로드 (이제 월별 데이터는 한 번에 로드되므로 필요없음)
   // React.useEffect(() => {
@@ -328,7 +293,7 @@ const Stats: React.FC = (): React.ReactElement => {
     const currentStats = selectedType === 'given' ? calculatedStats.given : calculatedStats.received;
     
     return (
-      <Animated.View style={[styles.section, { opacity: totalFadeAnim }]}>
+      <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitle}>총액 및 추세 분석</Text>
@@ -556,12 +521,12 @@ const Stats: React.FC = (): React.ReactElement => {
             </View>
           )}
         </View>
-      </Animated.View>
+      </View>
     );
   };
 
   const renderItemsAnalysis = () => (
-    <Animated.View style={[styles.section, { opacity: itemsFadeAnim }]}>
+    <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>항목별 분석</Text>
@@ -643,11 +608,11 @@ const Stats: React.FC = (): React.ReactElement => {
           ))}
         </View>
       </View>
-    </Animated.View>
+    </View>
   );
 
   const renderNetworkAnalysis = () => (
-    <Animated.View style={[styles.section, { opacity: networkFadeAnim }]}>
+    <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>관계별 분석</Text>
@@ -741,11 +706,11 @@ const Stats: React.FC = (): React.ReactElement => {
           </View>
         </View>
       ))}
-    </Animated.View>
+    </View>
   );
 
   const renderEventsAnalysis = () => (
-    <Animated.View style={[styles.section, { opacity: eventsFadeAnim }]}>
+    <View style={styles.section}>
 
       {/* 이벤트별 기록 - 요약 + 차트 */}
       <View style={styles.eventStatsContainer}>
@@ -817,7 +782,7 @@ const Stats: React.FC = (): React.ReactElement => {
         </View>
       </View>
 
-    </Animated.View>
+    </View>
   );
 
   const renderTabContent = () => {
@@ -837,41 +802,43 @@ const Stats: React.FC = (): React.ReactElement => {
 
   return (
     <MobileLayout currentPage="stats">
-      {/* 고정 헤더 */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Text style={styles.title}>찰나 통계</Text>
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        {/* 고정 헤더 */}
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>찰나 통계</Text>
+          </View>
         </View>
-      </View>
 
-      {/* 고정 탭 컨테이너 */}
-      <View style={styles.tabContainer}>
-        {[
-          { key: 'total', label: '총액' },
-          { key: 'items', label: '항목' },
-          { key: 'network', label: '관계' },
-          { key: 'events', label: '순간' },
-        ].map((tab) => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
-            onPress={() => setSelectedTab(tab.key as any)}
-            accessibilityRole="tab"
-            accessibilityLabel={`${tab.label} 탭, ${selectedTab === tab.key ? '현재 선택됨' : '선택되지 않음'}`}
-            accessibilityState={{ selected: selectedTab === tab.key }}
-          >
-            <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        {/* 고정 탭 컨테이너 */}
+        <View style={styles.tabContainer}>
+          {[
+            { key: 'total', label: '총액' },
+            { key: 'items', label: '항목' },
+            { key: 'network', label: '관계' },
+            { key: 'events', label: '순간' },
+          ].map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
+              onPress={() => setSelectedTab(tab.key as any)}
+              accessibilityRole="tab"
+              accessibilityLabel={`${tab.label} 탭, ${selectedTab === tab.key ? '현재 선택됨' : '선택되지 않음'}`}
+              accessibilityState={{ selected: selectedTab === tab.key }}
+            >
+              <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      <ScrollView ref={scrollViewRef} style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          {renderTabContent()}
-        </Animated.View>
-      </ScrollView>
+        <ScrollView ref={scrollViewRef} style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            {renderTabContent()}
+          </View>
+        </ScrollView>
+      </Animated.View>
     </MobileLayout>
   );
 };

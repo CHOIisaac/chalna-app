@@ -353,41 +353,42 @@ const Ledgers: React.FC = () => {
 
   return (
     <MobileLayout currentPage="ledgers">
-      {/* 고정 헤더 */}
-      <View style={styles.header} onTouchStart={handleSwipeableClose}>
-        <View style={styles.headerTop}>
-          <Text style={styles.title}>장부 기록</Text>
-          <TouchableOpacity 
-            style={styles.filterButton}
-            onPress={() => {
-              handleSwipeableClose();
-              setShowFilterModal(true);
-            }}
-          >
-            <Ionicons name="options-outline" size={20} color={colors.foreground} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* 고정 검색바 */}
-      <Animated.View style={[styles.searchSection, { opacity: fadeAnim }]}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            // placeholder="이름이나 관계로 검름색..."
-            // placeholderTextColor="#999"
-            value={searchTerm}
-            onChangeText={handleSearchChange}
-            onFocus={handleSwipeableClose}
-          />
-          {searchTerm.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={18} color="#999" />
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        {/* 고정 헤더 */}
+        <View style={styles.header} onTouchStart={handleSwipeableClose}>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>장부 기록</Text>
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => {
+                handleSwipeableClose();
+                setShowFilterModal(true);
+              }}
+            >
+              <Ionicons name="options-outline" size={20} color={colors.foreground} />
             </TouchableOpacity>
-          )}
+          </View>
         </View>
-      </Animated.View>
+
+        {/* 고정 검색바 */}
+        <View style={styles.searchSection}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              // placeholder="이름이나 관계로 검름색..."
+              // placeholderTextColor="#999"
+              value={searchTerm}
+              onChangeText={handleSearchChange}
+              onFocus={handleSwipeableClose}
+            />
+            {searchTerm.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearButton}>
+                <Ionicons name="close-circle" size={18} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
       <FlatList
         ref={scrollViewRef}
@@ -401,7 +402,7 @@ const Ledgers: React.FC = () => {
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         contentContainerStyle={{ paddingBottom: 20 }}
         ListHeaderComponent={() => (
-        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        <View style={styles.content}>
           {/* 에러 상태 */}
           {error && !loading && (
             <View style={styles.errorContainer}>
@@ -446,10 +447,10 @@ const Ledgers: React.FC = () => {
 
           </>
           )}
-        </Animated.View>
+        </View>
         )}
         renderItem={({ item: ledger }) => (
-          <Animated.View style={{ opacity: fadeAnim }}>
+          <View>
             <Swipeable
               key={ledger.id}
               renderRightActions={() => renderRightActions(ledger.id)}
@@ -505,7 +506,7 @@ const Ledgers: React.FC = () => {
                 </View>
               </TouchableOpacity>
             </Swipeable>
-          </Animated.View>
+          </View>
         )}
         ListEmptyComponent={() => !loading && !error && (
           <View style={styles.emptyState}>
@@ -519,6 +520,7 @@ const Ledgers: React.FC = () => {
           </View>
         )}
       />
+      </Animated.View>
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton />
