@@ -18,7 +18,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import FloatingActionButton from '../components/common/FloatingActionButton';
 import MobileLayout from '../components/layout/MobileLayout';
 import { colors } from '../lib/utils';
-import { handleApiError, LedgerItem, ledgerService } from '../services/api';
+import { handleApiError, LedgerItem, ledgerService, LedgerApiResponse } from '../services/api';
 
 const Ledgers: React.FC = () => {
   const router = useRouter();
@@ -45,6 +45,13 @@ const Ledgers: React.FC = () => {
   const [ledgers, setLedgers] = useState<LedgerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 이번 달 통계 상태
+  const [thisMonthStats, setThisMonthStats] = useState<{
+    this_month_total_count: number;
+    this_month_total_given: number;
+    this_month_total_received: number;
+  } | null>(null);
 
   // 무한 스크롤 상태
   const [hasMore, setHasMore] = useState(true);
@@ -90,6 +97,11 @@ const Ledgers: React.FC = () => {
           });
         } else {
           setLedgers(response.data);
+          
+          // 이번 달 통계 데이터 설정 (첫 로드 시에만)
+          if (response.this_month_stats) {
+            setThisMonthStats(response.this_month_stats);
+          }
         }
         setHasMore(response.data.length === 10); // 10개 미만이면 더 이상 데이터 없음
         setCurrentSkip(skip + response.data.length);
@@ -359,12 +371,23 @@ const Ledgers: React.FC = () => {
   // 서버에서 이미 필터링 및 정렬된 데이터 사용
   const filteredAndSortedLedgers = ledgers || [];
 
-  // 통계 계산을 useMemo로 최적화
-  const { totalGiven, totalReceived } = useMemo(() => {
-    const given = ledgers.filter(ledger => ledger.entry_type === 'given').reduce((sum, ledger) => sum + ledger.amount, 0);
-    const received = ledgers.filter(ledger => ledger.entry_type === 'received').reduce((sum, ledger) => sum + ledger.amount, 0);
-    return { totalGiven: given, totalReceived: received };
-  }, [ledgers]);
+  // 이번 달 통계 계산 (백엔드 데이터 사용, 없으면 0)
+  const { totalGiven, totalReceived, totalCount } = useMemo(() => {
+    if (thisMonthStats) {
+      return {
+        totalGiven: thisMonthStats.this_month_total_given,
+        totalReceived: thisMonthStats.this_month_total_received,
+        totalCount: thisMonthStats.this_month_total_count
+      };
+    }
+    
+    // 백엔드 데이터가 없으면 0으로 표시
+    return { 
+      totalGiven: 0, 
+      totalReceived: 0,
+      totalCount: 0
+    };
+  }, [thisMonthStats]);
 
   return (
     <MobileLayout currentPage="ledgers">
@@ -443,7 +466,7 @@ const Ledgers: React.FC = () => {
                 <View style={styles.statsHeader}>
                   <Text style={styles.statsTitle}>이번 달</Text>
                   <View style={styles.statsBadge}>
-                    <Text style={styles.statsBadgeText}>{ledgers.length}명</Text>
+                    <Text style={styles.statsBadgeText}>{totalCount}명</Text>
                   </View>
                 </View>
                 <View style={styles.statsGrid}>
@@ -531,7 +554,7 @@ const Ledgers: React.FC = () => {
         ListFooterComponent={() => loadingMore && (
           <View style={styles.loadingMoreContainer}>
             <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={styles.loadingMoreText}>기록을 불러오는 중...</Text>
+            {/*<Text style={styles.loadingMoreText}>기록을 불러오는 중...</Text>*/}
           </View>
         )}
       />
