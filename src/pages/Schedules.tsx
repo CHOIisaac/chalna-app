@@ -47,8 +47,6 @@ const Schedules: React.FC = () => {
     return timeString.substring(0, 5);
   };
 
-
-  
   // 현재 열린 Swipeable ID (단일 관리로 성능 최적화)
   const [openSwipeableId, setOpenSwipeableId] = useState<number | null>(null);
 
@@ -57,7 +55,6 @@ const Schedules: React.FC = () => {
   
   // 달력 월 네비게이션 상태
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  
   
   // 검색 및 필터 상태
   const [searchTerm, setSearchTerm] = useState('');
@@ -440,13 +437,6 @@ const Schedules: React.FC = () => {
         onTouchStart={handleSwipeableClose}
       >
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          {/* 로딩 상태 */}
-          {/*{loading && (*/}
-          {/*  <View style={styles.loadingContainer}>*/}
-          {/*    <ActivityIndicator size="large" color="#4a5568" />*/}
-          {/*    <Text style={styles.loadingText}>일정 목록을 불러오는 중...</Text>*/}
-          {/*  </View>*/}
-          {/*)}*/}
 
           {/* 에러 상태 */}
           {error && !loading && (
@@ -512,39 +502,39 @@ const Schedules: React.FC = () => {
         {!error && viewMode === 'list' ? (
           <>
             {/* 무신사 스타일 일정 목록 */}
-            <View style={styles.eventsSection}>
-              <View style={styles.eventsGrid}>
-                {filteredAndSortedEvents.map((event) => {
-                const typeStyle = getEventTypeColor(event.event_type);
-                const eventDate = new Date(event.event_date);
+            <View style={styles.schedulesSection}>
+              <View style={styles.schedulesGrid}>
+                {filteredAndSortedEvents.map((schedule) => {
+                const typeStyle = getEventTypeColor(schedule.event_type);
+                const eventDate = new Date(schedule.event_date);
                 const isToday = eventDate.toDateString() === new Date().toDateString();
                 const isTomorrow = eventDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
 
                 return (
                   <Swipeable 
-                    key={event.id}
-                    renderRightActions={() => renderRightActions(event.id)}
+                    key={schedule.id}
+                    renderRightActions={() => renderRightActions(schedule.id)}
                     rightThreshold={40}
-                    onSwipeableWillOpen={() => handleSwipeableOpen(event.id)}
+                    onSwipeableWillOpen={() => handleSwipeableOpen(schedule.id)}
                     onSwipeableWillClose={handleSwipeableClose}
                   >
                     <TouchableOpacity
-                      style={styles.eventCard}
+                      style={styles.scheduleCard}
                       activeOpacity={0.8}
                       onPress={() => {
-                        if (openSwipeableId !== event.id) {
+                        if (openSwipeableId !== schedule.id) {
                           router.push({
                             pathname: '/schedule-detail',
                             params: {
-                              id: event.id,
-                              data: JSON.stringify(event)
+                              id: schedule.id,
+                              data: JSON.stringify(schedule)
                             }
                           });
                         }
                       }}
                     >
                     {/* 메모 표시 - 카드 모서리 */}
-                    {event.memo && event.memo.trim() !== '' && (
+                    {schedule.memo && schedule.memo.trim() !== '' && (
                       <View style={styles.memoCorner} />
                     )}
 
@@ -564,19 +554,19 @@ const Schedules: React.FC = () => {
                     </View>
 
                     {/* 이벤트 정보 */}
-                    <View style={styles.eventInfo}>
-                      <View style={styles.eventHeader}>
-                        <Text style={styles.eventTitle}>{event.title}</Text>
+                    <View style={styles.scheduleInfo}>
+                      <View style={styles.scheduleHeader}>
+                        <Text style={styles.scheduleTitle}>{schedule.title}</Text>
                       </View>
 
-                      <View style={styles.eventDetails}>
+                      <View style={styles.scheduleDetails}>
                         <View style={styles.detailRow}>
                           <Ionicons name="time-outline" size={14} color="#666" />
-                          <Text style={styles.detailText}>{formatTime(event.event_time)}</Text>
+                          <Text style={styles.detailText}>{formatTime(schedule.event_time)}</Text>
                         </View>
                         <View style={styles.detailRow}>
                           <Ionicons name="location-outline" size={14} color="#666" />
-                          <Text style={styles.detailText}>{event.location}</Text>
+                          <Text style={styles.detailText}>{schedule.location}</Text>
                         </View>
                       </View>
                     </View>
@@ -585,12 +575,12 @@ const Schedules: React.FC = () => {
                     <View style={styles.statusSection}>
                         <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
                         <Text style={[styles.typeText, { color: typeStyle.text }]}>
-                          {event.event_type}
+                          {schedule.event_type}
                         </Text>
                       </View>
-                      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(event.status).bg }]}>
-                        <Text style={[styles.statusText, { color: getStatusColor(event.status).text }]}>
-                          {getStatusText(event.status)}
+                      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(schedule.status).bg }]}>
+                        <Text style={[styles.statusText, { color: getStatusColor(schedule.status).text }]}>
+                          {getStatusText(schedule.status)}
                         </Text>
                       </View>
                     </View>
@@ -604,10 +594,6 @@ const Schedules: React.FC = () => {
             {/* 빈 상태 */}
             {totalEvents === 0 && (
               <View style={styles.emptyState}>
-                {/*<View style={styles.emptyIcon}>*/}
-                {/*  <Ionicons name="calendar-outline" size={48} color="#ddd" />*/}
-                {/*</View>*/}
-                {/*<Text style={styles.emptyTitle}>일정이 없습니다</Text>*/}
                 <Text style={styles.emptyDescription}>일정이 없습니다</Text>
               </View>
             )}
@@ -680,14 +666,14 @@ const Schedules: React.FC = () => {
 
           <ScrollView style={styles.modalContent}>
             {selectedDate && getEventsForDate(selectedDate).length > 0 ? (
-              <View style={styles.modalEventsList}>
+              <View style={styles.modalSchedulesList}>
                 {getEventsForDate(selectedDate).map((event) => {
                   const typeStyle = getEventTypeColor(event.event_type);
 
                   return (
                     <TouchableOpacity
                       key={event.id}
-                      style={styles.modalEventCard}
+                      style={styles.modalScheduleCard}
                       activeOpacity={0.8}
                       onPress={() => {
                         setIsModalVisible(false);
@@ -714,12 +700,12 @@ const Schedules: React.FC = () => {
                       </View>
 
                       {/* 이벤트 정보 */}
-                      <View style={styles.modalEventInfo}>
-                        <View style={styles.modalEventHeader}>
-                          <Text style={styles.modalEventTitle}>{event.title}</Text>
+                      <View style={styles.modalScheduleInfo}>
+                        <View style={styles.modalScheduleHeader}>
+                          <Text style={styles.modalScheduleTitle}>{event.title}</Text>
                         </View>
                         
-                        <View style={styles.modalEventDetails}>
+                        <View style={styles.modalScheduleDetails}>
                           <View style={styles.modalDetailRow}>
                             <Ionicons name="time-outline" size={14} color="#666" />
                             <Text style={styles.modalDetailText}>{formatTime(event.event_time)}</Text>
@@ -1144,7 +1130,7 @@ const styles = StyleSheet.create({
   },
 
   // 일정 섹션
-  eventsSection: {
+  schedulesSection: {
     paddingHorizontal: 24,
     paddingBottom: 20,
   },
@@ -1164,10 +1150,10 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '500',
   },
-  eventsGrid: {
+  schedulesGrid: {
     gap: 12,
   },
-  eventCard: {
+  scheduleCard: {
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
@@ -1217,17 +1203,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // 이벤트 정보
-  eventInfo: {
+  // 일정 정보
+  scheduleInfo: {
     flex: 1,
   },
-  eventHeader: {
+  scheduleHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  eventTitle: {
+  scheduleTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
@@ -1246,7 +1232,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
   },
-  eventDetails: {
+  scheduleDetails: {
     gap: 4,
   },
   detailRow: {
@@ -1440,10 +1426,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 20,
   },
-  modalEventsList: {
+  modalSchedulesList: {
     gap: 12,
   },
-  modalEventCard: {
+  modalScheduleCard: {
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
@@ -1484,18 +1470,18 @@ const styles = StyleSheet.create({
   },
 
   // 모달 이벤트 정보
-  modalEventInfo: {
+  modalScheduleInfo: {
     flex: 1,
   },
-  modalEventHeader: {
+  modalScheduleHeader: {
     marginBottom: 6,
   },
-  modalEventTitle: {
+  modalScheduleTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
   },
-  modalEventDetails: {
+  modalScheduleDetails: {
     gap: 4,
   },
   modalDetailRow: {
@@ -1822,54 +1808,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-
-  // 로딩 상태 스타일
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
-  },
-
-  // // 에러 상태 스타일
-  // errorContainer: {
-  //   flex: 1,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   paddingVertical: 60,
-  //   paddingHorizontal: 40,
-  // },
-  // errorTitle: {
-  //   fontSize: 18,
-  //   fontWeight: '600',
-  //   color: '#1F2937',
-  //   marginTop: 16,
-  //   marginBottom: 8,
-  // },
-  // errorMessage: {
-  //   fontSize: 14,
-  //   color: '#6B7280',
-  //   textAlign: 'center',
-  //   lineHeight: 20,
-  //   marginBottom: 24,
-  // },
-  // retryButton: {
-  //   backgroundColor: '#4F46E5',
-  //   paddingHorizontal: 24,
-  //   paddingVertical: 12,
-  //   borderRadius: 8,
-  // },
-  // retryButtonText: {
-  //   color: 'white',
-  //   fontSize: 16,
-  //   fontWeight: '600',
-  // },
 
   // 빈 상태 스타일
   emptyState: {
