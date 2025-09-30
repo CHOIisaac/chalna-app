@@ -65,12 +65,12 @@ const Schedules: React.FC = () => {
   // 실제 적용된 필터 상태 (API 호출에 영향)
   const [appliedStatusFilter, setAppliedStatusFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
   const [appliedEventTypeFilter, setAppliedEventTypeFilter] = useState<string>('all');
-  const [appliedSortBy, setAppliedSortBy] = useState<'date_asc' | 'date_desc'>('date_asc');
+  const [appliedSortBy, setAppliedSortBy] = useState<'date_asc' | 'date_desc'>('date_desc');
   
   // 임시 필터 상태 (UI에서 선택만, API 호출 안 함)
   const [tempStatusFilter, setTempStatusFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
   const [tempEventTypeFilter, setTempEventTypeFilter] = useState<string>('all');
-  const [tempSortBy, setTempSortBy] = useState<'date_asc' | 'date_desc'>('date_asc');
+  const [tempSortBy, setTempSortBy] = useState<'date_asc' | 'date_desc'>('date_desc');
   
   // 드롭다운 상태
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -1089,7 +1089,7 @@ const Schedules: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {tempSortBy === 'date_asc' ? '최신순' : '오래된순'}
+                  {tempSortBy === 'date_desc' ? '최신순' : '오래된순'}
                 </Text>
                 <Ionicons 
                   name={showSortDropdown ? "chevron-up" : "chevron-down"} 
@@ -1100,26 +1100,6 @@ const Schedules: React.FC = () => {
               
               {showSortDropdown && (
                 <View style={styles.dropdownOptions}>
-                  <TouchableOpacity
-                    style={[
-                      styles.dropdownOption,
-                      tempSortBy === 'date_asc' && styles.dropdownOptionSelected
-                    ]}
-                    onPress={() => {
-                      setTempSortBy('date_asc');
-                      setShowSortDropdown(false);
-                    }}
-                  >
-                    <Text style={[
-                      styles.dropdownOptionText,
-                      tempSortBy === 'date_asc' && styles.dropdownOptionTextSelected
-                    ]}>
-                      최신순
-                    </Text>
-                    {tempSortBy === 'date_asc' && (
-                      <Ionicons name="checkmark" size={16} color="#4a5568" />
-                    )}
-                  </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
@@ -1134,9 +1114,29 @@ const Schedules: React.FC = () => {
                       styles.dropdownOptionText,
                       tempSortBy === 'date_desc' && styles.dropdownOptionTextSelected
                     ]}>
-                      오래된순
+                      최신순
                     </Text>
                     {tempSortBy === 'date_desc' && (
+                      <Ionicons name="checkmark" size={16} color="#4a5568" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownOption,
+                      tempSortBy === 'date_asc' && styles.dropdownOptionSelected
+                    ]}
+                    onPress={() => {
+                      setTempSortBy('date_asc');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownOptionText,
+                      tempSortBy === 'date_asc' && styles.dropdownOptionTextSelected
+                    ]}>
+                      오래된순
+                    </Text>
+                    {tempSortBy === 'date_asc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
