@@ -431,64 +431,10 @@ const Schedules: React.FC = () => {
         </View>
       </Animated.View>
 
-      <FlatList
-        ref={scrollViewRef} 
-        data={viewMode === 'list' ? filteredAndSortedEvents : []}
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        onTouchStart={handleSwipeableClose}
-        keyExtractor={(item, index) => `${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}`}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        ListHeaderComponent={() => (
-        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-
-          {/* 에러 상태 */}
-          {error && !loading && (
-            <View style={styles.errorContainer}>
-              <Ionicons name="warning-outline" size={48} color="#FF3B30" />
-              <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
-              <Text style={styles.errorMessage}>{error}</Text>
-              <TouchableOpacity 
-                style={styles.retryButton}
-                onPress={() => loadSchedules()}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.retryButtonText}>다시 시도</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* 정상 데이터가 있을 때만 표시 */}
-          {!loading && !error && (
-          <>
-            {/* 무신사 스타일 통계 카드 */}
-            <View style={styles.statsSection}>
-          <View style={styles.statsCard}>
-            <View style={styles.statsHeader}>
-              <Text style={styles.statsTitle}>
-                이번 달
-              </Text>
-              <View style={styles.statsBadge}>
-                <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
-              </View>
-            </View>
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{totalEvents}</Text>
-                <Text style={styles.statLabel}>총 일정</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{upcomingEvents}</Text>
-                <Text style={styles.statLabel}>다가오는 일정</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
+      {/* 공통 콘텐츠 - 통계 카드와 에러 상태 */}
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* 에러 상태 */}
-        {error && (
+        {error && !loading && (
           <View style={styles.errorContainer}>
             <Ionicons name="warning-outline" size={48} color="#FF3B30" />
             <Text style={styles.errorTitle}>오류가 발생했습니다</Text>
@@ -503,69 +449,85 @@ const Schedules: React.FC = () => {
           </View>
         )}
 
-        {/* 뷰 모드에 따른 콘텐츠 */}
-        {!error && viewMode === 'list' ? (
+        {/* 정상 데이터가 있을 때만 표시 */}
+        {!loading && !error && (
           <>
-            {/* 무신사 스타일 일정 목록 */}
-            <View style={styles.schedulesSection}>
-              <View style={styles.schedulesGrid}>
-                {/* 일정 목록은 FlatList renderItem으로 렌더링됨 */}
-            </View>
-          </View>
-
-            {/* 빈 상태 */}
-            {totalEvents === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyDescription}>일정이 없습니다</Text>
+            {/* 무신사 스타일 통계 카드 */}
+            <View style={styles.statsSection}>
+              <View style={styles.statsCard}>
+                <View style={styles.statsHeader}>
+                  <Text style={styles.statsTitle}>
+                    이번 달
+                  </Text>
+                  <View style={styles.statsBadge}>
+                    <Text style={styles.statsBadgeText}>{schedules.length}개</Text>
+                  </View>
+                </View>
+                <View style={styles.statsGrid}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{totalEvents}</Text>
+                    <Text style={styles.statLabel}>총 일정</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{upcomingEvents}</Text>
+                    <Text style={styles.statLabel}>다가오는 일정</Text>
+                  </View>
+                </View>
               </View>
-            )}
-          </>
-        ) : (
-          <>
-            {/* 달력 뷰 */}
-            <View style={styles.calendarSection}>
-            <Calendar
-              current={currentMonth.toISOString().split('T')[0]}
-              onDayPress={onDayPress}
-              markedDates={getMarkedDates()}
-              monthFormat={'yyyy년 M월'}
-              hideExtraDays={true}
-              firstDay={0}
-              onMonthChange={(month) => {
-                setCurrentMonth(new Date(month.year, month.month - 1));
-              }}
-              theme={{
-                backgroundColor: '#ffffff',
-                calendarBackground: '#ffffff',
-                textSectionTitleColor: '#666666',
-                selectedDayBackgroundColor: '#f0f0f0',
-                selectedDayTextColor: '#1a1a1a',
-                todayTextColor: '#1a1a1a',
-                dayTextColor: '#1a1a1a',
-                textDisabledColor: '#d9e1e8',
-                dotColor: '#4a5568',
-                selectedDotColor: '#4a5568',
-                arrowColor: '#666666',
-                disabledArrowColor: '#d9e1e8',
-                monthTextColor: '#1a1a1a',
-                indicatorColor: '#666666',
-                textDayFontWeight: '500',
-                textMonthFontWeight: '600',
-                textDayHeaderFontWeight: '600',
-                textDayFontSize: 16,
-                textMonthFontSize: 20,
-                textDayHeaderFontSize: 14,
-              }}
-              style={styles.calendar}
-            />
-          </View>
-          </>
-          )}
-          </>
-          )}
-        </Animated.View>
-        )}
-        renderItem={({ item: schedule }) => {
+            </View>
+
+            {/* 뷰 모드에 따른 콘텐츠 */}
+            {viewMode === 'calendar' ? (
+              /* 달력 뷰 */
+              <View style={styles.calendarSection}>
+                <Calendar
+                  current={currentMonth.toISOString().split('T')[0]}
+                  onDayPress={onDayPress}
+                  markedDates={getMarkedDates()}
+                  monthFormat={'yyyy년 M월'}
+                  hideExtraDays={true}
+                  firstDay={0}
+                  onMonthChange={(month) => {
+                    setCurrentMonth(new Date(month.year, month.month - 1));
+                  }}
+                  theme={{
+                    backgroundColor: '#ffffff',
+                    calendarBackground: '#ffffff',
+                    textSectionTitleColor: '#666666',
+                    selectedDayBackgroundColor: '#f0f0f0',
+                    selectedDayTextColor: '#1a1a1a',
+                    todayTextColor: '#1a1a1a',
+                    dayTextColor: '#1a1a1a',
+                    textDisabledColor: '#d9e1e8',
+                    dotColor: '#4a5568',
+                    selectedDotColor: '#4a5568',
+                    arrowColor: '#666666',
+                    disabledArrowColor: '#d9e1e8',
+                    monthTextColor: '#1a1a1a',
+                    indicatorColor: '#666666',
+                    textDayFontWeight: '500',
+                    textMonthFontWeight: '600',
+                    textDayHeaderFontWeight: '600',
+                    textDayFontSize: 16,
+                    textMonthFontSize: 20,
+                    textDayHeaderFontSize: 14,
+                  }}
+                  style={styles.calendar}
+                />
+              </View>
+            ) : (
+              /* 리스트 뷰 - FlatList */
+              <FlatList
+                ref={scrollViewRef} 
+                data={filteredAndSortedEvents}
+                style={styles.scrollContainer}
+                showsVerticalScrollIndicator={false}
+                onTouchStart={handleSwipeableClose}
+                keyExtractor={(item, index) => `${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}`}
+                ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                renderItem={({ item: schedule }) => {
           const typeStyle = getEventTypeColor(schedule.event_type);
           const eventDate = new Date(schedule.event_date);
           const isToday = eventDate.toDateString() === new Date().toDateString();
@@ -651,7 +613,16 @@ const Schedules: React.FC = () => {
             </Animated.View>
           );
         }}
-      />
+                ListEmptyComponent={() => !loading && !error && (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyDescription}>일정이 없습니다</Text>
+                  </View>
+                )}
+              />
+            )}
+          </>
+        )}
+      </Animated.View>
 
       {/* 날짜별 일정 모달 */}
       <Modal
