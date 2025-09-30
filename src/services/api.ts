@@ -193,6 +193,14 @@ export interface LedgerApiResponse<T> extends ApiResponse<T> {
   };
 }
 
+// 일정 API 응답 타입 (통계 데이터 포함)
+export interface ScheduleApiResponse<T> extends ApiResponse<T> {
+  this_month_stats?: {
+    this_month_total_count: number;
+    this_month_upcoming_count: number;
+  };
+}
+
 // 장부 관련 타입
 export interface LedgerItem {
   id: number;
@@ -289,7 +297,7 @@ export const scheduleService = {
     status?: 'upcoming' | 'completed';
     event_type?: string;
     sort_by?: 'date_asc' | 'date_desc';
-  }): Promise<ApiResponse<ScheduleItem[]>> {
+  }): Promise<ScheduleApiResponse<ScheduleItem[]>> {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append('search', params.search);
     if (params?.status) queryParams.append('status', params.status);
