@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Animated,
+    FlatList,
     Modal,
     ScrollView,
     StyleSheet,
@@ -37,7 +38,7 @@ LocaleConfig.defaultLocale = 'ko';
 
 const Schedules: React.FC = () => {
   const router = useRouter();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<FlatList>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   // 시간 포맷팅 함수 (초 제거)
@@ -227,7 +228,7 @@ const Schedules: React.FC = () => {
   // 탭이 포커스될 때마다 스크롤을 맨 위로 이동 및 스와이프 닫기
   useFocusEffect(
     useCallback(() => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      scrollViewRef.current?.scrollToOffset({ offset: 0, animated: true });
       // Swipeable 제거로 인한 성능 최적화
       // 데이터 새로고침
       loadSchedules();
@@ -430,12 +431,16 @@ const Schedules: React.FC = () => {
         </View>
       </Animated.View>
 
-      <ScrollView 
+      <FlatList
         ref={scrollViewRef} 
-        style={styles.scrollContainer} 
+        data={viewMode === 'list' ? filteredAndSortedEvents : []}
+        style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         onTouchStart={handleSwipeableClose}
-      >
+        keyExtractor={(item, index) => `${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}`}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        ListHeaderComponent={() => (
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
 
           {/* 에러 상태 */}
@@ -504,90 +509,7 @@ const Schedules: React.FC = () => {
             {/* 무신사 스타일 일정 목록 */}
             <View style={styles.schedulesSection}>
               <View style={styles.schedulesGrid}>
-                {filteredAndSortedEvents.map((schedule) => {
-                const typeStyle = getEventTypeColor(schedule.event_type);
-                const eventDate = new Date(schedule.event_date);
-                const isToday = eventDate.toDateString() === new Date().toDateString();
-                const isTomorrow = eventDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
-
-                return (
-                  <Swipeable 
-                    key={schedule.id}
-                    renderRightActions={() => renderRightActions(schedule.id)}
-                    rightThreshold={40}
-                    onSwipeableWillOpen={() => handleSwipeableOpen(schedule.id)}
-                    onSwipeableWillClose={handleSwipeableClose}
-                  >
-                    <TouchableOpacity
-                      style={styles.scheduleCard}
-                      activeOpacity={0.8}
-                      onPress={() => {
-                        if (openSwipeableId !== schedule.id) {
-                          router.push({
-                            pathname: '/schedule-detail',
-                            params: {
-                              id: schedule.id,
-                              data: JSON.stringify(schedule)
-                            }
-                          });
-                        }
-                      }}
-                    >
-                    {/* 메모 표시 - 카드 모서리 */}
-                    {schedule.memo && schedule.memo.trim() !== '' && (
-                      <View style={styles.memoCorner} />
-                    )}
-
-                    {/* 날짜 표시 */}
-                    <View style={styles.dateSection}>
-                      <View style={styles.dateContainer}>
-                        <Text style={styles.dateNumber}>{eventDate.getDate()}</Text>
-                        <Text style={styles.dateMonth}>{eventDate.getMonth() + 1}월</Text>
-                      </View>
-                      {(isToday || isTomorrow) && (
-                        <View style={styles.urgentBadge}>
-                          <Text style={styles.urgentText}>
-                            {isToday ? '오늘' : '내일'}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* 일정 정보 */}
-                    <View style={styles.scheduleInfo}>
-                      <View style={styles.scheduleHeader}>
-                        <Text style={styles.scheduleTitle}>{schedule.title}</Text>
-                      </View>
-
-                      <View style={styles.scheduleDetails}>
-                        <View style={styles.detailRow}>
-                          <Ionicons name="time-outline" size={14} color="#666" />
-                          <Text style={styles.detailText}>{formatTime(schedule.event_time)}</Text>
-                        </View>
-                        <View style={styles.detailRow}>
-                          <Ionicons name="location-outline" size={14} color="#666" />
-                          <Text style={styles.detailText}>{schedule.location}</Text>
-                        </View>
-                      </View>
-                    </View>
-
-                    {/* 상태 섹션 (이벤트 타입 + 상태) */}
-                    <View style={styles.statusSection}>
-                        <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
-                        <Text style={[styles.typeText, { color: typeStyle.text }]}>
-                          {schedule.event_type}
-                        </Text>
-                      </View>
-                      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(schedule.status).bg }]}>
-                        <Text style={[styles.statusText, { color: getStatusColor(schedule.status).text }]}>
-                          {getStatusText(schedule.status)}
-                        </Text>
-                      </View>
-                    </View>
-                    </TouchableOpacity>
-                  </Swipeable>
-                );
-              })}
+                {/* 일정 목록은 FlatList renderItem으로 렌더링됨 */}
             </View>
           </View>
 
@@ -642,7 +564,94 @@ const Schedules: React.FC = () => {
           </>
           )}
         </Animated.View>
-      </ScrollView>
+        )}
+        renderItem={({ item: schedule }) => {
+          const typeStyle = getEventTypeColor(schedule.event_type);
+          const eventDate = new Date(schedule.event_date);
+          const isToday = eventDate.toDateString() === new Date().toDateString();
+          const isTomorrow = eventDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
+
+          return (
+            <Animated.View style={{ opacity: fadeAnim }}>
+              <Swipeable 
+                key={schedule.id}
+                renderRightActions={() => renderRightActions(schedule.id)}
+                rightThreshold={40}
+                onSwipeableWillOpen={() => handleSwipeableOpen(schedule.id)}
+                onSwipeableWillClose={handleSwipeableClose}
+              >
+                <TouchableOpacity
+                  style={styles.scheduleCard}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    if (openSwipeableId !== schedule.id) {
+                      router.push({
+                        pathname: '/schedule-detail',
+                        params: {
+                          id: schedule.id.toString(),
+                          data: JSON.stringify(schedule)
+                        }
+                      });
+                    }
+                  }}
+                >
+                  {/* 메모 표시 - 카드 모서리 */}
+                  {schedule.memo && schedule.memo.trim() !== '' && (
+                    <View style={styles.memoCorner} />
+                  )}
+
+                  {/* 날짜 표시 */}
+                  <View style={styles.dateSection}>
+                    <View style={styles.dateContainer}>
+                      <Text style={styles.dateNumber}>{eventDate.getDate()}</Text>
+                      <Text style={styles.dateMonth}>{eventDate.getMonth() + 1}월</Text>
+                    </View>
+                    {(isToday || isTomorrow) && (
+                      <View style={styles.urgentBadge}>
+                        <Text style={styles.urgentText}>
+                          {isToday ? '오늘' : '내일'}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* 일정 정보 */}
+                  <View style={styles.scheduleInfo}>
+                    <View style={styles.scheduleHeader}>
+                      <Text style={styles.scheduleTitle}>{schedule.title}</Text>
+                    </View>
+
+                    <View style={styles.scheduleDetails}>
+                      <View style={styles.detailRow}>
+                        <Ionicons name="time-outline" size={14} color="#666" />
+                        <Text style={styles.detailText}>{formatTime(schedule.event_time)}</Text>
+                      </View>
+                      <View style={styles.detailRow}>
+                        <Ionicons name="location-outline" size={14} color="#666" />
+                        <Text style={styles.detailText}>{schedule.location}</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* 상태 섹션 (이벤트 타입 + 상태) */}
+                  <View style={styles.statusSection}>
+                    <View style={[styles.typeBadge, { backgroundColor: typeStyle.bg }]}>
+                    <Text style={[styles.typeText, { color: typeStyle.text }]}>
+                      {schedule.event_type}
+                    </Text>
+                  </View>
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(schedule.status).bg }]}>
+                    <Text style={[styles.statusText, { color: getStatusColor(schedule.status).text }]}>
+                      {getStatusText(schedule.status)}
+                    </Text>
+                  </View>
+                </View>
+                </TouchableOpacity>
+              </Swipeable>
+            </Animated.View>
+          );
+        }}
+      />
 
       {/* 날짜별 일정 모달 */}
       <Modal
@@ -1167,6 +1176,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0f0f0',
     position: 'relative',
+    marginHorizontal: 24
   },
 
   // 날짜 섹션
