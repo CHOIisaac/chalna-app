@@ -29,9 +29,13 @@ const Ledgers: React.FC = () => {
   // 현재 열린 Swipeable ID (단일 관리로 성능 최적화)
   const [openSwipeableId, setOpenSwipeableId] = useState<number | null>(null);
   
-  // 필터 상태
-  const [filterType, setFilterType] = useState<'all' | 'given' | 'received'>('all');
-  const [sortBy, setSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
+  // 실제 적용된 필터 상태 (API 호출에 영향)
+  const [appliedFilterType, setAppliedFilterType] = useState<'all' | 'given' | 'received'>('all');
+  const [appliedSortBy, setAppliedSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
+  
+  // 임시 필터 상태 (UI에서 선택만, API 호출 안 함)
+  const [tempFilterType, setTempFilterType] = useState<'all' | 'given' | 'received'>('all');
+  const [tempSortBy, setTempSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
   
   // 드롭다운 상태
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -119,12 +123,12 @@ const Ledgers: React.FC = () => {
       }
 
       // 현재 적용된 타입 필터 유지
-      if (filterType !== 'all') {
-        searchParams.entry_type = filterType;
+      if (appliedFilterType !== 'all') {
+        searchParams.entry_type = appliedFilterType;
       }
 
       // 현재 적용된 정렬 유지
-      searchParams.sort_by = sortBy;
+      searchParams.sort_by = appliedSortBy;
 
       const params = {
         ...searchParams,
@@ -144,7 +148,7 @@ const Ledgers: React.FC = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, currentSkip, searchTerm, filterType, sortBy]);
+  }, [loadingMore, hasMore, currentSkip, searchTerm, appliedFilterType, appliedSortBy]);
 
   // 검색어 전용 파라미터 빌드 함수 (검색어만 의존성으로 가짐)
   const buildSearchParams = useCallback(() => {
@@ -160,15 +164,15 @@ const Ledgers: React.FC = () => {
     }
 
     // 현재 적용된 타입 필터 유지
-    if (filterType !== 'all') {
-      searchParams.entry_type = filterType;
+    if (appliedFilterType !== 'all') {
+      searchParams.entry_type = appliedFilterType;
     }
 
     // 현재 적용된 정렬 유지
-    searchParams.sort_by = sortBy;
+    searchParams.sort_by = appliedSortBy;
 
     return searchParams;
-  }, [searchTerm, filterType, sortBy]); // 검색어, 필터 타입, 정렬 모두 의존성으로 가짐
+  }, [searchTerm, appliedFilterType, appliedSortBy]); // 검색어, 적용된 필터 타입, 적용된 정렬만 의존성으로 가짐
 
   // 전체 필터 파라미터 빌드 함수 (적용 버튼용)
   const buildFilterParams = useCallback(() => {
@@ -183,19 +187,30 @@ const Ledgers: React.FC = () => {
       filterParams.search = searchTerm.trim();
     }
 
-    // 타입 필터 추가
-    if (filterType !== 'all') {
-      filterParams.entry_type = filterType;
+    // 타입 필터 추가 (임시 필터 사용)
+    if (tempFilterType !== 'all') {
+      filterParams.entry_type = tempFilterType;
     }
 
-    // 정렬 추가
-    filterParams.sort_by = sortBy;
+    // 정렬 추가 (임시 정렬 사용)
+    filterParams.sort_by = tempSortBy;
 
     return filterParams;
-  }, [searchTerm, filterType, sortBy]);
+  }, [searchTerm, tempFilterType, tempSortBy]);
+
+  // 모달 열기 함수 (현재 적용된 필터를 임시 필터로 복사)
+  const openFilterModal = useCallback(() => {
+    setTempFilterType(appliedFilterType);
+    setTempSortBy(appliedSortBy);
+    setShowFilterModal(true);
+  }, [appliedFilterType, appliedSortBy]);
 
   // 필터 적용 함수 (메모이제이션)
   const applyFilter = useCallback(async () => {
+    // 임시 필터를 실제 적용된 필터로 복사
+    setAppliedFilterType(tempFilterType);
+    setAppliedSortBy(tempSortBy);
+    
     const filterParams = buildFilterParams();
     
     // API 호출 (무한 스크롤을 위해 limit 10으로 설정)
@@ -203,7 +218,7 @@ const Ledgers: React.FC = () => {
     
     // 모달 닫기
     setShowFilterModal(false);
-  }, [buildFilterParams, loadLedgers]);
+  }, [tempFilterType, tempSortBy, buildFilterParams, loadLedgers]);
 
   // 검색어 변경 시 실시간 필터링 (디바운싱 적용, 메모이제이션)
   const handleSearchChange = useCallback((text: string) => {
@@ -362,7 +377,7 @@ const Ledgers: React.FC = () => {
               style={styles.filterButton}
               onPress={() => {
                 handleSwipeableClose();
-                setShowFilterModal(true);
+                openFilterModal();
               }}
             >
               <Ionicons name="options-outline" size={20} color={colors.foreground} />
@@ -497,7 +512,7 @@ const Ledgers: React.FC = () => {
 
                 {/* 금액 영역 */}
                 <View style={styles.amountSection}>
-                  <Text style={[styles.amountText, { color: '#4a5568' }]}>
+                  <Text style={[styles.amountText, { color: 'black' }]}>
                     {ledger.amount.toLocaleString()}원
                   </Text>
                   <Text style={[styles.typeLabel, { color: ledger.entry_type === 'given' ? '#4a5568' : '#718096' }]}>
@@ -571,7 +586,7 @@ const Ledgers: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {filterType === 'all' ? '전체' : filterType === 'given' ? '나눔' : '받음'}
+                  {tempFilterType === 'all' ? '전체' : tempFilterType === 'given' ? '나눔' : '받음'}
                 </Text>
                 <Ionicons
                   name={showFilterDropdown ? "chevron-up" : "chevron-down"}
@@ -585,60 +600,60 @@ const Ledgers: React.FC = () => {
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      filterType === 'all' && styles.dropdownOptionSelected
+                      tempFilterType === 'all' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setFilterType('all');
+                      setTempFilterType('all');
                       setShowFilterDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      filterType === 'all' && styles.dropdownOptionTextSelected
+                      tempFilterType === 'all' && styles.dropdownOptionTextSelected
                     ]}>
                       전체
                     </Text>
-                    {filterType === 'all' && (
+                    {tempFilterType === 'all' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      filterType === 'given' && styles.dropdownOptionSelected
+                      tempFilterType === 'given' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setFilterType('given');
+                      setTempFilterType('given');
                       setShowFilterDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      filterType === 'given' && styles.dropdownOptionTextSelected
+                      tempFilterType === 'given' && styles.dropdownOptionTextSelected
                     ]}>
                       나눔
                     </Text>
-                    {filterType === 'given' && (
+                    {tempFilterType === 'given' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      filterType === 'received' && styles.dropdownOptionSelected
+                      tempFilterType === 'received' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setFilterType('received');
+                      setTempFilterType('received');
                       setShowFilterDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      filterType === 'received' && styles.dropdownOptionTextSelected
+                      tempFilterType === 'received' && styles.dropdownOptionTextSelected
                     ]}>
                       받음
                     </Text>
-                    {filterType === 'received' && (
+                    {tempFilterType === 'received' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
@@ -657,9 +672,9 @@ const Ledgers: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {sortBy === 'date_desc' ? '최신순' :
-                   sortBy === 'date_asc' ? '오래된순' :
-                   sortBy === 'amount_desc' ? '높은금액순' : '낮은금액순'}
+                  {tempSortBy === 'date_desc' ? '최신순' :
+                   tempSortBy === 'date_asc' ? '오래된순' :
+                   tempSortBy === 'amount_desc' ? '높은금액순' : '낮은금액순'}
                 </Text>
                 <Ionicons
                   name={showSortDropdown ? "chevron-up" : "chevron-down"}
@@ -673,80 +688,80 @@ const Ledgers: React.FC = () => {
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      sortBy === 'date_desc' && styles.dropdownOptionSelected
+                      tempSortBy === 'date_desc' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setSortBy('date_desc');
+                      setTempSortBy('date_desc');
                       setShowSortDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      sortBy === 'date_desc' && styles.dropdownOptionTextSelected
+                      tempSortBy === 'date_desc' && styles.dropdownOptionTextSelected
                     ]}>
                       최신순
                     </Text>
-                    {sortBy === 'date_desc' && (
+                    {tempSortBy === 'date_desc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      sortBy === 'date_asc' && styles.dropdownOptionSelected
+                      tempSortBy === 'date_asc' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setSortBy('date_asc');
+                      setTempSortBy('date_asc');
                       setShowSortDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      sortBy === 'date_asc' && styles.dropdownOptionTextSelected
+                      tempSortBy === 'date_asc' && styles.dropdownOptionTextSelected
                     ]}>
                       오래된순
                     </Text>
-                    {sortBy === 'date_asc' && (
+                    {tempSortBy === 'date_asc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      sortBy === 'amount_desc' && styles.dropdownOptionSelected
+                      tempSortBy === 'amount_desc' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setSortBy('amount_desc');
+                      setTempSortBy('amount_desc');
                       setShowSortDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      sortBy === 'amount_desc' && styles.dropdownOptionTextSelected
+                      tempSortBy === 'amount_desc' && styles.dropdownOptionTextSelected
                     ]}>
                       높은금액순
                     </Text>
-                    {sortBy === 'amount_desc' && (
+                    {tempSortBy === 'amount_desc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      sortBy === 'amount_asc' && styles.dropdownOptionSelected
+                      tempSortBy === 'amount_asc' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setSortBy('amount_asc');
+                      setTempSortBy('amount_asc');
                       setShowSortDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      sortBy === 'amount_asc' && styles.dropdownOptionTextSelected
+                      tempSortBy === 'amount_asc' && styles.dropdownOptionTextSelected
                     ]}>
                       낮은금액순
                     </Text>
-                    {sortBy === 'amount_asc' && (
+                    {tempSortBy === 'amount_asc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>

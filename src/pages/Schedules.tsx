@@ -61,9 +61,16 @@ const Schedules: React.FC = () => {
   // 검색 및 필터 상태
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
-  const [eventTypeFilter, setEventTypeFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'date_asc' | 'date_desc'>('date_asc');
+  
+  // 실제 적용된 필터 상태 (API 호출에 영향)
+  const [appliedStatusFilter, setAppliedStatusFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
+  const [appliedEventTypeFilter, setAppliedEventTypeFilter] = useState<string>('all');
+  const [appliedSortBy, setAppliedSortBy] = useState<'date_asc' | 'date_desc'>('date_asc');
+  
+  // 임시 필터 상태 (UI에서 선택만, API 호출 안 함)
+  const [tempStatusFilter, setTempStatusFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
+  const [tempEventTypeFilter, setTempEventTypeFilter] = useState<string>('all');
+  const [tempSortBy, setTempSortBy] = useState<'date_asc' | 'date_desc'>('date_asc');
   
   // 드롭다운 상태
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -154,17 +161,17 @@ const Schedules: React.FC = () => {
       }
 
       // 현재 적용된 상태 필터 유지
-      if (statusFilter !== 'all') {
-        searchParams.status = statusFilter;
+      if (appliedStatusFilter !== 'all') {
+        searchParams.status = appliedStatusFilter;
       }
 
       // 현재 적용된 경조사 타입 필터 유지
-      if (eventTypeFilter !== 'all') {
-        searchParams.event_type = eventTypeFilter;
+      if (appliedEventTypeFilter !== 'all') {
+        searchParams.event_type = appliedEventTypeFilter;
       }
 
       // 현재 적용된 정렬 유지
-      searchParams.sort_by = sortBy;
+      searchParams.sort_by = appliedSortBy;
 
       const params = {
         ...searchParams,
@@ -184,7 +191,7 @@ const Schedules: React.FC = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, currentSkip, searchTerm, statusFilter, eventTypeFilter, sortBy]);
+  }, [loadingMore, hasMore, currentSkip, searchTerm, appliedStatusFilter, appliedEventTypeFilter, appliedSortBy]);
 
   // 필터 파라미터 빌드 함수 (메모이제이션)
   const buildFilterParams = useCallback(() => {
@@ -200,24 +207,37 @@ const Schedules: React.FC = () => {
       filterParams.search = searchTerm.trim();
     }
 
-    // 상태 필터 추가
-    if (statusFilter !== 'all') {
-      filterParams.status = statusFilter;
+    // 상태 필터 추가 (임시 필터 사용)
+    if (tempStatusFilter !== 'all') {
+      filterParams.status = tempStatusFilter;
     }
 
-    // 경조사 타입 필터 추가
-    if (eventTypeFilter !== 'all') {
-      filterParams.event_type = eventTypeFilter;
+    // 경조사 타입 필터 추가 (임시 필터 사용)
+    if (tempEventTypeFilter !== 'all') {
+      filterParams.event_type = tempEventTypeFilter;
     }
 
-    // 정렬 추가
-    filterParams.sort_by = sortBy;
+    // 정렬 추가 (임시 정렬 사용)
+    filterParams.sort_by = tempSortBy;
 
     return filterParams;
-  }, [searchTerm, statusFilter, eventTypeFilter, sortBy]);
+  }, [searchTerm, tempStatusFilter, tempEventTypeFilter, tempSortBy]);
+
+  // 모달 열기 함수 (현재 적용된 필터를 임시 필터로 복사)
+  const openFilterModal = useCallback(() => {
+    setTempStatusFilter(appliedStatusFilter);
+    setTempEventTypeFilter(appliedEventTypeFilter);
+    setTempSortBy(appliedSortBy);
+    setShowFilterModal(true);
+  }, [appliedStatusFilter, appliedEventTypeFilter, appliedSortBy]);
 
   // 필터 적용 함수 (메모이제이션)
   const applyFilter = useCallback(async () => {
+    // 임시 필터를 실제 적용된 필터로 복사
+    setAppliedStatusFilter(tempStatusFilter);
+    setAppliedEventTypeFilter(tempEventTypeFilter);
+    setAppliedSortBy(tempSortBy);
+    
     const filterParams = buildFilterParams();
     
     // API 호출 (무한 스크롤을 위해 limit 10으로 설정)
@@ -225,7 +245,7 @@ const Schedules: React.FC = () => {
     
     // 모달 닫기
     setShowFilterModal(false);
-  }, [buildFilterParams, loadSchedules]);
+  }, [tempStatusFilter, tempEventTypeFilter, tempSortBy, buildFilterParams, loadSchedules]);
 
   // 검색어 변경 시 실시간 필터링 (디바운싱 적용, 메모이제이션)
   const handleSearchChange = useCallback((text: string) => {
@@ -295,15 +315,45 @@ const Schedules: React.FC = () => {
 
   // 컴포넌트 마운트 시 데이터 로드 제거 (useFocusEffect에서 처리)
 
+  // 검색어 전용 파라미터 빌드 함수 (검색어만 의존성으로 가짐)
+  const buildSearchParams = useCallback(() => {
+    const searchParams: {
+      search?: string;
+      status?: 'upcoming' | 'completed';
+      event_type?: string;
+      sort_by?: 'date_asc' | 'date_desc';
+    } = {};
+
+    // 검색어만 추가 (현재 적용된 필터 상태 유지)
+    if (searchTerm.trim()) {
+      searchParams.search = searchTerm.trim();
+    }
+
+    // 현재 적용된 상태 필터 유지
+    if (appliedStatusFilter !== 'all') {
+      searchParams.status = appliedStatusFilter;
+    }
+
+    // 현재 적용된 경조사 타입 필터 유지
+    if (appliedEventTypeFilter !== 'all') {
+      searchParams.event_type = appliedEventTypeFilter;
+    }
+
+    // 현재 적용된 정렬 유지
+    searchParams.sort_by = appliedSortBy;
+
+    return searchParams;
+  }, [searchTerm, appliedStatusFilter, appliedEventTypeFilter, appliedSortBy]);
+
   // 검색어 변경 시 디바운싱된 API 호출 (검색어만 실시간 적용)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      const filterParams = buildFilterParams();
-      loadSchedules(filterParams, 10, 0, false);
+      const searchParams = buildSearchParams();
+      loadSchedules(searchParams, 10, 0, false);
     }, 200); // 200ms로 최적화 (반응성 향상)
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, statusFilter, eventTypeFilter, sortBy, buildFilterParams, loadSchedules]);
+  }, [searchTerm, buildSearchParams, loadSchedules]);
 
   // 탭이 포커스될 때 데이터 새로고침
   useFocusEffect(
@@ -481,10 +531,10 @@ const Schedules: React.FC = () => {
               </View>
               <TouchableOpacity 
                 style={styles.filterButton}
-                onPress={() => {
-                  handleSwipeableClose();
-                  setShowFilterModal(true);
-                }}
+              onPress={() => {
+                handleSwipeableClose();
+                openFilterModal();
+              }}
               >
                 <Ionicons name="options-outline" size={20} color="#1a1a1a" />
               </TouchableOpacity>
@@ -867,7 +917,7 @@ const Schedules: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {statusFilter === 'all' ? '전체' : statusFilter === 'upcoming' ? '예정' : '완료'}
+                  {tempStatusFilter === 'all' ? '전체' : tempStatusFilter === 'upcoming' ? '예정' : '완료'}
                 </Text>
                 <Ionicons 
                   name={showStatusDropdown ? "chevron-up" : "chevron-down"} 
@@ -881,60 +931,60 @@ const Schedules: React.FC = () => {
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      statusFilter === 'all' && styles.dropdownOptionSelected
+                      tempStatusFilter === 'all' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setStatusFilter('all');
+                      setTempStatusFilter('all');
                       setShowStatusDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      statusFilter === 'all' && styles.dropdownOptionTextSelected
+                      tempStatusFilter === 'all' && styles.dropdownOptionTextSelected
                     ]}>
                       전체
                     </Text>
-                    {statusFilter === 'all' && (
+                    {tempStatusFilter === 'all' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      statusFilter === 'upcoming' && styles.dropdownOptionSelected
+                      tempStatusFilter === 'upcoming' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setStatusFilter('upcoming');
+                      setTempStatusFilter('upcoming');
                       setShowStatusDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      statusFilter === 'upcoming' && styles.dropdownOptionTextSelected
+                      tempStatusFilter === 'upcoming' && styles.dropdownOptionTextSelected
                     ]}>
                       예정
                     </Text>
-                    {statusFilter === 'upcoming' && (
+                    {tempStatusFilter === 'upcoming' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      statusFilter === 'completed' && styles.dropdownOptionSelected
+                      tempStatusFilter === 'completed' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setStatusFilter('completed');
+                      setTempStatusFilter('completed');
                       setShowStatusDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      statusFilter === 'completed' && styles.dropdownOptionTextSelected
+                      tempStatusFilter === 'completed' && styles.dropdownOptionTextSelected
                     ]}>
                       완료
                     </Text>
-                    {statusFilter === 'completed' && (
+                    {tempStatusFilter === 'completed' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
@@ -954,7 +1004,7 @@ const Schedules: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {eventTypeFilter === 'all' ? '전체' : eventTypeFilter}
+                  {tempEventTypeFilter === 'all' ? '전체' : tempEventTypeFilter}
                 </Text>
                 <Ionicons 
                   name={showEventTypeDropdown ? "chevron-up" : "chevron-down"} 
@@ -968,20 +1018,20 @@ const Schedules: React.FC = () => {
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      eventTypeFilter === 'all' && styles.dropdownOptionSelected
+                      tempEventTypeFilter === 'all' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setEventTypeFilter('all');
+                      setTempEventTypeFilter('all');
                       setShowEventTypeDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      eventTypeFilter === 'all' && styles.dropdownOptionTextSelected
+                      tempEventTypeFilter === 'all' && styles.dropdownOptionTextSelected
                     ]}>
                       전체
                     </Text>
-                    {eventTypeFilter === 'all' && (
+                    {tempEventTypeFilter === 'all' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
@@ -990,20 +1040,20 @@ const Schedules: React.FC = () => {
                       key={type}
                       style={[
                         styles.dropdownOption,
-                        eventTypeFilter === type && styles.dropdownOptionSelected
+                        tempEventTypeFilter === type && styles.dropdownOptionSelected
                       ]}
                       onPress={() => {
-                        setEventTypeFilter(type);
+                        setTempEventTypeFilter(type);
                         setShowEventTypeDropdown(false);
                       }}
                     >
                       <Text style={[
                         styles.dropdownOptionText,
-                        eventTypeFilter === type && styles.dropdownOptionTextSelected
+                        tempEventTypeFilter === type && styles.dropdownOptionTextSelected
                       ]}>
                         {type}
                       </Text>
-                      {eventTypeFilter === type && (
+                      {tempEventTypeFilter === type && (
                         <Ionicons name="checkmark" size={16} color="#4a5568" />
                       )}
                     </TouchableOpacity>
@@ -1024,7 +1074,7 @@ const Schedules: React.FC = () => {
                 }}
               >
                 <Text style={styles.dropdownButtonText}>
-                  {sortBy === 'date_asc' ? '최신순' : '오래된순'}
+                  {tempSortBy === 'date_asc' ? '최신순' : '오래된순'}
                 </Text>
                 <Ionicons 
                   name={showSortDropdown ? "chevron-up" : "chevron-down"} 
@@ -1038,40 +1088,40 @@ const Schedules: React.FC = () => {
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      sortBy === 'date_asc' && styles.dropdownOptionSelected
+                      tempSortBy === 'date_asc' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setSortBy('date_asc');
+                      setTempSortBy('date_asc');
                       setShowSortDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      sortBy === 'date_asc' && styles.dropdownOptionTextSelected
+                      tempSortBy === 'date_asc' && styles.dropdownOptionTextSelected
                     ]}>
                       최신순
                     </Text>
-                    {sortBy === 'date_asc' && (
+                    {tempSortBy === 'date_asc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.dropdownOption,
-                      sortBy === 'date_desc' && styles.dropdownOptionSelected
+                      tempSortBy === 'date_desc' && styles.dropdownOptionSelected
                     ]}
                     onPress={() => {
-                      setSortBy('date_desc');
+                      setTempSortBy('date_desc');
                       setShowSortDropdown(false);
                     }}
                   >
                     <Text style={[
                       styles.dropdownOptionText,
-                      sortBy === 'date_desc' && styles.dropdownOptionTextSelected
+                      tempSortBy === 'date_desc' && styles.dropdownOptionTextSelected
                     ]}>
                       오래된순
                     </Text>
-                    {sortBy === 'date_desc' && (
+                    {tempSortBy === 'date_desc' && (
                       <Ionicons name="checkmark" size={16} color="#4a5568" />
                     )}
                   </TouchableOpacity>
