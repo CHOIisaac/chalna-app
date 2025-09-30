@@ -78,7 +78,12 @@ const Ledgers: React.FC = () => {
       
       if (response.success) {
         if (isLoadMore) {
-          setLedgers(prev => [...prev, ...response.data]);
+          // 중복 제거 로직 추가
+          setLedgers(prev => {
+            const existingIds = new Set(prev.map(item => item.id));
+            const newData = response.data.filter(item => !existingIds.has(item.id));
+            return [...prev, ...newData];
+          });
         } else {
           setLedgers(response.data);
         }
@@ -392,7 +397,7 @@ const Ledgers: React.FC = () => {
         onTouchStart={handleSwipeableClose}
         onEndReached={loadMoreLedgers}
         onEndReachedThreshold={0.1}
-        keyExtractor={(item, index) => `${item.id || index}-${item.name || 'unknown'}-${item.event_date || Date.now()}`}
+        keyExtractor={(item, index) => `ledger-${item.id || index}-${item.counterparty_name || 'unknown'}-${item.event_date || Date.now()}-${index}`}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         contentContainerStyle={{ paddingBottom: 20 }}
         ListHeaderComponent={() => (

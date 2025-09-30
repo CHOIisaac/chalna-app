@@ -112,7 +112,12 @@ const Schedules: React.FC = () => {
       
       if (response.success) {
         if (isLoadMore) {
-          setSchedules(prev => [...prev, ...response.data]);
+          // 중복 제거 로직 추가
+          setSchedules(prev => {
+            const existingIds = new Set(prev.map(item => item.id));
+            const newData = response.data.filter(item => !existingIds.has(item.id));
+            return [...prev, ...newData];
+          });
         } else {
           setSchedules(response.data);
         }
