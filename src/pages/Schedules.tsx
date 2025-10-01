@@ -82,6 +82,9 @@ const Schedules: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // 달력뷰 전용 데이터 상태
+  const [calendarSchedules, setCalendarSchedules] = useState<ScheduleItem[]>([]);
+  
   // 이번 달 통계 상태
   const [thisMonthStats, setThisMonthStats] = useState<{
     this_month_total_count: number;
@@ -146,6 +149,57 @@ const Schedules: React.FC = () => {
       setError(handleApiError(err));
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // 달력뷰 전용 데이터 로드 함수 (월별 전체 데이터)
+  const loadCalendarSchedules = useCallback(async (year?: number, month?: number) => {
+    try {
+      setError(null);
+      
+      let allSchedules: ScheduleItem[] = [];
+      let skip = 0;
+      const limit = 100; // 백엔드 최대 제한값
+      let hasMore = true;
+      
+      // 특정 월이 지정된 경우 해당 월의 데이터만 필터링
+      const params: any = {
+        limit,
+        skip: 0
+      };
+      
+      if (year && month !== undefined) {
+        const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
+        const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+        params.start_date = startDate;
+        params.end_date = endDate;
+      }
+      
+      // 해당 월의 모든 데이터를 페이지네이션으로 가져오기
+      while (hasMore) {
+        const currentParams = { ...params, skip };
+        const response = await scheduleService.getSchedules(currentParams);
+        
+        if (response.success) {
+          allSchedules = [...allSchedules, ...response.data];
+          
+          // 100개 미만이면 더 이상 데이터 없음
+          if (response.data.length < limit) {
+            hasMore = false;
+          } else {
+            skip += limit;
+          }
+        } else {
+          setError(response.error || '달력 데이터를 불러오는데 실패했습니다.');
+          return [];
+        }
+      }
+      
+      return allSchedules;
+    } catch (err) {
+      console.error('달력 데이터 로드 실패:', err);
+      setError(handleApiError(err));
+      return [];
     }
   }, []);
 
@@ -486,7 +540,10 @@ const Schedules: React.FC = () => {
 
   // 선택된 날짜의 이벤트 필터링
   const getEventsForDate = (date: Date) => {
-    return schedules.filter(schedule => {
+    // 뷰 모드에 따라 적절한 데이터 사용
+    const dataToUse = viewMode === 'calendar' ? calendarSchedules : schedules;
+    
+    return dataToUse.filter(schedule => {
       const eventDate = new Date(schedule.event_date);
       return eventDate.getDate() === date.getDate() &&
         eventDate.getMonth() === date.getMonth() &&
@@ -498,7 +555,10 @@ const Schedules: React.FC = () => {
   const getMarkedDates = () => {
     const marked: any = {};
     
-    schedules.forEach(schedule => {
+    // 달력뷰에서는 달력 전용 데이터 사용
+    const dataToUse = viewMode === 'calendar' ? calendarSchedules : schedules;
+    
+    dataToUse.forEach(schedule => {
       const eventDate = schedule.event_date;
       marked[eventDate] = {
         marked: true,
@@ -564,9 +624,14 @@ const Schedules: React.FC = () => {
                     styles.toggleButtonCompact,
                     viewMode === 'calendar' && styles.activeToggleButtonCompact,
                   ]}
-                  onPress={() => {
+                  onPress={async () => {
                     handleSwipeableClose();
                     setViewMode('calendar');
+                    
+                    // 달력뷰로 전환 시 현재 월의 데이터 로드
+                    const now = new Date();
+                    const monthData = await loadCalendarSchedules(now.getFullYear(), now.getMonth() + 1);
+                    setCalendarSchedules(monthData);
                   }}
                 >
                   <Ionicons
@@ -646,8 +711,12 @@ const Schedules: React.FC = () => {
                       monthFormat={'yyyy년 M월'}
                       hideExtraDays={true}
                       firstDay={0}
-                      onMonthChange={(month) => {
+                      onMonthChange={async (month) => {
                         setCurrentMonth(new Date(month.year, month.month - 1));
+                        
+                        // 해당 월의 달력 데이터 로드
+                        const monthData = await loadCalendarSchedules(month.year, month.month);
+                        setCalendarSchedules(monthData);
                       }}
                       theme={{
                         backgroundColor: '#ffffff',
