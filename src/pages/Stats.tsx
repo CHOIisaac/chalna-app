@@ -67,9 +67,11 @@ const Stats: React.FC = (): React.ReactElement => {
   
 
   // API 호출 함수들
-  const loadMonthlyTrends = useCallback(async () => {
+  const loadMonthlyTrends = useCallback(async (triggerLoading = false) => {
     try {
-      setLoading(true);
+      if (triggerLoading) {
+        setLoading(true);
+      }
       setError(null);
       
       // 실제 데이터가 있는 연도와 월만 받아옴
@@ -84,7 +86,9 @@ const Stats: React.FC = (): React.ReactElement => {
       console.error('월별 추세 데이터 로드 실패:', err);
       setError(handleApiError(err));
     } finally {
-      setLoading(false);
+      if (triggerLoading) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -194,58 +198,61 @@ const Stats: React.FC = (): React.ReactElement => {
     }
   }, []);
 
-  // 탭이 포커스될 때마다 스크롤을 맨 위로 이동하고 데이터 로드
+  // 탭 변경 시 데이터 로드 함수 (페이드인 애니메이션 없이)
+  const loadTabData = useCallback(async () => {
+    if (selectedTab === 'total') {
+      loadMonthlyTrends(false); // triggerLoading = false
+      loadTotalAmounts();
+    } else if (selectedTab === 'items') {
+      loadTopItems();
+      loadAmountDistribution();
+    } else if (selectedTab === 'network') {
+      loadRelationshipStats();
+      loadNetworkData();
+    } else if (selectedTab === 'events') {
+      loadEventData();
+    }
+  }, [selectedTab, loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution, loadRelationshipStats, loadNetworkData, loadEventData]);
+
+  // 화면 포커스 시 스크롤 위치 초기화
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-      
-      // 초기 데이터 로드 (총액 탭의 월별 데이터와 총액 데이터)
-      if (selectedTab === 'total') {
-        // 월별 추세 데이터 한 번에 로드
-        loadMonthlyTrends();
-        
-        // 총액 데이터 로드 (나눈/받은 모두 한 번에)
-        loadTotalAmounts();
-      } else if (selectedTab === 'items') {
-        // TOP 5 항목 데이터 로드
-        loadTopItems();
-        // 금액대별 분포 데이터 로드
-        loadAmountDistribution();
-      } else if (selectedTab === 'network') {
-        // 관계별 분석 데이터 로드
-        loadRelationshipStats();
-        // 개인별 상세 데이터 로드
-        loadNetworkData();
-      } else if (selectedTab === 'events') {
-        // 이벤트별 기록 데이터 로드
-        loadEventData();
-      }
-    }, []) // 의존성 배열을 비워서 중복 호출 방지
+    }, [])
   );
 
-  // 전체 페이드인 애니메이션 관리
+  // 화면 포커스 시 초기 데이터 로드 (페이드인 애니메이션 트리거)
+  useFocusEffect(
+    useCallback(() => {
+      // 현재 선택된 탭의 데이터 로드 (페이드인 애니메이션 트리거)
+      if (selectedTab === 'total') {
+        loadMonthlyTrends(true); // triggerLoading = true
+        loadTotalAmounts();
+      } else if (selectedTab === 'items') {
+        loadTopItems();
+        loadAmountDistribution();
+      } else if (selectedTab === 'network') {
+        loadRelationshipStats();
+        loadNetworkData();
+      } else if (selectedTab === 'events') {
+        loadEventData();
+      }
+    }, [loadMonthlyTrends, loadTotalAmounts, loadTopItems, loadAmountDistribution, loadRelationshipStats, loadNetworkData, loadEventData])
+  );
+
+  // 페이드인 애니메이션 효과 (다른 화면들과 동일한 패턴)
   React.useEffect(() => {
-    console.log('📊 통계 화면 페이드인 체크:', { loading, error });
     if (!loading && !error) {
-      console.log('📊 통계 화면 페이드인 애니메이션 시작');
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
       }).start();
     } else {
-      console.log('📊 통계 화면 페이드인 애니메이션 초기화');
       fadeAnim.setValue(0);
     }
   }, [loading, error, fadeAnim]);
 
-  // 타입 변경 시 월별 데이터 로드 (이제 월별 데이터는 한 번에 로드되므로 필요없음)
-  // React.useEffect(() => {
-  //   if (selectedTab === 'total') {
-  //     loadMonthlyData(weddingYear, 'wedding');
-  //     loadMonthlyData(condolenceYear, 'condolence');
-  //   }
-  // }, [selectedType, selectedTab, weddingYear, condolenceYear, loadMonthlyData]);
 
   // 차트 색상 정의
   const chartColors = ['#1F2937', '#9CA3AF', '#1E3A8A', '#374151', '#111827', '#6B7280', '#059669', '#DC2626', '#7C3AED', '#EA580C'];
@@ -560,7 +567,16 @@ const Stats: React.FC = (): React.ReactElement => {
         <View style={styles.subsectionTitleContainer}>
           <Text style={styles.subsectionTitle}>TOP 5 항목</Text>
         </View>
-        {(topItemsData?.[selectedType] || []).map((item, index) => (
+        {!topItemsData ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={colors.foreground} />
+            <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+          </View>
+        ) : (topItemsData?.[selectedType] || []).length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>데이터가 없습니다.</Text>
+          </View>
+        ) : (topItemsData?.[selectedType] || []).map((item, index) => (
           <View key={index} style={styles.topItemCard}>
             <View style={styles.rankSection}>
               <View style={[styles.rankBadge, { backgroundColor: chartColors[index % chartColors.length] }]}>
@@ -577,7 +593,8 @@ const Stats: React.FC = (): React.ReactElement => {
               </Text>
             </View>
           </View>
-        ))}
+        ))
+        }
       </View>
 
       {/* 금액대별 분포 - 분포 차트 스타일 */}
@@ -643,7 +660,16 @@ const Stats: React.FC = (): React.ReactElement => {
 
       {/* 관계별 분석 */}
       <View style={styles.relationshipContainer}>
-        {(relationshipStatsData?.[selectedType] || []).map((stat, index) => {
+        {!relationshipStatsData ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={colors.foreground} />
+            <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+          </View>
+        ) : (relationshipStatsData?.[selectedType] || []).length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>데이터가 없습니다.</Text>
+          </View>
+        ) : (relationshipStatsData?.[selectedType] || []).map((stat, index) => {
           // color를 추가 (API에서는 color가 없으므로 프론트엔드에서 추가)
           const statWithColor = { ...stat, color: chartColors[index % chartColors.length] };
           return (
@@ -668,7 +694,8 @@ const Stats: React.FC = (): React.ReactElement => {
             </View>
           </View>
           );
-        })}
+        })
+        }
       </View>
 
       {/* 개인별 상세 분석 */}
@@ -756,7 +783,12 @@ const Stats: React.FC = (): React.ReactElement => {
             style={styles.eventChartScrollView}
             contentContainerStyle={styles.eventChartContent}
           >
-            {eventData.map((event, index) => {
+            {!eventData || eventData.length === 0 ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={colors.foreground} />
+                <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+              </View>
+            ) : eventData.map((event, index) => {
               const maxCount = Math.max(...eventData.map(e => e.count));
               const barHeight = (event.count / maxCount) * 120; // 최대 120px
               
@@ -777,7 +809,8 @@ const Stats: React.FC = (): React.ReactElement => {
                   <Text style={styles.eventChartCount}>{event.count}회</Text>
                 </View>
               );
-            })}
+            })
+            }
           </ScrollView>
         </View>
       </View>
@@ -821,7 +854,24 @@ const Stats: React.FC = (): React.ReactElement => {
             <TouchableOpacity
               key={tab.key}
               style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
-              onPress={() => setSelectedTab(tab.key as any)}
+              onPress={() => {
+                const newTab = tab.key as any;
+                setSelectedTab(newTab);
+                
+                // 새로운 탭에 맞는 데이터 로드
+                if (newTab === 'total') {
+                  loadMonthlyTrends(false);
+                  loadTotalAmounts();
+                } else if (newTab === 'items') {
+                  loadTopItems();
+                  loadAmountDistribution();
+                } else if (newTab === 'network') {
+                  loadRelationshipStats();
+                  loadNetworkData();
+                } else if (newTab === 'events') {
+                  loadEventData();
+                }
+              }}
               accessibilityRole="tab"
               accessibilityLabel={`${tab.label} 탭, ${selectedTab === tab.key ? '현재 선택됨' : '선택되지 않음'}`}
               accessibilityState={{ selected: selectedTab === tab.key }}
@@ -904,6 +954,25 @@ const styles = StyleSheet.create({
   },
   content: {
     // flex: 1 제거
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#666666',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#999999',
   },
   section: {
     marginBottom: 32,
@@ -1545,20 +1614,8 @@ const styles = StyleSheet.create({
     color: '#FF6B6B',
     fontWeight: '700',
   },
-  
-  // 로딩 및 에러 상태 스타일
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-    gap: 8,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
+
+  // 에러 상태 스타일
   errorContainer: {
     alignItems: 'center',
     paddingVertical: 20,
