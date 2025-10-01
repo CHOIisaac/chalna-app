@@ -198,6 +198,7 @@ export interface ScheduleApiResponse<T> extends ApiResponse<T> {
   this_month_stats?: {
     this_month_total_count: number;
     this_month_upcoming_count: number;
+    total_count: number;
   };
 }
 
