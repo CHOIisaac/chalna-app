@@ -86,6 +86,7 @@ const Schedules: React.FC = () => {
   const [thisMonthStats, setThisMonthStats] = useState<{
     this_month_total_count: number;
     this_month_upcoming_count: number;
+    total_count: number;
   } | null>(null);
 
   // 무한 스크롤 상태
@@ -601,67 +602,75 @@ const Schedules: React.FC = () => {
           {/* 정상 데이터가 있을 때만 표시 */}
           {!loading && !error && (
             <>
-              {/* 무신사 스타일 통계 카드 */}
-              <View style={styles.statsSection}>
-                <View style={styles.statsCard}>
-                  <View style={styles.statsHeader}>
-                    <Text style={styles.statsTitle}>
-                      이번 달
-                    </Text>
-                  </View>
-                  <View style={styles.statsGrid}>
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>{totalEvents}</Text>
-                      <Text style={styles.statLabel}>총 일정</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>{upcomingEvents}</Text>
-                      <Text style={styles.statLabel}>다가오는 일정</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-
               {/* 뷰 모드에 따른 콘텐츠 */}
               {viewMode === 'calendar' ? (
                 /* 달력 뷰 */
-                <View style={styles.calendarSection}>
-                  <Calendar
-                    current={currentMonth.toISOString().split('T')[0]}
-                    onDayPress={onDayPress}
-                    markedDates={getMarkedDates()}
-                    monthFormat={'yyyy년 M월'}
-                    hideExtraDays={true}
-                    firstDay={0}
-                    onMonthChange={(month) => {
-                      setCurrentMonth(new Date(month.year, month.month - 1));
-                    }}
-                    theme={{
-                      backgroundColor: '#ffffff',
-                      calendarBackground: '#ffffff',
-                      textSectionTitleColor: '#666666',
-                      selectedDayBackgroundColor: '#f0f0f0',
-                      selectedDayTextColor: '#1a1a1a',
-                      todayTextColor: '#1a1a1a',
-                      dayTextColor: '#1a1a1a',
-                      textDisabledColor: '#d9e1e8',
-                      dotColor: '#4a5568',
-                      selectedDotColor: '#4a5568',
-                      arrowColor: '#666666',
-                      disabledArrowColor: '#d9e1e8',
-                      monthTextColor: '#1a1a1a',
-                      indicatorColor: '#666666',
-                      textDayFontWeight: '500',
-                      textMonthFontWeight: '600',
-                      textDayHeaderFontWeight: '600',
-                      textDayFontSize: 16,
-                      textMonthFontSize: 20,
-                      textDayHeaderFontSize: 14,
-                    }}
-                    style={styles.calendar}
-                  />
-                </View>
+                <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                  {/* 통계 카드 */}
+                  <View style={styles.statsSection}>
+                    <View style={styles.statsCard}>
+                      <View style={styles.statsHeader}>
+                        <Text style={styles.statsTitle}>
+                          이번 달
+                        </Text>
+                        <View style={styles.statsBadge}>
+                          <Text style={styles.statsBadgeText}>
+                            {thisMonthStats?.this_month_total_count || 0}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.statsGrid}>
+                        <View style={styles.statItem}>
+                          <Text style={styles.statValue}>{totalEvents}</Text>
+                          <Text style={styles.statLabel}>총 일정</Text>
+                        </View>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                          <Text style={styles.statValue}>{upcomingEvents}</Text>
+                          <Text style={styles.statLabel}>다가오는 일정</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* 달력 */}
+                  <View style={styles.calendarSection}>
+                    <Calendar
+                      current={currentMonth.toISOString().split('T')[0]}
+                      onDayPress={onDayPress}
+                      markedDates={getMarkedDates()}
+                      monthFormat={'yyyy년 M월'}
+                      hideExtraDays={true}
+                      firstDay={0}
+                      onMonthChange={(month) => {
+                        setCurrentMonth(new Date(month.year, month.month - 1));
+                      }}
+                      theme={{
+                        backgroundColor: '#ffffff',
+                        calendarBackground: '#ffffff',
+                        textSectionTitleColor: '#666666',
+                        selectedDayBackgroundColor: '#f0f0f0',
+                        selectedDayTextColor: '#1a1a1a',
+                        todayTextColor: '#1a1a1a',
+                        dayTextColor: '#1a1a1a',
+                        textDisabledColor: '#d9e1e8',
+                        dotColor: '#4a5568',
+                        selectedDotColor: '#4a5568',
+                        arrowColor: '#666666',
+                        disabledArrowColor: '#d9e1e8',
+                        monthTextColor: '#1a1a1a',
+                        indicatorColor: '#666666',
+                        textDayFontWeight: '500',
+                        textMonthFontWeight: '600',
+                        textDayHeaderFontWeight: '600',
+                        textDayFontSize: 16,
+                        textMonthFontSize: 20,
+                        textDayHeaderFontSize: 14,
+                      }}
+                      style={styles.calendar}
+                    />
+                  </View>
+                </ScrollView>
               ) : (
                 /* 리스트 뷰 - FlatList */
                 <FlatList
@@ -675,6 +684,33 @@ const Schedules: React.FC = () => {
                   keyExtractor={(item, index) => `schedule-${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}-${item.event_time || ''}-${index}`}
                   ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
                   contentContainerStyle={{ paddingBottom: 20 }}
+                  ListHeaderComponent={() => (
+                    <View style={styles.statsSection}>
+                      <View style={styles.statsCard}>
+                        <View style={styles.statsHeader}>
+                          <Text style={styles.statsTitle}>
+                            이번 달
+                          </Text>
+                          <View style={styles.statsBadge}>
+                            <Text style={styles.statsBadgeText}>
+                              {thisMonthStats?.total_count || 0}건
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={styles.statsGrid}>
+                          <View style={styles.statItem}>
+                            <Text style={styles.statValue}>{totalEvents}</Text>
+                            <Text style={styles.statLabel}>총 일정</Text>
+                          </View>
+                          <View style={styles.statDivider} />
+                          <View style={styles.statItem}>
+                            <Text style={styles.statValue}>{upcomingEvents}</Text>
+                            <Text style={styles.statLabel}>다가오는 일정</Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  )}
                   renderItem={({ item: schedule }) => {
             const typeStyle = getEventTypeColor(schedule.event_type);
             const eventDate = new Date(schedule.event_date);
