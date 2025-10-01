@@ -3,16 +3,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Animated,
-    FlatList,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Animated,
+  FlatList,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -455,6 +455,34 @@ const Schedules: React.FC = () => {
     }
   };
 
+  // 통계 카드 컴포넌트
+  const StatsCard = () => (
+    <View style={styles.statsSection}>
+      <View style={styles.statsCard}>
+        <View style={styles.statsHeader}>
+          <Text style={styles.statsTitle}>
+            이번 달
+          </Text>
+          <View style={styles.statsBadge}>
+            <Text style={styles.statsBadgeText}>
+              {thisMonthStats?.total_count || 0}건
+            </Text>
+          </View>
+        </View>
+        <View style={styles.statsGrid}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{totalEvents}</Text>
+            <Text style={styles.statLabel}>총 일정</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{upcomingEvents}</Text>
+            <Text style={styles.statLabel}>다가오는 일정</Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 
   // 선택된 날짜의 이벤트 필터링
   const getEventsForDate = (date: Date) => {
@@ -607,31 +635,7 @@ const Schedules: React.FC = () => {
                 /* 달력 뷰 */
                 <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                   {/* 통계 카드 */}
-                  <View style={styles.statsSection}>
-                    <View style={styles.statsCard}>
-                      <View style={styles.statsHeader}>
-                        <Text style={styles.statsTitle}>
-                          이번 달
-                        </Text>
-                        <View style={styles.statsBadge}>
-                          <Text style={styles.statsBadgeText}>
-                            {thisMonthStats?.this_month_total_count || 0}
-                          </Text>
-                        </View>
-                      </View>
-                      <View style={styles.statsGrid}>
-                        <View style={styles.statItem}>
-                          <Text style={styles.statValue}>{totalEvents}</Text>
-                          <Text style={styles.statLabel}>총 일정</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statItem}>
-                          <Text style={styles.statValue}>{upcomingEvents}</Text>
-                          <Text style={styles.statLabel}>다가오는 일정</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
+                  <StatsCard />
 
                   {/* 달력 */}
                   <View style={styles.calendarSection}>
@@ -684,33 +688,7 @@ const Schedules: React.FC = () => {
                   keyExtractor={(item, index) => `schedule-${item.id || index}-${item.title || 'unknown'}-${item.event_date || Date.now()}-${item.event_time || ''}-${index}`}
                   ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
                   contentContainerStyle={{ paddingBottom: 20 }}
-                  ListHeaderComponent={() => (
-                    <View style={styles.statsSection}>
-                      <View style={styles.statsCard}>
-                        <View style={styles.statsHeader}>
-                          <Text style={styles.statsTitle}>
-                            이번 달
-                          </Text>
-                          <View style={styles.statsBadge}>
-                            <Text style={styles.statsBadgeText}>
-                              {thisMonthStats?.total_count || 0}건
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={styles.statsGrid}>
-                          <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{totalEvents}</Text>
-                            <Text style={styles.statLabel}>총 일정</Text>
-                          </View>
-                          <View style={styles.statDivider} />
-                          <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{upcomingEvents}</Text>
-                            <Text style={styles.statLabel}>다가오는 일정</Text>
-                          </View>
-                        </View>
-                      </View>
-                    </View>
-                  )}
+                  ListHeaderComponent={() => <StatsCard />}
                   renderItem={({ item: schedule }) => {
             const typeStyle = getEventTypeColor(schedule.event_type);
             const eventDate = new Date(schedule.event_date);
