@@ -83,6 +83,11 @@ export const API_ENDPOINTS = {
   NOTIFICATION_READ: (id: string) => `/api/v1/notifications/${id}/read`,
   NOTIFICATION_READ_ALL: '/api/v1/notifications/read-all',
   NOTIFICATION_DELETE: (id: string) => `/api/v1/notifications/${id}`,
+
+  // FCM 푸시 알림 관련
+  FCM_REGISTER: '/api/v1/fcm/register',
+  FCM_UNREGISTER: '/api/v1/fcm/unregister',
+  FCM_SEND_TEST: '/api/v1/fcm/send-test',
 } as const;
 
 // 타임아웃 설정 (ms)

@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthService } from '@/src/services/auth';
+import { fcmNotificationService } from '@/src/services/fcmNotificationService';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -22,7 +23,7 @@ export default function RootLayout() {
   // 인증 상태 관리
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  // 앱 시작 시 로그인 상태 확인 (한 번만 실행)
+  // 앱 시작 시 로그인 상태 확인 및 FCM 초기화 (한 번만 실행)
   useEffect(() => {
     let isMounted = true; // 컴포넌트가 마운트된 상태인지 확인
     
@@ -37,6 +38,11 @@ export default function RootLayout() {
         
         setIsAuthenticated(isLoggedIn);
         console.log('✅ 인증 상태 설정 완료:', isLoggedIn);
+
+        // 로그인 상태이면 FCM 토큰 등록
+        if (isLoggedIn) {
+          await initializeFCM();
+        }
       } catch (error) {
         console.error('인증 상태 확인 실패:', error);
         if (isMounted) {
@@ -51,6 +57,41 @@ export default function RootLayout() {
       isMounted = false; // 컴포넌트 언마운트 시 플래그 설정
     };
   }, []); // 의존성 배열을 빈 배열로 설정하여 한 번만 실행
+
+  // FCM 푸시 알림 초기화
+  const initializeFCM = async () => {
+    try {
+      console.log('🔔 FCM 푸시 알림 초기화 중...');
+      
+      // FCM 토큰 등록
+      const token = await fcmNotificationService.registerForPushNotificationsAsync();
+      
+      if (token) {
+        console.log('✅ FCM 토큰 등록 완료:', token);
+        
+        // 서버에 FCM 토큰 등록
+        const userData = await AuthService.getUserData();
+        if (userData?.id) {
+          const result = await fcmNotificationService.registerTokenToServer(userData.id.toString());
+          if (result.success) {
+            console.log('✅ 서버에 FCM 토큰 등록 완료');
+          } else {
+            console.log('⚠️ 서버에 FCM 토큰 등록 실패:', result.error);
+          }
+        }
+      } else {
+        console.log('⚠️ FCM 토큰을 가져오지 못했습니다. (시뮬레이터 또는 권한 거부)');
+      }
+    } catch (error) {
+      console.error('❌ FCM 초기화 실패:', error);
+    }
+  };
+
+  // FCM 알림 리스너 설정
+  useEffect(() => {
+    const unsubscribe = fcmNotificationService.setupNotificationListeners();
+    return unsubscribe;
+  }, []);
 
   if (!loaded || isAuthenticated === null) {
     // 폰트 로딩 또는 인증 상태 확인 중

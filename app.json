@@ -75,6 +75,15 @@
           "kakaoAppKey": "cd8ddfc145a849f19e915e54d5dce6f6"
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/chalna-app-icon1.png",
+          "color": "#ffffff",
+          "sounds": [],
+          "mode": "production"
+        }
+      ],
       "expo-build-properties"
     ],
     "experiments": {

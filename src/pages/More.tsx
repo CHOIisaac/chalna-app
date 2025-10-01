@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
+    Alert,
     Platform,
     ScrollView,
     Share,
@@ -13,18 +14,111 @@ import {
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
 import { shadows } from '../lib/utils';
+import { fcmTest } from '../services/fcmTestService';
 
 const More: React.FC = () => {
   const navigation = useNavigation();
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
+  const [fcmStatus, setFcmStatus] = useState<{
+    hasToken: boolean;
+    token: string | null;
+    registered: boolean;
+  } | null>(null);
 
   // 탭이 포커스될 때마다 스크롤을 맨 위로 이동
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      // FCM 상태 확인
+      checkFCMStatus();
     }, [])
   );
+
+  // FCM 상태 확인
+  const checkFCMStatus = async () => {
+    const status = await fcmTest.checkFCMStatus();
+    setFcmStatus(status);
+  };
+
+  // 테스트 알림 전송
+  const handleSendTestNotification = async () => {
+    Alert.alert(
+      '테스트 알림 전송',
+      '어떤 타입의 테스트 알림을 보내시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '일반 알림',
+          onPress: async () => {
+            const result = await fcmTest.sendTestNotification();
+            Alert.alert(
+              result.success ? '성공' : '실패',
+              result.success ? result.message! : result.error!
+            );
+          },
+        },
+        {
+          text: '결혼식 알림',
+          onPress: async () => {
+            const result = await fcmTest.sendEventTestNotification('wedding');
+            Alert.alert(
+              result.success ? '성공' : '실패',
+              result.success ? result.message! : result.error!
+            );
+          },
+        },
+        {
+          text: '장부 알림',
+          onPress: async () => {
+            const result = await fcmTest.sendLedgerTestNotification();
+            Alert.alert(
+              result.success ? '성공' : '실패',
+              result.success ? result.message! : result.error!
+            );
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  // FCM 토큰 재등록
+  const handleReregisterFCM = async () => {
+    Alert.alert(
+      'FCM 토큰 재등록',
+      'FCM 토큰을 재등록하시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '재등록',
+          onPress: async () => {
+            const result = await fcmTest.reregisterFCMToken();
+            Alert.alert(
+              result.success ? '성공' : '실패',
+              result.success ? result.message! : result.error!
+            );
+            // 재등록 후 상태 업데이트
+            if (result.success) {
+              await checkFCMStatus();
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // FCM 정보 출력
+  const handlePrintFCMInfo = async () => {
+    await fcmTest.printFCMInfo();
+    Alert.alert('FCM 정보', '콘솔을 확인하세요. (개발자 도구)');
+  };
 
   const quickActions = [
     {
@@ -129,6 +223,30 @@ ${appStoreUrl || ''}`,
     },
   ];
 
+  // 개발자 메뉴 (FCM 테스트)
+  const developerMenuItems = [
+    {
+      title: '푸시 알림 테스트',
+      description: 'FCM 푸시 알림 전송 테스트',
+      icon: 'notifications-outline',
+      badge: fcmStatus?.hasToken ? '활성' : '비활성',
+      badgeColor: fcmStatus?.hasToken ? '#10B981' : '#EF4444',
+      onPress: handleSendTestNotification,
+    },
+    {
+      title: 'FCM 토큰 재등록',
+      description: '푸시 알림 토큰 재등록',
+      icon: 'refresh-outline',
+      onPress: handleReregisterFCM,
+    },
+    {
+      title: 'FCM 정보 확인',
+      description: '콘솔에 FCM 정보 출력',
+      icon: 'information-circle-outline',
+      onPress: handlePrintFCMInfo,
+    },
+  ];
+
   return (
     <MobileLayout currentPage="more">
       <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
@@ -185,6 +303,41 @@ ${appStoreUrl || ''}`,
           </View>
         </View>
 
+
+        {/* 개발자 메뉴 (FCM 테스트) */}
+        <View style={styles.additionalMenuSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>🔧 개발자 도구</Text>
+          </View>
+          <View style={styles.additionalMenuList}>
+            {developerMenuItems.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.additionalMenuItem}
+                onPress={item.onPress}
+                activeOpacity={0.7}
+              >
+                <View style={styles.additionalMenuContent}>
+                  <View style={styles.menuItemLeft}>
+                    <View style={styles.menuItemIcon}>
+                      <Ionicons name={item.icon as any} size={20} color="#4a5568" />
+                    </View>
+                    <View style={styles.additionalMenuText}>
+                      <Text style={styles.additionalMenuTitle}>{item.title}</Text>
+                      <Text style={styles.additionalMenuDescription}>{item.description}</Text>
+                    </View>
+                  </View>
+                  {'badge' in item && item.badge && (
+                    <View style={[styles.badge, { backgroundColor: (item as any).badgeColor }]}>
+                      <Text style={styles.badgeText}>{item.badge}</Text>
+                    </View>
+                  )}
+                  <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
         {/* 고객지원 */}
         <View style={styles.additionalMenuSection}>
@@ -446,6 +599,17 @@ const styles = StyleSheet.create({
   additionalMenuDescription: {
     fontSize: 13,
     color: '#6B7280',
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'white',
   },
 
   // 앱 정보 섹션
