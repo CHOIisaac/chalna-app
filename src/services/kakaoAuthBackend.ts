@@ -4,6 +4,7 @@ import {
     logout,
     unlink
 } from '@react-native-seoul/kakao-login';
+import { getApiBaseUrl } from '../config/api';
 import { AuthService } from './auth';
 
 // 백엔드 연동 카카오 로그인 서비스
@@ -29,7 +30,7 @@ export const kakaoAuthBackendService = {
       console.log('📤 요청 데이터:', JSON.stringify(request, null, 2));
       
       // 카카오 로그인은 토큰이 필요하지 않으므로 직접 fetch 사용
-      const response = await fetch('http://192.168.0.95:8000/api/v1/kakao/login', {
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/kakao/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

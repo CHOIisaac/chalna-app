@@ -15,7 +15,7 @@
 // 개발/운영 환경별 API URL 설정
 export const API_CONFIG = {
   // 로컬 개발 서버 (폰에서 접근 가능한 IP로 변경 필요)
-  local: 'http://192.168.0.95:8000', // ✅ 실제 개발 머신의 IP 주소
+  local: 'http://192.168.0.98:8000', // ✅ 실제 개발 머신의 IP 주소
   
   // 개발 서버 (예시)
   development: 'https://dev-api.chalna.com',
@@ -24,16 +24,20 @@ export const API_CONFIG = {
   production: 'https://api.chalna.com',
 };
 
+// 환경 변수 또는 설정에 따른 환경 선택
+const getEnvironment = (): 'local' | 'development' | 'production' => {
+  // 환경 변수에서 ENV 값을 읽어오거나, 기본값 설정
+  const env = process.env.EXPO_PUBLIC_ENV || 'local';
+  
+  if (env === 'production') return 'production';
+  if (env === 'development') return 'development';
+  return 'local'; // 기본값
+};
+
 // 현재 환경에 따른 API URL 선택
 export const getApiBaseUrl = (): string => {
-  // Expo 개발 환경에서는 __DEV__ 사용
-  if (__DEV__) {
-    // 개발 중에는 로컬 서버 사용 (폰에서 접근 가능한 IP)
-    return API_CONFIG.local;
-  }
-  
-  // 운영 환경에서는 운영 서버 사용
-  return API_CONFIG.production;
+  const environment = getEnvironment();
+  return API_CONFIG[environment];
 };
 
 // API 버전
