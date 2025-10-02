@@ -793,9 +793,10 @@ export const notificationApiService = {
   },
 
   // 알림 읽음 처리
-  async markAsRead(id: string): Promise<ApiResponse<{ id: string; read: boolean; read_at: string }>> {
+  async markAsRead(id: string, data: { read: boolean }): Promise<ApiResponse<{ id: string; read: boolean; read_at: string }>> {
     return apiClient.put<ApiResponse<{ id: string; read: boolean; read_at: string }>>(
-      API_ENDPOINTS.NOTIFICATION_READ(id)
+      API_ENDPOINTS.NOTIFICATION_READ(id),
+      data
     );
   },
 
