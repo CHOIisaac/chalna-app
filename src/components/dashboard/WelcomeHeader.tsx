@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     Modal,
     StyleSheet,
@@ -40,23 +41,31 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ monthlyStats, loading }) 
     return `전월 대비 ${sign}${change}%`;
   };
 
-  // 읽지 않은 알림 확인
-  useEffect(() => {
-    const checkUnreadNotifications = async () => {
-      try {
-        const response = await notificationApiService.getNotifications();
-        // API 응답 구조: response.data.notifications
-        const notifications = response.data?.notifications || [];
-        const hasUnread = notifications.some(notification => !notification.read);
-        setHasUnreadNotifications(hasUnread);
-      } catch (error) {
-        console.error('알림 상태 확인 실패:', error);
-        setHasUnreadNotifications(false);
-      }
-    };
-
-    checkUnreadNotifications();
+  // 읽지 않은 알림 확인 함수
+  const checkUnreadNotifications = useCallback(async () => {
+    try {
+      const response = await notificationApiService.getNotifications();
+      // API 응답 구조: response.data.notifications
+      const notifications = response.data?.notifications || [];
+      const hasUnread = notifications.some(notification => !notification.read);
+      setHasUnreadNotifications(hasUnread);
+    } catch (error) {
+      console.error('알림 상태 확인 실패:', error);
+      setHasUnreadNotifications(false);
+    }
   }, []);
+
+  // 컴포넌트 마운트 시 알림 상태 확인
+  useEffect(() => {
+    checkUnreadNotifications();
+  }, [checkUnreadNotifications]);
+
+  // 홈화면 포커스 시 알림 상태 다시 확인
+  useFocusEffect(
+    useCallback(() => {
+      checkUnreadNotifications();
+    }, [checkUnreadNotifications])
+  );
 
   return (
     <View style={styles.container}>
