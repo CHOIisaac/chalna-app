@@ -9,32 +9,34 @@ import {
     View,
 } from 'react-native';
 import MobileLayout from '../components/layout/MobileLayout';
+import { NotificationData } from '../services/api';
 import { getEventMessage } from '../utils/eventMessages';
 
 const NotificationDetail: React.FC = () => {
   const router = useRouter();
-  const { notificationId } = useLocalSearchParams<{ notificationId: string }>();
+  const { notificationId, notificationData } = useLocalSearchParams<{ 
+    notificationId: string;
+    notificationData?: string;
+  }>();
 
-  // Mock data - 실제로는 notificationId로 데이터를 가져와야 함
-  const notification = {
-    id: notificationId || "1",
-    title: "김철수 결혼식 알림",
-    time: "1시간 전",
-    type: "wedding",
-    read: false,
-    date: new Date(),
-    location: "롯데호텔 크리스탈볼룸",
-    fullDetails: {
-      host: "김철수, 박영희",
-      contact: "010-1234-5678",
-      dressCode: "정장/드레스",
-      giftInfo: "축하금 또는 선물",
-      additionalInfo: "주차장 이용 가능, 지하철 2호선 잠실역 3번 출구 도보 5분"
-    }
-  };
+  // 목록에서 전달받은 데이터 사용
+  const notification: NotificationData = notificationData 
+    ? JSON.parse(notificationData)
+    : {
+        id: notificationId || "1",
+        title: "알림 정보를 불러올 수 없습니다",
+        message: "알림 데이터가 없습니다.",
+        time: "",
+        event_type: "wedding",
+        read: false,
+        date: new Date().toISOString(),
+        location: "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
   // 경조사 타입에 따른 메시지 생성
-  const message = getEventMessage(notification.type, notification.title, notification.date, notification.location);
+  const message = getEventMessage(notification.event_type, notification.title, new Date(notification.date), notification.location);
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
@@ -56,7 +58,7 @@ const NotificationDetail: React.FC = () => {
     }
   };
 
-  const typeInfo = getEventTypeColor(notification.type);
+  const typeInfo = getEventTypeColor(notification.event_type);
 
   return (
     <MobileLayout>
@@ -81,7 +83,7 @@ const NotificationDetail: React.FC = () => {
               <View style={[styles.typeBadge, { backgroundColor: typeInfo.bg }]}>
                 <Text style={styles.typeIcon}>{typeInfo.icon}</Text>
                 <Text style={[styles.typeText, { color: typeInfo.text }]}>
-                  {getEventTypeName(notification.type)}
+                  {getEventTypeName(notification.event_type)}
                 </Text>
               </View>
               <Text style={styles.timeText}>{notification.time}</Text>
@@ -90,7 +92,7 @@ const NotificationDetail: React.FC = () => {
             <Text style={styles.title}>{notification.title}</Text>
             
             <View style={styles.messageContainer}>
-              <Text style={styles.message}>{message}</Text>
+              <Text style={styles.message}>{notification.message || message}</Text>
             </View>
 
             {/* 상세 정보 */}
@@ -100,7 +102,7 @@ const NotificationDetail: React.FC = () => {
                 <View style={styles.detailContent}>
                   <Text style={styles.detailLabel}>일시</Text>
                   <Text style={styles.detailValue}>
-                    {notification.date.toLocaleDateString('ko-KR', {
+                    {new Date(notification.date).toLocaleDateString('ko-KR', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
@@ -122,24 +124,6 @@ const NotificationDetail: React.FC = () => {
 
           </View>
 
-          {/* 액션 버튼들 */}
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="checkmark-circle" size={20} color="white" />
-              <Text style={styles.primaryButtonText}>참석 확인</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="call" size={20} color="#666" />
-              <Text style={styles.secondaryButtonText}>연락하기</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
       </View>
     </MobileLayout>
@@ -250,42 +234,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1F2937',
     fontWeight: '500',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  primaryButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#3B82F6',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  secondaryButtonText: {
-    color: '#6B7280',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 
