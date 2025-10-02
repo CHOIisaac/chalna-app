@@ -39,83 +39,8 @@ const Notifications: React.FC = () => {
       console.error('❌ 알림 로드 실패:', err);
       setError(handleApiError(err));
       
-      // 오류 발생 시 Mock 데이터 사용
-      console.log('📱 Mock 데이터를 사용합니다.');
-      const mockNotifications: ApiNotificationData[] = [
-        {
-          id: "1",
-          title: "김철수 결혼식 알림",
-          message: "💒 결혼식이 곧 다가옵니다!\n\n김철수님이 내일 오후 12시에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.",
-          time: "1시간 전",
-          event_type: "wedding",
-          read: false,
-          date: new Date().toISOString(),
-          location: "롯데호텔 크리스탈볼룸",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "2", 
-          title: "박영희 어머님 장례식 알림",
-          message: "🕊️ 조문 안내\n\n박영희님 어머님이 3일 후 오후 2시에 진행됩니다. 고인의 명복을 빌어주시면 감사하겠습니다.",
-          time: "3시간 전",
-          event_type: "funeral",
-          read: false,
-          date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-          location: "서울추모공원",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "3",
-          title: "이민수 아들 돌잔치 알림", 
-          message: "🎂 돌잔치 초대\n\n이민수님 아들이 7일 후 오전 11시 30분에 진행됩니다. 아이의 건강한 성장을 함께 축하해주시면 감사하겠습니다.",
-          time: "1일 전",
-          event_type: "birthday",
-          read: true,
-          date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          location: "강남구청 웨딩홀",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "4",
-          title: "정수정 개업식 알림",
-          message: "🎊 개업식 초대\n\n정수정님이 10일 후 오후 3시에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.",
-          time: "2일 전", 
-          event_type: "opening",
-          read: true,
-          date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-          location: "강남구 신사동 사무실",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "5",
-          title: "최영수 결혼식 알림",
-          message: "💒 결혼식이 곧 다가옵니다!\n\n최영수님이 15일 후 오후 1시에 진행됩니다. 새로운 시작을 함께 축하해주시면 감사하겠습니다.",
-          time: "3일 전",
-          event_type: "wedding", 
-          read: false,
-          date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-          location: "그랜드하얏트 서울 웨딩홀",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "6",
-          title: "김민지 딸 돌잔치 알림",
-          message: "🎂 돌잔치 초대\n\n김민지님 딸이 20일 후 오전 10시 30분에 진행됩니다. 아이의 건강한 성장을 함께 축하해주시면 감사하겠습니다.",
-          time: "5일 전",
-          event_type: "birthday",
-          read: true,
-          date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
-          location: "롯데호텔 월드 크리스탈볼룸",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-      ];
-      setNotifications(mockNotifications);
+      // API 실패 시 빈 배열로 설정
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -131,23 +56,38 @@ const Notifications: React.FC = () => {
 
   // 개별 알림 카드 클릭 시 읽음으로 처리하고 상세 페이지로 이동
   const handleNotificationPress = async (notificationId: string) => {
+    const notification = notifications.find(n => n.id === notificationId);
+    
     try {
-      // API에서 읽음 처리
-      await notificationApiService.markAsRead(notificationId);
+      // 이미 읽지 않은 알림만 API 호출
+      if (!notification?.read) {
+        await notificationApiService.markAsRead(notificationId, { read: true });
+        console.log('✅ 알림 읽음 처리 완료:', notificationId);
+        
+        // 로컬 상태 업데이트
+        setNotifications(prevNotifications => 
+          prevNotifications.map(notification => 
+            notification.id === notificationId 
+              ? { ...notification, read: true }
+              : notification
+          )
+        );
+      }
       
-      // 로컬 상태 업데이트
-      setNotifications(prevNotifications => 
-        prevNotifications.map(notification => 
-          notification.id === notificationId 
-            ? { ...notification, read: true }
-            : notification
-        )
-      );
-      
-      // 상세 페이지로 이동
-      router.push(`/notification-detail?notificationId=${notificationId}`);
+      // 상세 페이지로 이동 (알림 데이터 전달)
+      if (notification) {
+        router.push({
+          pathname: '/notification-detail',
+          params: {
+            notificationId: notificationId,
+            notificationData: JSON.stringify(notification)
+          }
+        });
+      } else {
+        router.push(`/notification-detail?notificationId=${notificationId}`);
+      }
     } catch (error) {
-      console.error('알림 읽음 처리 실패:', error);
+      console.error('❌ 알림 읽음 처리 실패:', error);
       // API 실패해도 상세 페이지는 이동
       router.push(`/notification-detail?notificationId=${notificationId}`);
     }
@@ -229,6 +169,12 @@ const Notifications: React.FC = () => {
               >
                 <Text style={styles.retryButtonText}>다시 시도</Text>
               </TouchableOpacity>
+            </View>
+          ) : filteredNotifications.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="notifications-outline" size={48} color="#9CA3AF" />
+              <Text style={styles.emptyTitle}>알림이 없습니다</Text>
+              <Text style={styles.emptyDescription}>새로운 알림이 오면 여기에 표시됩니다.</Text>
             </View>
           ) : (
             <View style={styles.notificationsList}>
