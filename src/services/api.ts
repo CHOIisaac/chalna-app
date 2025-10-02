@@ -167,6 +167,14 @@ class ApiClient {
     });
   }
 
+  // PATCH 요청
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
   // DELETE 요청
   async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE' });
@@ -794,7 +802,7 @@ export const notificationApiService = {
 
   // 알림 읽음 처리
   async markAsRead(id: string, data: { read: boolean }): Promise<ApiResponse<{ id: string; read: boolean; read_at: string }>> {
-    return apiClient.put<ApiResponse<{ id: string; read: boolean; read_at: string }>>(
+    return apiClient.patch<ApiResponse<{ id: string; read: boolean; read_at: string }>>(
       API_ENDPOINTS.NOTIFICATION_READ(id),
       data
     );
